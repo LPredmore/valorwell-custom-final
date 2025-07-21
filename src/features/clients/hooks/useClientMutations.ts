@@ -27,6 +27,10 @@ interface ClientData {
   client_group_number_primary?: string;
 }
 
+interface ClientDataWithId extends ClientData {
+  id: string;
+}
+
 export const useCreateClient = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -36,7 +40,7 @@ export const useCreateClient = () => {
     mutationFn: async (clientData: ClientData) => {
       const { data, error } = await supabase
         .from('clients')
-        .insert([clientData])
+        .insert(clientData)
         .select()
         .single();
 
@@ -95,6 +99,46 @@ export const useUpdateClient = (clientId: string) => {
         variant: 'destructive',
       });
       console.error('Error updating client:', error);
+    },
+  });
+};
+
+/**
+ * Flexible upsert function for clients using Supabase
+ * Handles both single and bulk updates efficiently
+ */
+export const useUpsertClients = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (clients: ClientDataWithId[]) => {
+      const { data, error } = await supabase
+        .from('clients')
+        .upsert(clients, { onConflict: ['id'] })
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      // Invalidate individual client queries for updated clients
+      data?.forEach(client => {
+        queryClient.invalidateQueries({ queryKey: ['client', client.id] });
+      });
+      toast({
+        title: 'Success',
+        description: `${data?.length || 0} client(s) updated successfully`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update clients. Please try again.',
+        variant: 'destructive',
+      });
+      console.error('Error upserting clients:', error);
     },
   });
 };
