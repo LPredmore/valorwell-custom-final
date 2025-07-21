@@ -8,7 +8,7 @@ export interface AppointmentEvent {
     id: string;
     client_id: string;
     clinician_id: string;
-    status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+    status: 'scheduled' | 'documented' | 'no show' | 'cancelled';
     type: string;
     notes?: string;
     client_timezone?: string;

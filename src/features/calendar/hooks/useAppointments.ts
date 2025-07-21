@@ -10,7 +10,7 @@ interface CreateAppointmentData {
   end_at: string;
   type: string;
   notes?: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'scheduled' | 'documented' | 'no show' | 'cancelled';
 }
 
 interface UpdateAppointmentData extends Partial<CreateAppointmentData> {

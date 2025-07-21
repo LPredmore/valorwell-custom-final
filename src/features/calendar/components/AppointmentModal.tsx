@@ -31,7 +31,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     notes: '',
     start_at: '',
     end_at: '',
-    status: 'pending' as const
+    status: 'scheduled' as const
   });
 
   const { toast } = useToast();
@@ -127,7 +127,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         notes: '',
         start_at: format(selectedSlot.start, "yyyy-MM-dd'T'HH:mm"),
         end_at: format(selectedSlot.end, "yyyy-MM-dd'T'HH:mm"),
-        status: 'pending'
+        status: 'scheduled'
       });
     } else if (selectedEvent) {
       setFormData({
@@ -136,7 +136,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         notes: selectedEvent.resource?.notes || '',
         start_at: format(selectedEvent.start, "yyyy-MM-dd'T'HH:mm"),
         end_at: format(selectedEvent.end, "yyyy-MM-dd'T'HH:mm"),
-        status: selectedEvent.resource?.status || 'pending'
+        status: selectedEvent.resource?.status || 'scheduled'
       });
     }
   }, [selectedSlot, selectedEvent]);
@@ -229,7 +229,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: 'pending' | 'confirmed' | 'cancelled' | 'completed') => 
+                onValueChange={(value: 'scheduled' | 'documented' | 'no show' | 'cancelled') => 
                   setFormData({ ...formData, status: value })
                 }
               >
@@ -237,10 +237,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="documented">Documented</SelectItem>
+                  <SelectItem value="no show">No Show</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>

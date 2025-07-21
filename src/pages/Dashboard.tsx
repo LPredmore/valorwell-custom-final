@@ -35,7 +35,7 @@ export const Dashboard: React.FC = () => {
     {
       title: 'Today\'s Appointments',
       value: todayAppointments.length.toString(),
-      description: `${todayAppointments.filter(apt => apt.status === 'confirmed').length} confirmed`,
+      description: `${todayAppointments.filter(apt => apt.status === 'scheduled').length} scheduled`,
       icon: Calendar,
       color: 'text-blue-600',
     },
@@ -146,9 +146,11 @@ export const Dashboard: React.FC = () => {
                       <p className="font-medium">{appointment.time}</p>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
-                          appointment.status === 'confirmed'
+                          appointment.status === 'scheduled'
                             ? 'bg-green-100 text-green-800'
-                            : appointment.status === 'pending'
+                            : appointment.status === 'documented'
+                            ? 'bg-blue-100 text-blue-800'
+                            : appointment.status === 'no show'
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-red-100 text-red-800'
                         }`}
