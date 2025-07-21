@@ -40,7 +40,7 @@ export const useCreateClient = () => {
     mutationFn: async (clientData: ClientData) => {
       const { data, error } = await supabase
         .from('clients')
-        .insert([clientData])
+        .insert([clientData as any]) // Cast to any to handle the id field issue
         .select()
         .single();
 
