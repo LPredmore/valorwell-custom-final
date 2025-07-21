@@ -1,0 +1,138 @@
+
+-- Create user profiles table
+CREATE TABLE public.profiles (
+  id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  first_name text,
+  last_name text,
+  email text,
+  phone text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+-- Create user roles enum
+CREATE TYPE public.user_role AS ENUM ('admin', 'clinician', 'client');
+
+-- Create user roles table
+CREATE TABLE public.user_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role user_role NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  UNIQUE(user_id, role)
+);
+
+-- Enable RLS on profiles table
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Enable RLS on user_roles table
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+
+-- Create security definer function to check user roles
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role user_role)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = _user_id
+      AND role = _role
+  )
+$$;
+
+-- Create security definer function to get current user role
+CREATE OR REPLACE FUNCTION public.get_current_user_role()
+RETURNS user_role
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT role FROM public.user_roles WHERE user_id = auth.uid() LIMIT 1;
+$$;
+
+-- Profiles RLS policies
+CREATE POLICY "Users can view their own profile"
+  ON public.profiles
+  FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile"
+  ON public.profiles
+  FOR UPDATE
+  USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile"
+  ON public.profiles
+  FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Admins can view all profiles"
+  ON public.profiles
+  FOR SELECT
+  USING (public.has_role(auth.uid(), 'admin'));
+
+-- User roles RLS policies
+CREATE POLICY "Users can view their own roles"
+  ON public.user_roles
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can view all user roles"
+  ON public.user_roles
+  FOR SELECT
+  USING (public.has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can manage user roles"
+  ON public.user_roles
+  FOR ALL
+  USING (public.has_role(auth.uid(), 'admin'));
+
+-- Create trigger function to automatically create profile on user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, first_name, last_name, email)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data->>'first_name',
+    NEW.raw_user_meta_data->>'last_name',
+    NEW.email
+  );
+  
+  -- Assign default clinician role to new users
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.id, 'clinician');
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Create trigger to run the function on user creation
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- Update existing tables to reference profiles instead of auth.users
+ALTER TABLE public.appointments
+ADD CONSTRAINT fk_appointments_client_profiles
+FOREIGN KEY (client_id) REFERENCES public.profiles(id);
+
+ALTER TABLE public.appointments
+ADD CONSTRAINT fk_appointments_clinician_profiles
+FOREIGN KEY (clinician_id) REFERENCES public.profiles(id);
+
+ALTER TABLE public.clients
+ADD CONSTRAINT fk_clients_profiles
+FOREIGN KEY (id) REFERENCES public.profiles(id);
+
+ALTER TABLE public.clinicians
+ADD CONSTRAINT fk_clinicians_profiles
+FOREIGN KEY (id) REFERENCES public.profiles(id);
