@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,10 @@ import { Login } from "@/pages/Login";
 import { Dashboard } from "@/pages/Dashboard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Clients from "./pages/Clients";
+import ClientDetails from "./pages/ClientDetails";
+import ClientNew from "./pages/ClientNew";
+import ClientEdit from "./pages/ClientEdit";
 
 const queryClient = new QueryClient();
 
@@ -33,20 +38,47 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* Placeholder routes for future features */}
             <Route
               path="/clients"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <div className="p-8">
-                      <h1 className="text-2xl font-bold">Clients</h1>
-                      <p className="text-muted-foreground">Client management coming soon...</p>
-                    </div>
+                    <Clients />
                   </Layout>
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/clients/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClientNew />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClientDetails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClientEdit />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {/* Placeholder routes for future features */}
             <Route
               path="/appointments"
               element={
