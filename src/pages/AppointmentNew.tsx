@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +10,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCreateAppointment } from '@/features/calendar/hooks/useAppointments';
 import { ArrowLeft } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
+
+type AppointmentStatus = Database['public']['Enums']['appointment_status'];
 
 const AppointmentNew = () => {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ const AppointmentNew = () => {
     notes: '',
     start_at: '',
     end_at: '',
-    status: 'pending' as const
+    status: 'scheduled' as AppointmentStatus
   });
 
   const { data: clients = [] } = useQuery({

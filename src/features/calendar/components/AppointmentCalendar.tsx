@@ -67,10 +67,13 @@ export const AppointmentCalendar: React.FC = () => {
     let backgroundColor = '#3174ad';
     
     switch (status) {
-      case 'confirmed':
+      case 'scheduled':
         backgroundColor = '#10b981';
         break;
-      case 'pending':
+      case 'documented':
+        backgroundColor = '#3b82f6';
+        break;
+      case 'no show':
         backgroundColor = '#f59e0b';
         break;
       case 'cancelled':

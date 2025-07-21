@@ -1,4 +1,8 @@
 
+import type { Database } from '@/integrations/supabase/types';
+
+export type AppointmentStatus = Database['public']['Enums']['appointment_status'];
+
 export interface AppointmentEvent {
   id: string;
   title: string;
@@ -8,7 +12,7 @@ export interface AppointmentEvent {
     id: string;
     client_id: string;
     clinician_id: string;
-    status: 'scheduled' | 'documented' | 'no show' | 'cancelled';
+    status: AppointmentStatus;
     type: string;
     notes?: string;
     client_timezone?: string;

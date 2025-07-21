@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { AppointmentEvent } from '../types/calendar';
+import { AppointmentEvent, AppointmentStatus } from '../types/calendar';
 import { format } from 'date-fns';
 
 interface AppointmentModalProps {
@@ -31,7 +30,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     notes: '',
     start_at: '',
     end_at: '',
-    status: 'scheduled' as const
+    status: 'scheduled' as AppointmentStatus
   });
 
   const { toast } = useToast();
@@ -127,7 +126,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         notes: '',
         start_at: format(selectedSlot.start, "yyyy-MM-dd'T'HH:mm"),
         end_at: format(selectedSlot.end, "yyyy-MM-dd'T'HH:mm"),
-        status: 'scheduled'
+        status: 'scheduled' as AppointmentStatus
       });
     } else if (selectedEvent) {
       setFormData({
@@ -136,7 +135,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         notes: selectedEvent.resource?.notes || '',
         start_at: format(selectedEvent.start, "yyyy-MM-dd'T'HH:mm"),
         end_at: format(selectedEvent.end, "yyyy-MM-dd'T'HH:mm"),
-        status: selectedEvent.resource?.status || 'scheduled'
+        status: selectedEvent.resource?.status || 'scheduled' as AppointmentStatus
       });
     }
   }, [selectedSlot, selectedEvent]);
@@ -229,7 +228,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <Label htmlFor="status">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: 'scheduled' | 'documented' | 'no show' | 'cancelled') => 
+                onValueChange={(value: AppointmentStatus) => 
                   setFormData({ ...formData, status: value })
                 }
               >

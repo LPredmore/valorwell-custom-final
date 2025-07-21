@@ -2,6 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type AppointmentStatus = Database['public']['Enums']['appointment_status'];
 
 interface CreateAppointmentData {
   client_id: string;
@@ -10,7 +13,7 @@ interface CreateAppointmentData {
   end_at: string;
   type: string;
   notes?: string;
-  status: 'scheduled' | 'documented' | 'no show' | 'cancelled';
+  status: AppointmentStatus;
 }
 
 interface UpdateAppointmentData extends Partial<CreateAppointmentData> {
