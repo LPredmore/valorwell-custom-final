@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,8 @@ import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import ClientNew from "./pages/ClientNew";
 import ClientEdit from "./pages/ClientEdit";
+import Appointments from "./pages/Appointments";
+import AppointmentNew from "./pages/AppointmentNew";
 
 const queryClient = new QueryClient();
 
@@ -78,16 +79,22 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* Placeholder routes for future features */}
             <Route
               path="/appointments"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <div className="p-8">
-                      <h1 className="text-2xl font-bold">Appointments</h1>
-                      <p className="text-muted-foreground">Appointment scheduling coming soon...</p>
-                    </div>
+                    <Appointments />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/appointments/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AppointmentNew />
                   </Layout>
                 </ProtectedRoute>
               }

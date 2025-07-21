@@ -1,17 +1,41 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Users, Video, FileText, Clock, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Users, Video, FileText, Clock, AlertCircle, Plus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useAppointments } from '@/features/calendar/hooks/useAppointments';
+import { Link } from 'react-router-dom';
+import { format, isToday, startOfDay, endOfDay } from 'date-fns';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const today = new Date();
+  
+  const { data: appointments = [] } = useAppointments({
+    start: startOfDay(today),
+    end: endOfDay(today)
+  });
+
+  const todayAppointments = appointments.filter(apt => 
+    isToday(new Date(apt.start_at))
+  );
+
+  const upcomingAppointments = todayAppointments
+    .slice(0, 3)
+    .map(apt => ({
+      id: apt.id,
+      client: `${apt.clients.client_first_name} ${apt.clients.client_last_name}`,
+      time: format(new Date(apt.start_at), 'h:mm a'),
+      type: apt.type,
+      status: apt.status
+    }));
 
   const stats = [
     {
       title: 'Today\'s Appointments',
-      value: '8',
-      description: '+2 from yesterday',
+      value: todayAppointments.length.toString(),
+      description: `${todayAppointments.filter(apt => apt.status === 'confirmed').length} confirmed`,
       icon: Calendar,
       color: 'text-blue-600',
     },
@@ -24,7 +48,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       title: 'Telehealth Sessions',
-      value: '3',
+      value: todayAppointments.filter(apt => apt.type === 'telehealth').length.toString(),
       description: 'Scheduled today',
       icon: Video,
       color: 'text-purple-600',
@@ -35,30 +59,6 @@ export const Dashboard: React.FC = () => {
       description: 'Requires attention',
       icon: FileText,
       color: 'text-orange-600',
-    },
-  ];
-
-  const upcomingAppointments = [
-    {
-      id: 1,
-      client: 'Sarah Johnson',
-      time: '10:00 AM',
-      type: 'Initial Consultation',
-      status: 'confirmed',
-    },
-    {
-      id: 2,
-      client: 'Michael Chen',
-      time: '11:30 AM',
-      type: 'Follow-up',
-      status: 'confirmed',
-    },
-    {
-      id: 3,
-      client: 'Emily Rodriguez',
-      time: '2:00 PM',
-      type: 'Telehealth Session',
-      status: 'pending',
     },
   ];
 
@@ -79,13 +79,21 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, {user?.email?.split('@')[0]}
-        </h1>
-        <p className="text-muted-foreground">
-          Here's what's happening with your practice today.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            Welcome back, {user?.email?.split('@')[0]}
+          </h1>
+          <p className="text-muted-foreground">
+            Here's what's happening with your practice today.
+          </p>
+        </div>
+        <Button asChild>
+          <Link to="/appointments/new">
+            <Plus className="h-4 w-4 mr-2" />
+            New Appointment
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Grid */}
@@ -122,31 +130,43 @@ export const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {upcomingAppointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{appointment.client}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {appointment.type}
-                    </p>
+              {upcomingAppointments.length > 0 ? (
+                upcomingAppointments.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">{appointment.client}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {appointment.type}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{appointment.time}</p>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          appointment.status === 'confirmed'
+                            ? 'bg-green-100 text-green-800'
+                            : appointment.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {appointment.status}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">{appointment.time}</p>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        appointment.status === 'confirmed'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {appointment.status}
-                    </span>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No appointments scheduled for today</p>
+                  <Button asChild className="mt-4">
+                    <Link to="/appointments/new">Schedule Appointment</Link>
+                  </Button>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
