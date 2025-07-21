@@ -40,7 +40,7 @@ export const useCreateClient = () => {
     mutationFn: async (clientData: ClientData) => {
       const { data, error } = await supabase
         .from('clients')
-        .insert(clientData)
+        .insert([clientData])
         .select()
         .single();
 
