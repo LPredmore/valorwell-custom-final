@@ -40,7 +40,7 @@ export const useCreateClient = () => {
     mutationFn: async (clientData: ClientData) => {
       const { data, error } = await supabase
         .from('clients')
-        .insert(clientData)
+        .insert([clientData])
         .select()
         .single();
 
@@ -115,7 +115,7 @@ export const useUpsertClients = () => {
     mutationFn: async (clients: ClientDataWithId[]) => {
       const { data, error } = await supabase
         .from('clients')
-        .upsert(clients, { onConflict: ['id'] })
+        .upsert(clients, { onConflict: 'id' })
         .select();
 
       if (error) throw error;
