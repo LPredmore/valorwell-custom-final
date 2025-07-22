@@ -59,7 +59,7 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/clients" element={
+              <Route path="/myclients" element={
                 <ProtectedRoute>
                   <Layout>
                     <Clients />

@@ -16,7 +16,7 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Profile', href: '/clinicianprof', icon: Settings },
-  { name: 'Clients', href: '/clients', icon: Users },
+  { name: 'Clients', href: '/myclients', icon: Users },
   { name: 'Appointments', href: '/appointments', icon: Calendar },
   { name: 'Telehealth', href: '/telehealth', icon: Video },
   { name: 'Documentation', href: '/documentation', icon: FileText },

@@ -3,10 +3,11 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, User } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Search, Filter, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -86,82 +87,81 @@ export const ClientList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Clients</h1>
-          <p className="text-muted-foreground">Manage your client roster</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-semibold">All Clients</h1>
+          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+            {filteredClients?.length || 0}
+          </Badge>
         </div>
-        <Button onClick={() => navigate('/clients/new')}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Client
+      </div>
+
+      <div className="bg-muted/30 p-4 rounded-lg">
+        <Button variant="ghost" className="text-sm font-medium">
+          All Clients
         </Button>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex items-center justify-between">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search clients..."
+            placeholder="Search Clients"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 w-80"
           />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            Search
+          </Button>
+          <Button variant="ghost" size="sm">
+            Clear
+          </Button>
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
+          <Button variant="ghost" size="sm">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-4">
-        {filteredClients?.map((client) => (
-          <Card key={client.id} className="cursor-pointer hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <User className="h-5 w-5 mr-2" />
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b">
+              <TableHead className="w-12">
+                <Checkbox />
+              </TableHead>
+              <TableHead className="font-medium">NAME</TableHead>
+              <TableHead className="font-medium">EMAIL</TableHead>
+              <TableHead className="font-medium">PHONE</TableHead>
+              <TableHead className="font-medium">DATE OF BIRTH</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredClients?.map((client) => (
+              <TableRow key={client.id} className="hover:bg-muted/50">
+                <TableCell>
+                  <Checkbox />
+                </TableCell>
+                <TableCell className="font-medium">
                   {client.profiles?.first_name || 'Unknown'} {client.profiles?.last_name || 'User'}
-                </CardTitle>
-                <Badge className={getStatusColor(client.client_status)}>
-                  {client.client_status || 'Unknown'}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Email</p>
-                  <p>{client.profiles?.email || 'Not provided'}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Phone</p>
-                  <p>{client.profiles?.phone || 'Not provided'}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Assigned Therapist</p>
-                  <p>{client.client_assigned_therapist || 'Unassigned'}</p>
-                </div>
-              </div>
-              <div className="mt-4 flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate(`/clients/${client.id}`)}
-                >
-                  View Details
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate(`/clients/${client.id}/edit`)}
-                >
-                  Edit
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </TableCell>
+                <TableCell>{client.profiles?.email || 'Not provided'}</TableCell>
+                <TableCell>{client.profiles?.phone || 'Not provided'}</TableCell>
+                <TableCell>-</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {filteredClients?.length === 0 && (
         <div className="text-center py-12">
-          <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-lg font-medium">No clients found</p>
           <p className="text-muted-foreground">
             {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first client'}
