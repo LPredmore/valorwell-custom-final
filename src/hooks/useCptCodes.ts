@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,7 +10,7 @@ export interface CptCode {
   time_reserved?: number;
   online_scheduling?: boolean;
   active?: boolean;
-  specialty_type?: 'general_practice' | 'psychiatry' | 'psychology' | 'counseling' | 'social_work' | 'marriage_family_therapy' | 'substance_abuse' | 'child_adolescent' | 'geriatric' | 'group_therapy' | 'neuropsychology' | 'behavioral_analysis';
+  specialty_type?: string;
   created_at: string;
   updated_at: string;
 }
