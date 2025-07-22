@@ -7,10 +7,121 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { usePracticeInfo, usePracticeUpdate, PracticeInfo } from '@/hooks/usePracticeInfo';
-import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X, Plus, Trash2, Phone, Mail } from 'lucide-react';
+import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X, Plus, Trash2, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useClinicians, useDeleteClinician } from '@/hooks/useClinicians';
+import { useCptCodes, useDeleteCptCode } from '@/hooks/useCptCodes';
 import { Link } from 'react-router-dom';
+
+const CptCodesManagement = () => {
+  const { data: cptCodes, isLoading } = useCptCodes();
+  const deleteCptCode = useDeleteCptCode();
+
+  const handleDelete = async (code: string) => {
+    if (window.confirm('Are you sure you want to delete this CPT code?')) {
+      await deleteCptCode.mutateAsync(code);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const getActiveStatusVariant = (status?: string) => {
+    return status === 'active' ? 'default' : 'secondary';
+  };
+
+  const getActiveStatusText = (status?: string) => {
+    return status === 'active' ? 'Active' : 'Inactive';
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading CPT codes...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>CPT Codes</CardTitle>
+          <CardDescription>
+            Manage CPT codes and their fees for billing.
+          </CardDescription>
+        </div>
+        <Button className="bg-green-700 hover:bg-green-800 text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Add CPT Code
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {/* Header Row */}
+          <div className="grid grid-cols-9 gap-4 py-3 border-b border-border font-medium text-muted-foreground text-sm">
+            <div>Active</div>
+            <div>Code</div>
+            <div>Usual and Customary Fee</div>
+            <div className="col-span-2">Name</div>
+            <div>Time Reserved</div>
+            <div>Session Duration</div>
+            <div>Online Scheduling</div>
+            <div>Telehealth Enabled</div>
+          </div>
+
+          {/* Data Rows */}
+          {cptCodes?.map((cptCode) => (
+            <div key={cptCode.code} className="grid grid-cols-9 gap-4 py-3 border-b border-border items-center">
+              <div>
+                <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+              </div>
+              <div className="text-foreground font-medium">
+                {cptCode.code}
+              </div>
+              <div className="text-muted-foreground">
+                ${formatCurrency(cptCode.fee).replace('$', '')}
+              </div>
+              <div className="col-span-2 text-foreground">
+                {cptCode.name}
+              </div>
+              <div className="text-muted-foreground">
+                50 <span className="text-xs">min</span>
+              </div>
+              <div className="text-muted-foreground">
+                50 <span className="text-xs">min</span>
+              </div>
+              <div>
+                <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
+                  <CheckCircle className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {(!cptCodes || cptCodes.length === 0) && (
+            <div className="text-center py-8 text-muted-foreground">
+              No CPT codes found. Add your first CPT code to get started.
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const StaffManagement = () => {
   const { data: clinicians, isLoading } = useClinicians();
@@ -374,14 +485,7 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="billing" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Billing Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Billing configuration features coming soon.</p>
-            </CardContent>
-          </Card>
+          <CptCodesManagement />
         </TabsContent>
 
         <TabsContent value="documentation" className="mt-6">
