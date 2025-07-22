@@ -133,13 +133,9 @@ export type Database = {
           client_behavior: string | null
           client_branchOS: string | null
           client_champva: string | null
-          client_city: string | null
           client_currentsymptoms: string | null
-          client_date_of_birth: string | null
           client_diagnosis: string[] | null
           client_disabilityrating: string | null
-          client_email: string | null
-          client_first_name: string | null
           client_functioning: string | null
           client_gender: string | null
           client_gender_identity: string | null
@@ -161,7 +157,6 @@ export type Database = {
           client_intervention5: string | null
           client_intervention6: string | null
           client_is_profile_complete: string | null
-          client_last_name: string | null
           client_medications: string | null
           client_memoryconcentration: string | null
           client_middle_name: string | null
@@ -171,7 +166,6 @@ export type Database = {
           client_orientation: string | null
           client_perception: string | null
           client_personsinattendance: string | null
-          client_phone: string | null
           client_planlength: string | null
           client_policy_number_primary: string | null
           client_policy_number_secondary: string | null
@@ -191,7 +185,6 @@ export type Database = {
           client_self_goal: string | null
           client_sessionnarrative: string | null
           client_speech: string | null
-          client_state: string | null
           client_status: string | null
           client_subscriber_dob_primary: string | null
           client_subscriber_dob_secondary: string | null
@@ -222,7 +215,6 @@ export type Database = {
           client_tricare_sponsor_id: string | null
           client_tricare_sponsor_name: string | null
           client_vacoverage: string | null
-          client_zip_code: string | null
           created_at: string
           eligibility_claimmd_id_primary: string | null
           eligibility_claimmd_id_secondary: string | null
@@ -246,6 +238,7 @@ export type Database = {
           eligibility_status_secondary: string | null
           eligibility_status_tertiary: string | null
           id: string
+          profile_id: string | null
           stripe_customer_id: string | null
           updated_at: string
         }
@@ -259,13 +252,9 @@ export type Database = {
           client_behavior?: string | null
           client_branchOS?: string | null
           client_champva?: string | null
-          client_city?: string | null
           client_currentsymptoms?: string | null
-          client_date_of_birth?: string | null
           client_diagnosis?: string[] | null
           client_disabilityrating?: string | null
-          client_email?: string | null
-          client_first_name?: string | null
           client_functioning?: string | null
           client_gender?: string | null
           client_gender_identity?: string | null
@@ -287,7 +276,6 @@ export type Database = {
           client_intervention5?: string | null
           client_intervention6?: string | null
           client_is_profile_complete?: string | null
-          client_last_name?: string | null
           client_medications?: string | null
           client_memoryconcentration?: string | null
           client_middle_name?: string | null
@@ -297,7 +285,6 @@ export type Database = {
           client_orientation?: string | null
           client_perception?: string | null
           client_personsinattendance?: string | null
-          client_phone?: string | null
           client_planlength?: string | null
           client_policy_number_primary?: string | null
           client_policy_number_secondary?: string | null
@@ -317,7 +304,6 @@ export type Database = {
           client_self_goal?: string | null
           client_sessionnarrative?: string | null
           client_speech?: string | null
-          client_state?: string | null
           client_status?: string | null
           client_subscriber_dob_primary?: string | null
           client_subscriber_dob_secondary?: string | null
@@ -348,7 +334,6 @@ export type Database = {
           client_tricare_sponsor_id?: string | null
           client_tricare_sponsor_name?: string | null
           client_vacoverage?: string | null
-          client_zip_code?: string | null
           created_at?: string
           eligibility_claimmd_id_primary?: string | null
           eligibility_claimmd_id_secondary?: string | null
@@ -372,6 +357,7 @@ export type Database = {
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
           id: string
+          profile_id?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
         }
@@ -385,13 +371,9 @@ export type Database = {
           client_behavior?: string | null
           client_branchOS?: string | null
           client_champva?: string | null
-          client_city?: string | null
           client_currentsymptoms?: string | null
-          client_date_of_birth?: string | null
           client_diagnosis?: string[] | null
           client_disabilityrating?: string | null
-          client_email?: string | null
-          client_first_name?: string | null
           client_functioning?: string | null
           client_gender?: string | null
           client_gender_identity?: string | null
@@ -413,7 +395,6 @@ export type Database = {
           client_intervention5?: string | null
           client_intervention6?: string | null
           client_is_profile_complete?: string | null
-          client_last_name?: string | null
           client_medications?: string | null
           client_memoryconcentration?: string | null
           client_middle_name?: string | null
@@ -423,7 +404,6 @@ export type Database = {
           client_orientation?: string | null
           client_perception?: string | null
           client_personsinattendance?: string | null
-          client_phone?: string | null
           client_planlength?: string | null
           client_policy_number_primary?: string | null
           client_policy_number_secondary?: string | null
@@ -443,7 +423,6 @@ export type Database = {
           client_self_goal?: string | null
           client_sessionnarrative?: string | null
           client_speech?: string | null
-          client_state?: string | null
           client_status?: string | null
           client_subscriber_dob_primary?: string | null
           client_subscriber_dob_secondary?: string | null
@@ -474,7 +453,6 @@ export type Database = {
           client_tricare_sponsor_id?: string | null
           client_tricare_sponsor_name?: string | null
           client_vacoverage?: string | null
-          client_zip_code?: string | null
           created_at?: string
           eligibility_claimmd_id_primary?: string | null
           eligibility_claimmd_id_secondary?: string | null
@@ -498,10 +476,19 @@ export type Database = {
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
           id?: string
+          profile_id?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clinicians: {
         Row: {
@@ -551,10 +538,7 @@ export type Database = {
           clinician_bio: string | null
           clinician_calendar_end_time: string | null
           clinician_calendar_start_time: string | null
-          clinician_email: string | null
-          clinician_first_name: string | null
           clinician_image_url: string | null
-          clinician_last_name: string | null
           clinician_license_type: string | null
           clinician_licensed_states: string[] | null
           clinician_max_advance_days: number | null
@@ -562,7 +546,6 @@ export type Database = {
           clinician_min_notice_days: number | null
           clinician_nameinsurance: string | null
           clinician_npi_number: string | null
-          clinician_phone: string | null
           clinician_professional_name: string | null
           clinician_taxonomy_code: string | null
           clinician_temppassword: string | null
@@ -573,7 +556,6 @@ export type Database = {
           clinician_type: string | null
           created_at: string
           id: string
-          is_admin: boolean
           last_google_sync: string | null
           profile_id: string | null
           updated_at: string
@@ -625,10 +607,7 @@ export type Database = {
           clinician_bio?: string | null
           clinician_calendar_end_time?: string | null
           clinician_calendar_start_time?: string | null
-          clinician_email?: string | null
-          clinician_first_name?: string | null
           clinician_image_url?: string | null
-          clinician_last_name?: string | null
           clinician_license_type?: string | null
           clinician_licensed_states?: string[] | null
           clinician_max_advance_days?: number | null
@@ -636,7 +615,6 @@ export type Database = {
           clinician_min_notice_days?: number | null
           clinician_nameinsurance?: string | null
           clinician_npi_number?: string | null
-          clinician_phone?: string | null
           clinician_professional_name?: string | null
           clinician_taxonomy_code?: string | null
           clinician_temppassword?: string | null
@@ -649,7 +627,6 @@ export type Database = {
           clinician_type?: string | null
           created_at?: string
           id: string
-          is_admin?: boolean
           last_google_sync?: string | null
           profile_id?: string | null
           updated_at?: string
@@ -701,10 +678,7 @@ export type Database = {
           clinician_bio?: string | null
           clinician_calendar_end_time?: string | null
           clinician_calendar_start_time?: string | null
-          clinician_email?: string | null
-          clinician_first_name?: string | null
           clinician_image_url?: string | null
-          clinician_last_name?: string | null
           clinician_license_type?: string | null
           clinician_licensed_states?: string[] | null
           clinician_max_advance_days?: number | null
@@ -712,7 +686,6 @@ export type Database = {
           clinician_min_notice_days?: number | null
           clinician_nameinsurance?: string | null
           clinician_npi_number?: string | null
-          clinician_phone?: string | null
           clinician_professional_name?: string | null
           clinician_taxonomy_code?: string | null
           clinician_temppassword?: string | null
@@ -725,7 +698,6 @@ export type Database = {
           clinician_type?: string | null
           created_at?: string
           id?: string
-          is_admin?: boolean
           last_google_sync?: string | null
           profile_id?: string | null
           updated_at?: string
@@ -1064,6 +1036,54 @@ export type Database = {
           practice_taxonomy?: string | null
           practice_zip?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          password: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          state: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          password?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          password?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
