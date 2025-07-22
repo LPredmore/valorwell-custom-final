@@ -41,6 +41,32 @@ export const ClinicianProfile: React.FC = () => {
           <CardTitle>Profile Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-muted-foreground">First Name</label>
+                <Edit className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="text-foreground">{profile?.first_name || 'Test'}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-muted-foreground">Last Name</label>
+                <Edit className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="text-foreground">{profile?.last_name || 'Therapist'}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-muted-foreground">Professional Name</label>
+                <Edit className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="text-foreground">NotReal Therapist, LPC</p>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -57,6 +83,14 @@ export const ClinicianProfile: React.FC = () => {
               </div>
               <p className="text-foreground">{profile?.phone || '(555) 123-4567'}</p>
             </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-muted-foreground">Bio</label>
+              <Edit className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <p className="text-foreground">Licensed Professional Counselor specializing in mental health therapy with over 10 years of experience helping individuals overcome anxiety, depression, and relationship challenges.</p>
           </div>
         </CardContent>
       </Card>
