@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Profile', href: '/clinicianprof', icon: Settings },
   { name: 'Clients', href: '/myclients', icon: Users },
+  { name: 'Staff', href: '/staff', icon: Users },
   { name: 'Billing', href: '/billing', icon: CreditCard },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },

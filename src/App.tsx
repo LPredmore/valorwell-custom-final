@@ -15,6 +15,7 @@ import { Profile } from "./pages/Profile";
 import { ClinicianProfile } from "./pages/ClinicianProfile";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
+import Staff from "./pages/Staff";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +58,13 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Clients />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/staff" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Staff />
                   </Layout>
                 </ProtectedRoute>
               } />
