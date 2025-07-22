@@ -1,12 +1,119 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { usePracticeInfo, usePracticeUpdate, PracticeInfo } from '@/hooks/usePracticeInfo';
-import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X } from 'lucide-react';
+import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X, Plus, Trash2, Phone, Mail } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useClinicians, useDeleteClinician } from '@/hooks/useClinicians';
+import { Link } from 'react-router-dom';
+
+const StaffManagement = () => {
+  const { data: clinicians, isLoading } = useClinicians();
+  const deleteClinician = useDeleteClinician();
+
+  const handleDelete = async (clinicianId: string) => {
+    if (window.confirm('Are you sure you want to delete this clinician?')) {
+      await deleteClinician.mutateAsync(clinicianId);
+    }
+  };
+
+  const getStatusVariant = (accepting: boolean | undefined) => {
+    return accepting ? 'default' : 'secondary';
+  };
+
+  const getStatusText = (accepting: boolean | undefined) => {
+    return accepting ? 'Active' : 'New';
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading clinicians...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Clinician Management</CardTitle>
+          <CardDescription>
+            Manage clinicians and their access to the system.
+          </CardDescription>
+        </div>
+        <Button className="bg-green-700 hover:bg-green-800 text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Clinician
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {/* Header Row */}
+          <div className="grid grid-cols-6 gap-4 py-3 border-b border-border font-medium text-muted-foreground text-sm">
+            <div>Name</div>
+            <div>Email</div>
+            <div>Phone</div>
+            <div>Status</div>
+            <div>Actions</div>
+            <div></div>
+          </div>
+
+          {/* Data Rows */}
+          {clinicians?.map((clinician) => (
+            <div key={clinician.id} className="grid grid-cols-6 gap-4 py-3 border-b border-border items-center">
+              <div>
+                <Link 
+                  to="/clinicianprof" 
+                  className="text-foreground hover:text-primary font-medium cursor-pointer"
+                >
+                  {clinician.profile?.first_name} {clinician.profile?.last_name}
+                </Link>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="h-4 w-4" />
+                {clinician.profile?.email}
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Phone className="h-4 w-4" />
+                {clinician.profile?.phone || '—'}
+              </div>
+              <div>
+                <Badge variant={getStatusVariant(clinician.clinician_accepting_new_clients)}>
+                  {getStatusText(clinician.clinician_accepting_new_clients)}
+                </Badge>
+              </div>
+              <div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDelete(clinician.id)}
+                  disabled={deleteClinician.isPending}
+                >
+                  Delete
+                </Button>
+              </div>
+              <div></div>
+            </div>
+          ))}
+
+          {(!clinicians || clinicians.length === 0) && (
+            <div className="text-center py-8 text-muted-foreground">
+              No clinicians found. Add your first clinician to get started.
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -69,7 +176,7 @@ const Settings = () => {
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Users
+            Staff
           </TabsTrigger>
           <TabsTrigger value="billing" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
@@ -263,14 +370,7 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="users" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">User management features coming soon.</p>
-            </CardContent>
-          </Card>
+          <StaffManagement />
         </TabsContent>
 
         <TabsContent value="billing" className="mt-6">
