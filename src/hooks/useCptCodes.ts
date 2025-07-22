@@ -7,7 +7,10 @@ export interface CptCode {
   description?: string;
   fee: number;
   clinical_type?: string;
-  status?: string;
+  time_reserved?: number;
+  online_scheduling?: boolean;
+  active?: boolean;
+  specialty_type?: string;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +26,24 @@ export const useCptCodes = () => {
       
       if (error) throw error;
       return data as CptCode[];
+    }
+  });
+};
+
+export const useUpdateCptCode = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ code, updates }: { code: string; updates: Partial<CptCode> }) => {
+      const { error } = await supabase
+        .from('cpt_codes')
+        .update(updates)
+        .eq('code', code);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cpt-codes'] });
     }
   });
 };

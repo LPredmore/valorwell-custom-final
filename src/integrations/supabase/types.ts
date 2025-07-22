@@ -945,33 +945,42 @@ export type Database = {
       }
       cpt_codes: {
         Row: {
+          active: boolean | null
           clinical_type: string | null
           code: string
           created_at: string
           description: string | null
           fee: number
           name: string
-          status: string | null
+          online_scheduling: boolean | null
+          specialty_type: string | null
+          time_reserved: number | null
           updated_at: string
         }
         Insert: {
+          active?: boolean | null
           clinical_type?: string | null
           code: string
           created_at?: string
           description?: string | null
           fee: number
           name: string
-          status?: string | null
+          online_scheduling?: boolean | null
+          specialty_type?: string | null
+          time_reserved?: number | null
           updated_at?: string
         }
         Update: {
+          active?: boolean | null
           clinical_type?: string | null
           code?: string
           created_at?: string
           description?: string | null
           fee?: number
           name?: string
-          status?: string | null
+          online_scheduling?: boolean | null
+          specialty_type?: string | null
+          time_reserved?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -1102,6 +1111,63 @@ export type Database = {
     }
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
+      states:
+        | "Alabama"
+        | "Alaska"
+        | "American Samoa"
+        | "Arizona"
+        | "Arkansas"
+        | "California"
+        | "Colorado"
+        | "Connecticut"
+        | "Delaware"
+        | "District of Columbia"
+        | "Florida"
+        | "Georgia"
+        | "Guam"
+        | "Hawaii"
+        | "Idaho"
+        | "Illinois"
+        | "Indiana"
+        | "Iowa"
+        | "Kansas"
+        | "Kentucky"
+        | "Louisiana"
+        | "Maine"
+        | "Maryland"
+        | "Massachusetts"
+        | "Michigan"
+        | "Minnesota"
+        | "Mississippi"
+        | "Missouri"
+        | "Montana"
+        | "Nebraska"
+        | "Nevada"
+        | "New Hampshire"
+        | "New Jersey"
+        | "New Mexico"
+        | "New York"
+        | "North Carolina"
+        | "North Dakota"
+        | "Northern Mariana Islands"
+        | "Ohio"
+        | "Oklahoma"
+        | "Oregon"
+        | "Pennsylvania"
+        | "Puerto Rico"
+        | "Rhode Island"
+        | "South Carolina"
+        | "South Dakota"
+        | "Tennessee"
+        | "Texas"
+        | "Utah"
+        | "Vermont"
+        | "Virgin Islands"
+        | "Virginia"
+        | "Washington"
+        | "West Virginia"
+        | "Wisconsin"
+        | "Wyoming"
       time_zones:
         | "America/New_York"
         | "America/Chicago"
@@ -1239,6 +1305,64 @@ export const Constants = {
   public: {
     Enums: {
       appointment_status: ["scheduled", "documented", "no show", "cancelled"],
+      states: [
+        "Alabama",
+        "Alaska",
+        "American Samoa",
+        "Arizona",
+        "Arkansas",
+        "California",
+        "Colorado",
+        "Connecticut",
+        "Delaware",
+        "District of Columbia",
+        "Florida",
+        "Georgia",
+        "Guam",
+        "Hawaii",
+        "Idaho",
+        "Illinois",
+        "Indiana",
+        "Iowa",
+        "Kansas",
+        "Kentucky",
+        "Louisiana",
+        "Maine",
+        "Maryland",
+        "Massachusetts",
+        "Michigan",
+        "Minnesota",
+        "Mississippi",
+        "Missouri",
+        "Montana",
+        "Nebraska",
+        "Nevada",
+        "New Hampshire",
+        "New Jersey",
+        "New Mexico",
+        "New York",
+        "North Carolina",
+        "North Dakota",
+        "Northern Mariana Islands",
+        "Ohio",
+        "Oklahoma",
+        "Oregon",
+        "Pennsylvania",
+        "Puerto Rico",
+        "Rhode Island",
+        "South Carolina",
+        "South Dakota",
+        "Tennessee",
+        "Texas",
+        "Utah",
+        "Vermont",
+        "Virgin Islands",
+        "Virginia",
+        "Washington",
+        "West Virginia",
+        "Wisconsin",
+        "Wyoming",
+      ],
       time_zones: [
         "America/New_York",
         "America/Chicago",
