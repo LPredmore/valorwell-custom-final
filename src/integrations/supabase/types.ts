@@ -1111,6 +1111,7 @@ export type Database = {
     }
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
+      specialty_type: "Mental Health" | "Speech Therapy"
       states:
         | "Alabama"
         | "Alaska"
@@ -1305,6 +1306,7 @@ export const Constants = {
   public: {
     Enums: {
       appointment_status: ["scheduled", "documented", "no show", "cancelled"],
+      specialty_type: ["Mental Health", "Speech Therapy"],
       states: [
         "Alabama",
         "Alaska",
