@@ -27,8 +27,6 @@ export const ProfileMenu: React.FC = () => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'destructive';
       case 'clinician':
         return 'default';
       case 'client':

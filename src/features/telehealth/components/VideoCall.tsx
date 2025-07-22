@@ -145,7 +145,7 @@ export const VideoCall: React.FC<VideoCallProps> = ({
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center p-4 bg-background border-b">
           <div className="flex items-center space-x-2">
-            <Badge variant="success">Live</Badge>
+            <Badge variant="default" className="bg-green-500 text-white">Live</Badge>
             {clientName && <span className="text-sm text-muted-foreground">with {clientName}</span>}
           </div>
           <div className="flex space-x-2">

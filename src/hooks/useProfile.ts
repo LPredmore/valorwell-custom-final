@@ -2,8 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
 
-interface Profile {
+type Profile = {
   id: string;
   first_name?: string;
   last_name?: string;
@@ -11,24 +12,20 @@ interface Profile {
   phone?: string;
   created_at: string;
   updated_at: string;
-}
+};
 
-interface UserRole {
-  id: string;
-  user_id: string;
-  role: 'admin' | 'clinician' | 'client';
-  created_at: string;
-}
+type UserRole = Database['public']['Enums']['user_role'];
 
 export const useProfile = () => {
   return useQuery({
     queryKey: ['profile'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Profile | null> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Use RPC call to get profile data since profiles table might not be in types yet
-      const { data, error } = await supabase.rpc('get_user_profile', { user_id: user.id });
+      const { data, error } = await supabase.rpc('get_user_profile', { 
+        user_id: user.id 
+      });
       if (error) throw error;
       return data;
     },
@@ -38,14 +35,15 @@ export const useProfile = () => {
 export const useUserRole = () => {
   return useQuery({
     queryKey: ['user-role'],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserRole | null> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Use RPC call to get user role
-      const { data, error } = await supabase.rpc('get_user_role', { user_id: user.id });
+      const { data, error } = await supabase.rpc('get_user_role', { 
+        user_id: user.id 
+      });
       if (error) throw error;
-      return data as 'admin' | 'clinician' | 'client';
+      return data as UserRole;
     },
   });
 };
@@ -59,7 +57,6 @@ export const useUpdateProfile = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Use RPC call to update profile
       const { data, error } = await supabase.rpc('update_user_profile', {
         user_id: user.id,
         profile_data: profileData

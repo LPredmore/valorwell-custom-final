@@ -8,18 +8,18 @@ import { AuthProvider } from "./context/AuthContext";
 import { Layout } from "./components/layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { RoleGuard } from "./components/RoleGuard";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Appointments from "./pages/Appointments";
-import AppointmentNew from "./pages/AppointmentNew";
-import Clients from "./pages/Clients";
-import ClientNew from "./pages/ClientNew";
-import ClientEdit from "./pages/ClientEdit";
-import ClientDetails from "./pages/ClientDetails";
-import Profile from "./pages/Profile";
-import TelehealthSession from "./pages/TelehealthSession";
-import NotFound from "./pages/NotFound";
+import { Index } from "./pages/Index";
+import { Login } from "./pages/Login";
+import { Dashboard } from "./pages/Dashboard";
+import { Appointments } from "./pages/Appointments";
+import { AppointmentNew } from "./pages/AppointmentNew";
+import { Clients } from "./pages/Clients";
+import { ClientNew } from "./pages/ClientNew";
+import { ClientEdit } from "./pages/ClientEdit";
+import { ClientDetails } from "./pages/ClientDetails";
+import { Profile } from "./pages/Profile";
+import { TelehealthSession } from "./pages/TelehealthSession";
+import { NotFound } from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +48,7 @@ function App() {
                 path="/appointments"
                 element={
                   <ProtectedRoute>
-                    <RoleGuard allowedRoles={['admin', 'clinician']}>
+                    <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
                         <Appointments />
                       </Layout>
@@ -60,7 +60,7 @@ function App() {
                 path="/appointments/new"
                 element={
                   <ProtectedRoute>
-                    <RoleGuard allowedRoles={['admin', 'clinician']}>
+                    <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
                         <AppointmentNew />
                       </Layout>
@@ -82,7 +82,7 @@ function App() {
                 path="/clients"
                 element={
                   <ProtectedRoute>
-                    <RoleGuard allowedRoles={['admin', 'clinician']}>
+                    <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
                         <Clients />
                       </Layout>
@@ -94,7 +94,7 @@ function App() {
                 path="/clients/new"
                 element={
                   <ProtectedRoute>
-                    <RoleGuard allowedRoles={['admin', 'clinician']}>
+                    <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
                         <ClientNew />
                       </Layout>
@@ -106,7 +106,7 @@ function App() {
                 path="/clients/:id/edit"
                 element={
                   <ProtectedRoute>
-                    <RoleGuard allowedRoles={['admin', 'clinician']}>
+                    <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
                         <ClientEdit />
                       </Layout>
@@ -118,7 +118,7 @@ function App() {
                 path="/clients/:id"
                 element={
                   <ProtectedRoute>
-                    <RoleGuard allowedRoles={['admin', 'clinician']}>
+                    <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
                         <ClientDetails />
                       </Layout>

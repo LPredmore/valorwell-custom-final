@@ -143,7 +143,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         notes: '',
         start_at: format(selectedSlot.start, "yyyy-MM-dd'T'HH:mm"),
         end_at: format(selectedSlot.end, "yyyy-MM-dd'T'HH:mm"),
-        status: 'scheduled' as AppointmentStatus
+        status: 'scheduled' as AppointmentStatus,
+        enableTelehealth: false
       });
     } else if (selectedEvent) {
       setFormData({
@@ -152,7 +153,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         notes: selectedEvent.resource?.notes || '',
         start_at: format(selectedEvent.start, "yyyy-MM-dd'T'HH:mm"),
         end_at: format(selectedEvent.end, "yyyy-MM-dd'T'HH:mm"),
-        status: selectedEvent.resource?.status || 'scheduled' as AppointmentStatus
+        status: selectedEvent.resource?.status || 'scheduled' as AppointmentStatus,
+        enableTelehealth: false
       });
     }
   }, [selectedSlot, selectedEvent]);

@@ -39,6 +39,14 @@ export const Profile: React.FC = () => {
     );
   }
 
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p>No profile found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <Card>
@@ -82,7 +90,7 @@ export const Profile: React.FC = () => {
               <Input
                 id="email"
                 type="email"
-                value={profile?.email || ''}
+                value={profile.email || ''}
                 disabled
                 className="bg-muted"
               />
