@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUpload } from '@/components/ui/image-upload';
 import { usePracticeInfo, usePracticeUpdate, PracticeInfo } from '@/hooks/usePracticeInfo';
 import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X, Plus, Trash2, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useClinicians, useDeleteClinician } from '@/hooks/useClinicians';
 import { useCptCodes, useDeleteCptCode, useUpdateCptCode, CptCode } from '@/hooks/useCptCodes';
@@ -201,6 +204,10 @@ const CptCodesManagement = () => {
 const StaffManagement = () => {
   const { data: clinicians, isLoading } = useClinicians();
   const deleteClinician = useDeleteClinician();
+  const { toast } = useToast();
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
 
   const handleDelete = async (clinicianId: string) => {
     if (window.confirm('Are you sure you want to delete this clinician?')) {
@@ -214,6 +221,59 @@ const StaffManagement = () => {
 
   const getStatusText = (accepting: boolean | undefined) => {
     return accepting ? 'Active' : 'New';
+  };
+
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSendInvite = async () => {
+    if (!isValidEmail(inviteEmail)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsInviting(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: inviteEmail,
+        password: crypto.randomUUID(), // Generate a random password
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            role: 'clinician'
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Invitation Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Invitation Sent",
+          description: `An invitation has been sent to ${inviteEmail}`,
+        });
+        setInviteEmail('');
+        setIsInviteDialogOpen(false);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send invitation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   if (isLoading) {
@@ -235,10 +295,39 @@ const StaffManagement = () => {
             Manage clinicians and their access to the system.
           </CardDescription>
         </div>
-        <Button className="bg-green-700 hover:bg-green-800 text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Clinician
-        </Button>
+        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-green-700 hover:bg-green-800 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Staff
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Invite Clinician to your Practice</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="inviteEmail">Email</Label>
+                <Input
+                  id="inviteEmail"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button
+                onClick={handleSendInvite}
+                disabled={!isValidEmail(inviteEmail) || isInviting}
+                className="w-full"
+              >
+                {isInviting ? 'Sending...' : 'Send Invite'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
