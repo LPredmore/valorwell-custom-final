@@ -19,6 +19,8 @@ const CptCodesManagement = () => {
   const deleteCptCode = useDeleteCptCode();
   const updateCptCode = useUpdateCptCode();
 
+  const specialtyTypeOptions = ['Mental Health', 'Speech Therapy'];
+
   const handleDelete = async (code: string) => {
     if (window.confirm('Are you sure you want to delete this CPT code?')) {
       await deleteCptCode.mutateAsync(code);
@@ -144,14 +146,23 @@ const CptCodesManagement = () => {
                   </div>
                 </TableCell>
                 
-                {/* Specialty Type - Editable */}
+                {/* Specialty Type - Dropdown */}
                 <TableCell>
-                  <Input
+                  <Select
                     value={cptCode.specialty_type || ''}
-                    onChange={(e) => handleFieldUpdate(cptCode.code, 'specialty_type', e.target.value)}
-                    className="h-8"
-                    placeholder="Type..."
-                  />
+                    onValueChange={(value) => handleFieldUpdate(cptCode.code, 'specialty_type', value)}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specialtyTypeOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 
                 {/* Online Scheduling Toggle */}
