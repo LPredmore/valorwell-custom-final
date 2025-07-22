@@ -240,13 +240,15 @@ const StaffManagement = () => {
 
     setIsInviting(true);
     try {
+      const generatedPassword = crypto.randomUUID(); // Generate a random password
       const { error } = await supabase.auth.signUp({
         email: inviteEmail,
-        password: crypto.randomUUID(), // Generate a random password
+        password: generatedPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            role: 'clinician'
+            role: 'clinician',
+            password: generatedPassword // Pass password in metadata for storage
           }
         }
       });
