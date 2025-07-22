@@ -1,0 +1,76 @@
+Reference Guide for Preventing Common Build Errors
+To reduce TypeScript build failures and ensure consistency across your codebase, add a root-level file named DEVELOPMENT_GUIDELINES.md. This living document codifies best practices, typing conventions, and file-structure rules. Below is a suggested outline and content to include:
+
+1. Module Export & Import Conventions
+Default vs. Named Exports
+
+If a file uses export default Component, always import it as:
+
+ts
+import Component from './path/Component';
+If a file uses export const Component, always import it as:
+
+ts
+import { Component } from './path/Component';
+Rule: Never mix default and named imports for the same module.
+
+2. React Query & Supabase Generics
+Always specify generics on useQuery/useMutation and Supabase’s .from<>() calls:
+
+ts
+// Fetch profile
+useQuery<Clinicians.Row, Error>(['profile'], async () => { … });
+
+// Update profile
+useMutation<Clinicians.Row, Error, Partial<Clinicians.Row>>(
+  async (updates) => {
+    return supabase
+      .from<Clinicians.Row>('clinicians')
+      .update(updates)
+      .eq('id', auth.user!.id)
+      .single();
+  }
+);
+Benefit: Prevents “type never” and overload mismatches when passing strings or objects.
+
+3. Supabase Insert/Update/Upsert Patterns
+Operation	Payload Shape	Method Call
+Insert	Array of Insert objects	.insert([record, …])
+Update	Single Partial<Row> (no id) + filter	.update(fields).eq('id', id)
+Upsert	Array of Insert or Update objects (with id) + string onConflict	.upsert(records, { onConflict: 'id' })
+Rule: Never pass an array to .update(); use .upsert() for bulk operations.
+
+4. Enum & Status Alignment
+Database Enums are authoritative—import from types/database.types.ts:
+
+ts
+import { Enums } from './types/database.types';
+type AppointmentStatus = Enums['appointment_status'];
+Map UI statuses (e.g. “pending”, “confirmed”) to database values (“scheduled”, “documented”) in a single mapping function.
+
+5. Nullable Data Guards
+Always null-check query results before accessing properties:
+
+ts
+const { data: profile } = useProfile();
+if (!profile) return <Loading />;
+console.log(profile.first_name);
+Rule: Never assume a hook returns non-null without guard.
+
+6. Code Reviews & CI Validations
+Pre-commit hook: Run npm run lint && npm run type-check.
+
+CI pipeline:
+
+npm run build
+
+npm run test
+
+Ensure PRs cannot be merged if type-check fails.
+
+7. Contributing & Updates
+When adding new tables or enums, regenerate types via:
+
+text
+npx supabase gen types typescript --project-id $PROJECT_REF > types/database.types.ts
+Update this guide when new patterns or errors emerge.
