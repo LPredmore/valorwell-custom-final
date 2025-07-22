@@ -71,115 +71,116 @@ const CptCodesManagement = () => {
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {/* Header Row */}
-          <div className="grid grid-cols-7 gap-4 py-3 border-b border-border font-medium text-muted-foreground text-sm">
-            <div>Active</div>
-            <div>Code</div>
-            <div>Usual and Customary Fee</div>
-            <div className="col-span-2">Name</div>
-            <div>Time Reserved</div>
-            <div>Specialty Type</div>
-            <div>Online Scheduling</div>
-          </div>
-
-          {/* Data Rows */}
-          {cptCodes?.map((cptCode) => (
-            <div key={cptCode.code} className="grid grid-cols-7 gap-4 py-3 border-b border-border items-center">
-              {/* Active Toggle */}
-              <div>
-                <button
-                  onClick={() => handleToggle(cptCode.code, 'active', cptCode.active || false)}
-                  className="flex items-center justify-center w-6 h-6 rounded"
-                  disabled={updateCptCode.isPending}
-                >
-                  {cptCode.active ? (
-                    <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
-                      <CheckCircle className="h-4 w-4 text-white" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center w-6 h-6 rounded border-2 border-muted-foreground">
-                      <XCircle className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  )}
-                </button>
-              </div>
-              
-              {/* Code */}
-              <div className="text-foreground font-medium">
-                {cptCode.code}
-              </div>
-              
-              {/* Fee - Editable */}
-              <div>
-                <Input
-                  type="number"
-                  value={cptCode.fee}
-                  onChange={(e) => handleFieldUpdate(cptCode.code, 'fee', parseFloat(e.target.value) || 0)}
-                  className="w-20 h-8"
-                  step="0.01"
-                />
-              </div>
-              
-              {/* Name - Editable */}
-              <div className="col-span-2">
-                <Input
-                  value={cptCode.name}
-                  onChange={(e) => handleFieldUpdate(cptCode.code, 'name', e.target.value)}
-                  className="h-8"
-                />
-              </div>
-              
-              {/* Time Reserved - Editable */}
-              <div>
-                <div className="flex items-center gap-1">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16">Active</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Usual and Customary Fee</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Time Reserved</TableHead>
+              <TableHead>Specialty Type</TableHead>
+              <TableHead className="w-20">Online Scheduling</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {cptCodes?.map((cptCode) => (
+              <TableRow key={cptCode.code}>
+                {/* Active Toggle */}
+                <TableCell>
+                  <button
+                    onClick={() => handleToggle(cptCode.code, 'active', cptCode.active || false)}
+                    className="flex items-center justify-center w-6 h-6 rounded"
+                    disabled={updateCptCode.isPending}
+                  >
+                    {cptCode.active ? (
+                      <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center w-6 h-6 rounded border-2 border-muted-foreground">
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                  </button>
+                </TableCell>
+                
+                {/* Code */}
+                <TableCell className="text-foreground font-medium">
+                  {cptCode.code}
+                </TableCell>
+                
+                {/* Fee - Editable */}
+                <TableCell>
                   <Input
                     type="number"
-                    value={cptCode.time_reserved || 50}
-                    onChange={(e) => handleFieldUpdate(cptCode.code, 'time_reserved', parseInt(e.target.value) || 50)}
-                    className="w-16 h-8"
+                    value={cptCode.fee}
+                    onChange={(e) => handleFieldUpdate(cptCode.code, 'fee', parseFloat(e.target.value) || 0)}
+                    className="w-20 h-8"
+                    step="0.01"
                   />
-                  <span className="text-xs text-muted-foreground">min</span>
-                </div>
-              </div>
-              
-              {/* Specialty Type - Editable */}
-              <div>
-                <Input
-                  value={cptCode.specialty_type || ''}
-                  onChange={(e) => handleFieldUpdate(cptCode.code, 'specialty_type', e.target.value)}
-                  className="h-8"
-                  placeholder="Type..."
-                />
-              </div>
-              
-              {/* Online Scheduling Toggle */}
-              <div>
-                <button
-                  onClick={() => handleToggle(cptCode.code, 'online_scheduling', cptCode.online_scheduling || false)}
-                  className="flex items-center justify-center w-6 h-6 rounded"
-                  disabled={updateCptCode.isPending}
-                >
-                  {cptCode.online_scheduling ? (
-                    <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
-                      <CheckCircle className="h-4 w-4 text-white" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center w-6 h-6 rounded border-2 border-muted-foreground">
-                      <XCircle className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
+                </TableCell>
+                
+                {/* Name - Editable */}
+                <TableCell>
+                  <Input
+                    value={cptCode.name}
+                    onChange={(e) => handleFieldUpdate(cptCode.code, 'name', e.target.value)}
+                    className="h-8"
+                  />
+                </TableCell>
+                
+                {/* Time Reserved - Editable */}
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      value={cptCode.time_reserved || 50}
+                      onChange={(e) => handleFieldUpdate(cptCode.code, 'time_reserved', parseInt(e.target.value) || 50)}
+                      className="w-16 h-8"
+                    />
+                    <span className="text-xs text-muted-foreground">min</span>
+                  </div>
+                </TableCell>
+                
+                {/* Specialty Type - Editable */}
+                <TableCell>
+                  <Input
+                    value={cptCode.specialty_type || ''}
+                    onChange={(e) => handleFieldUpdate(cptCode.code, 'specialty_type', e.target.value)}
+                    className="h-8"
+                    placeholder="Type..."
+                  />
+                </TableCell>
+                
+                {/* Online Scheduling Toggle */}
+                <TableCell>
+                  <button
+                    onClick={() => handleToggle(cptCode.code, 'online_scheduling', cptCode.online_scheduling || false)}
+                    className="flex items-center justify-center w-6 h-6 rounded"
+                    disabled={updateCptCode.isPending}
+                  >
+                    {cptCode.online_scheduling ? (
+                      <div className="flex items-center justify-center w-6 h-6 rounded bg-primary">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center w-6 h-6 rounded border-2 border-muted-foreground">
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-          {(!cptCodes || cptCodes.length === 0) && (
-            <div className="text-center py-8 text-muted-foreground">
-              No CPT codes found. Add your first CPT code to get started.
-            </div>
-          )}
-        </div>
+        {(!cptCodes || cptCodes.length === 0) && (
+          <div className="text-center py-8 text-muted-foreground">
+            No CPT codes found. Add your first CPT code to get started.
+          </div>
+        )}
       </CardContent>
     </Card>
   );
