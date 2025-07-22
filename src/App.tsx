@@ -21,6 +21,7 @@ import Appointments from "./pages/Appointments";
 import AppointmentNew from "./pages/AppointmentNew";
 import TelehealthSession from "./pages/TelehealthSession";
 import AdminUserCreation from "./pages/AdminUserCreation";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -104,6 +105,13 @@ function App() {
               <Route path="/telehealth/:appointmentId" element={
                 <ProtectedRoute>
                   <TelehealthSession />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
+                  </Layout>
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
