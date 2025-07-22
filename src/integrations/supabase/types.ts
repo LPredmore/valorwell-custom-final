@@ -996,8 +996,10 @@ export type Database = {
       }
       practiceinfo: {
         Row: {
+          banner_url: string | null
           created_at: string
           id: string
+          logo_url: string | null
           practice_address1: string | null
           practice_address2: string | null
           practice_city: string | null
@@ -1010,8 +1012,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string
           id?: string
+          logo_url?: string | null
           practice_address1?: string | null
           practice_address2?: string | null
           practice_city?: string | null
@@ -1024,8 +1028,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_url?: string | null
           created_at?: string
           id?: string
+          logo_url?: string | null
           practice_address1?: string | null
           practice_address2?: string | null
           practice_city?: string | null
