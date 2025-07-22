@@ -12,6 +12,7 @@ import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Dashboard } from "./pages/Dashboard";
 import { Profile } from "./pages/Profile";
+import { ClinicianProfile } from "./pages/ClinicianProfile";
 import Clients from "./pages/Clients";
 import ClientNew from "./pages/ClientNew";
 import ClientEdit from "./pages/ClientEdit";
@@ -48,6 +49,13 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/clinicianprof" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClinicianProfile />
                   </Layout>
                 </ProtectedRoute>
               } />
