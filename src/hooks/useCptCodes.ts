@@ -1,5 +1,7 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 export interface CptCode {
   code: string;
@@ -10,7 +12,7 @@ export interface CptCode {
   time_reserved?: number;
   online_scheduling?: boolean;
   active?: boolean;
-  specialty_type?: string;
+  specialty_type?: Database['public']['Enums']['specialty_type'];
   created_at: string;
   updated_at: string;
 }
