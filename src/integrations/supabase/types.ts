@@ -1044,7 +1044,7 @@ export type Database = {
           city: string | null
           created_at: string
           date_of_birth: string | null
-          email: string | null
+          email: string
           first_name: string | null
           id: string
           last_name: string | null
@@ -1059,7 +1059,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
-          email?: string | null
+          email: string
           first_name?: string | null
           id: string
           last_name?: string | null
@@ -1074,7 +1074,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
-          email?: string | null
+          email?: string
           first_name?: string | null
           id?: string
           last_name?: string | null
