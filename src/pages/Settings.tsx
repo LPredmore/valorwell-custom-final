@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { usePracticeInfo, usePracticeUpdate, PracticeInfo } from '@/hooks/usePracticeInfo';
 import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X, Plus, Trash2, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
@@ -293,6 +294,8 @@ const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<PracticeInfo>>({});
   
+  const specialtyTypeOptions = ['Mental Health', 'Speech Therapy'];
+  
   const { data: practiceInfo, isLoading } = usePracticeInfo();
   const updatePractice = usePracticeUpdate();
 
@@ -310,6 +313,7 @@ const Settings = () => {
         practice_city: '',
         practice_state: '',
         practice_zip: '',
+        primary_specialty: null,
         logo_url: null,
         banner_url: null,
       });
@@ -525,17 +529,36 @@ const Settings = () => {
                           disabled={!isEditing}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="zipCode">Zip Code</Label>
-                        <Input
-                          id="zipCode"
-                          value={formData.practice_zip || ''}
-                          onChange={(e) => handleFieldChange('practice_zip', e.target.value)}
-                          placeholder="Enter zip code"
-                          disabled={!isEditing}
-                        />
-                      </div>
-                    </div>
+                       <div className="space-y-2">
+                         <Label htmlFor="zipCode">Zip Code</Label>
+                         <Input
+                           id="zipCode"
+                           value={formData.practice_zip || ''}
+                           onChange={(e) => handleFieldChange('practice_zip', e.target.value)}
+                           placeholder="Enter zip code"
+                           disabled={!isEditing}
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label htmlFor="specialtyType">Specialty Type</Label>
+                         <Select
+                           value={formData.primary_specialty || ''}
+                           onValueChange={(value) => handleFieldChange('primary_specialty', value)}
+                           disabled={!isEditing}
+                         >
+                           <SelectTrigger>
+                             <SelectValue placeholder="Select specialty type" />
+                           </SelectTrigger>
+                           <SelectContent>
+                             {specialtyTypeOptions.map((option) => (
+                               <SelectItem key={option} value={option}>
+                                 {option}
+                               </SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                       </div>
+                     </div>
                   </div>
                 </div>
               )}
