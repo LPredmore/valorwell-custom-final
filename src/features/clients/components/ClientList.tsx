@@ -12,13 +12,15 @@ import { useNavigate } from 'react-router-dom';
 
 interface Client {
   id: string;
-  client_first_name: string;
-  client_last_name: string;
-  client_email: string;
-  client_phone: string;
   client_status: string;
   client_assigned_therapist: string;
   created_at: string;
+  profiles: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  } | null;
 }
 
 export const ClientList: React.FC = () => {
@@ -30,7 +32,15 @@ export const ClientList: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            first_name,
+            last_name,
+            email,
+            phone
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -39,10 +49,10 @@ export const ClientList: React.FC = () => {
   });
 
   const filteredClients = clients?.filter(client =>
-    `${client.client_first_name} ${client.client_last_name}`
+    `${client.profiles?.first_name || ''} ${client.profiles?.last_name || ''}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase()) ||
-    client.client_email?.toLowerCase().includes(searchTerm.toLowerCase())
+    client.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -106,7 +116,7 @@ export const ClientList: React.FC = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center">
                   <User className="h-5 w-5 mr-2" />
-                  {client.client_first_name} {client.client_last_name}
+                  {client.profiles?.first_name || 'Unknown'} {client.profiles?.last_name || 'User'}
                 </CardTitle>
                 <Badge className={getStatusColor(client.client_status)}>
                   {client.client_status || 'Unknown'}
@@ -117,11 +127,11 @@ export const ClientList: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Email</p>
-                  <p>{client.client_email || 'Not provided'}</p>
+                  <p>{client.profiles?.email || 'Not provided'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Phone</p>
-                  <p>{client.client_phone || 'Not provided'}</p>
+                  <p>{client.profiles?.phone || 'Not provided'}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Assigned Therapist</p>

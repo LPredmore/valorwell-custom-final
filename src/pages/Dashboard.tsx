@@ -25,7 +25,7 @@ export const Dashboard: React.FC = () => {
     .slice(0, 3)
     .map(apt => ({
       id: apt.id,
-      client: `${apt.clients.client_first_name} ${apt.clients.client_last_name}`,
+      client: `${apt.clients?.profiles?.first_name || 'Unknown'} ${apt.clients?.profiles?.last_name || 'Client'}`,
       time: format(new Date(apt.start_at), 'h:mm a'),
       type: apt.type,
       status: apt.status

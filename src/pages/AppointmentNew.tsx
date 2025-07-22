@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,8 +33,15 @@ const AppointmentNew = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
-        .select('id, client_first_name, client_last_name, client_email')
-        .order('client_first_name');
+        .select(`
+          id,
+          profiles (
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .order('created_at');
 
       if (error) throw error;
       return data;
@@ -90,7 +98,7 @@ const AppointmentNew = () => {
                 <SelectContent>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.client_first_name} {client.client_last_name}
+                      {client.profiles?.first_name || 'Unknown'} {client.profiles?.last_name || 'Client'}
                     </SelectItem>
                   ))}
                 </SelectContent>

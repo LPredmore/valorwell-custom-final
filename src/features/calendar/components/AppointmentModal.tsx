@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -45,8 +46,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
-        .select('id, client_first_name, client_last_name, client_email')
-        .order('client_first_name');
+        .select(`
+          id,
+          profiles (
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .order('created_at');
 
       if (error) throw error;
       return data;
@@ -194,7 +202,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <SelectContent>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
-                    {client.client_first_name} {client.client_last_name}
+                    {client.profiles?.first_name || 'Unknown'} {client.profiles?.last_name || 'Client'}
                   </SelectItem>
                 ))}
               </SelectContent>

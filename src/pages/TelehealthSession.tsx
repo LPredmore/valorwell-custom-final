@@ -21,8 +21,11 @@ const TelehealthSession = () => {
         .select(`
           *,
           clients!inner(
-            client_first_name,
-            client_last_name
+            id,
+            profiles (
+              first_name,
+              last_name
+            )
           )
         `)
         .eq('id', appointmentId)
@@ -62,8 +65,8 @@ const TelehealthSession = () => {
     );
   }
 
-  const clientName = appointment.clients 
-    ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
+  const clientName = appointment.clients?.profiles
+    ? `${appointment.clients.profiles.first_name} ${appointment.clients.profiles.last_name}`
     : 'Unknown Client';
 
   return (
