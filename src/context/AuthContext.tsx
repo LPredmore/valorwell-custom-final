@@ -67,9 +67,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, role: 'client' | 'clinician' = 'client', firstName?: string, lastName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    console.log('🔵 AUTH CONTEXT - signUp function called with parameters:');
+    console.log('📧 Email:', email);
+    console.log('🔒 Password length:', password?.length);
+    console.log('👤 Role:', role);
+    console.log('👤 First Name:', firstName);
+    console.log('👤 Last Name:', lastName);
     
-    const { error } = await supabase.auth.signUp({
+    const redirectUrl = `${window.location.origin}/`;
+    console.log('🌐 Redirect URL:', redirectUrl);
+    
+    const signUpPayload = {
       email,
       password,
       options: {
@@ -80,22 +88,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           last_name: lastName
         }
       }
-    });
+    };
+    
+    console.log('📦 Full signUp payload being sent to Supabase:');
+    console.log(JSON.stringify(signUpPayload, null, 2));
+    
+    console.log('🚀 Calling supabase.auth.signUp...');
+    
+    try {
+      const result = await supabase.auth.signUp(signUpPayload);
+      
+      console.log('✅ Supabase signUp response received:');
+      console.log('📊 Full result object:', JSON.stringify(result, null, 2));
+      console.log('❌ Error object:', result.error);
+      console.log('👤 User object:', result.data?.user);
+      console.log('🔑 Session object:', result.data?.session);
+      
+      if (result.error) {
+        console.error('❌ SIGNUP ERROR DETECTED:');
+        console.error('Error message:', result.error.message);
+        console.error('Error status:', result.error.status);
+        console.error('Error details:', result.error);
+        
+        toast({
+          variant: "destructive",
+          title: "Registration Error",
+          description: result.error.message,
+        });
+      } else {
+        console.log('✅ SIGNUP SUCCESS - No error detected');
+        toast({
+          title: "Registration Successful",
+          description: "Please check your email to confirm your account.",
+        });
+      }
 
-    if (error) {
+      return { error: result.error };
+    } catch (exception) {
+      console.error('💥 EXCEPTION CAUGHT during signUp:');
+      console.error('Exception type:', typeof exception);
+      console.error('Exception message:', exception?.message);
+      console.error('Full exception:', exception);
+      
       toast({
         variant: "destructive",
         title: "Registration Error",
-        description: error.message,
+        description: "An unexpected error occurred during registration.",
       });
-    } else {
-      toast({
-        title: "Registration Successful",
-        description: "Please check your email to confirm your account.",
-      });
+      
+      return { error: exception };
     }
-
-    return { error };
   };
 
   const signOut = async () => {

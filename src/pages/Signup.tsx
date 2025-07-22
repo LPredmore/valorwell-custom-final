@@ -27,6 +27,7 @@ export const Signup: React.FC = () => {
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('📝 FORM INPUT CHANGE:', e.target.name, '=', e.target.value);
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -34,30 +35,68 @@ export const Signup: React.FC = () => {
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
+    console.log('🔵 SIGN IN - Form submission started');
     e.preventDefault();
     setIsSubmitting(true);
+    console.log('📧 Sign in email:', formData.email);
+    console.log('🔒 Sign in password length:', formData.password?.length);
     await signIn(formData.email, formData.password);
     setIsSubmitting(false);
+    console.log('🏁 SIGN IN - Process completed');
   };
 
   const handleClientSignup = async (e: React.FormEvent) => {
+    console.log('🟢 CLIENT SIGNUP - Form submission started');
     e.preventDefault();
+    
+    console.log('📝 CLIENT SIGNUP Form data:');
+    console.log('Email:', formData.email);
+    console.log('Password length:', formData.password?.length);
+    console.log('Confirm password length:', formData.confirmPassword?.length);
+    console.log('First name:', formData.firstName);
+    console.log('Last name:', formData.lastName);
+    console.log('Passwords match:', formData.password === formData.confirmPassword);
+    
     if (formData.password !== formData.confirmPassword) {
+      console.error('❌ CLIENT SIGNUP - Password mismatch, aborting');
       return;
     }
+    
     setIsSubmitting(true);
+    console.log('✅ CLIENT SIGNUP - Password validation passed, calling signUp...');
+    console.log('🎯 CLIENT SIGNUP - Calling signUp with role: client');
+    
     await signUp(formData.email, formData.password, 'client', formData.firstName, formData.lastName);
+    
     setIsSubmitting(false);
+    console.log('🏁 CLIENT SIGNUP - Process completed');
   };
 
   const handleStaffSignup = async (e: React.FormEvent) => {
+    console.log('🟡 STAFF SIGNUP - Form submission started');
     e.preventDefault();
+    
+    console.log('📝 STAFF SIGNUP Form data:');
+    console.log('Email:', formData.email);
+    console.log('Password length:', formData.password?.length);
+    console.log('Confirm password length:', formData.confirmPassword?.length);
+    console.log('First name:', formData.firstName);
+    console.log('Last name:', formData.lastName);
+    console.log('Passwords match:', formData.password === formData.confirmPassword);
+    
     if (formData.password !== formData.confirmPassword) {
+      console.error('❌ STAFF SIGNUP - Password mismatch, aborting');
       return;
     }
+    
     setIsSubmitting(true);
+    console.log('✅ STAFF SIGNUP - Password validation passed, calling signUp...');
+    console.log('🎯 STAFF SIGNUP - Calling signUp with role: clinician');
+    
     await signUp(formData.email, formData.password, 'clinician', formData.firstName, formData.lastName);
+    
     setIsSubmitting(false);
+    console.log('🏁 STAFF SIGNUP - Process completed');
   };
 
   if (loading) {
