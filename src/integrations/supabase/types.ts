@@ -557,7 +557,7 @@ export type Database = {
           created_at: string
           id: string
           last_google_sync: string | null
-          profile_id: string | null
+          profile_id: string
           updated_at: string
         }
         Insert: {
@@ -626,9 +626,9 @@ export type Database = {
           clinician_treatment_approaches?: string[] | null
           clinician_type?: string | null
           created_at?: string
-          id: string
+          id?: string
           last_google_sync?: string | null
-          profile_id?: string | null
+          profile_id: string
           updated_at?: string
         }
         Update: {
@@ -699,10 +699,18 @@ export type Database = {
           created_at?: string
           id?: string
           last_google_sync?: string | null
-          profile_id?: string | null
+          profile_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_clinicians_profile_id"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       CMS1500_claims: {
         Row: {
@@ -946,40 +954,37 @@ export type Database = {
       cpt_codes: {
         Row: {
           active: boolean | null
-          clinical_type: string | null
           code: string
           created_at: string
           description: string | null
           fee: number
           name: string
           online_scheduling: boolean | null
-          specialty_type: string | null
+          specialty_type: Database["public"]["Enums"]["specialty_type"] | null
           time_reserved: number | null
           updated_at: string
         }
         Insert: {
           active?: boolean | null
-          clinical_type?: string | null
           code: string
           created_at?: string
           description?: string | null
           fee: number
           name: string
           online_scheduling?: boolean | null
-          specialty_type?: string | null
+          specialty_type?: Database["public"]["Enums"]["specialty_type"] | null
           time_reserved?: number | null
           updated_at?: string
         }
         Update: {
           active?: boolean | null
-          clinical_type?: string | null
           code?: string
           created_at?: string
           description?: string | null
           fee?: number
           name?: string
           online_scheduling?: boolean | null
-          specialty_type?: string | null
+          specialty_type?: Database["public"]["Enums"]["specialty_type"] | null
           time_reserved?: number | null
           updated_at?: string
         }
@@ -1018,6 +1023,9 @@ export type Database = {
           practice_taxid: string | null
           practice_taxonomy: string | null
           practice_zip: string | null
+          primary_specialty:
+            | Database["public"]["Enums"]["specialty_type"]
+            | null
           updated_at: string
         }
         Insert: {
@@ -1034,6 +1042,9 @@ export type Database = {
           practice_taxid?: string | null
           practice_taxonomy?: string | null
           practice_zip?: string | null
+          primary_specialty?:
+            | Database["public"]["Enums"]["specialty_type"]
+            | null
           updated_at?: string
         }
         Update: {
@@ -1050,6 +1061,9 @@ export type Database = {
           practice_taxid?: string | null
           practice_taxonomy?: string | null
           practice_zip?: string | null
+          primary_specialty?:
+            | Database["public"]["Enums"]["specialty_type"]
+            | null
           updated_at?: string
         }
         Relationships: []
