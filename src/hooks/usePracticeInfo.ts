@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +14,7 @@ export interface PracticeInfo {
   practice_city: string | null;
   practice_state: string | null;
   practice_zip: string | null;
+  primary_specialty: string | null;
   logo_url: string | null;
   banner_url: string | null;
 }

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { usePracticeInfo, usePracticeUpdate, PracticeInfo } from '@/hooks/usePracticeInfo';
 import { Building, Users, CreditCard, FileText, Shield, Edit3, Save, X, Plus, Trash2, Phone, Mail, CheckCircle, XCircle } from 'lucide-react';
@@ -13,8 +14,25 @@ import { useClinicians, useDeleteClinician } from '@/hooks/useClinicians';
 import { useCptCodes, useDeleteCptCode, useUpdateCptCode, CptCode } from '@/hooks/useCptCodes';
 import { Link } from 'react-router-dom';
 
+// Specialty type options from the enum
+const specialtyTypeOptions = [
+  { value: 'general_practice', label: 'General Practice' },
+  { value: 'psychiatry', label: 'Psychiatry' },
+  { value: 'psychology', label: 'Psychology' },
+  { value: 'counseling', label: 'Counseling' },
+  { value: 'social_work', label: 'Social Work' },
+  { value: 'marriage_family_therapy', label: 'Marriage & Family Therapy' },
+  { value: 'substance_abuse', label: 'Substance Abuse' },
+  { value: 'child_adolescent', label: 'Child & Adolescent' },
+  { value: 'geriatric', label: 'Geriatric' },
+  { value: 'group_therapy', label: 'Group Therapy' },
+  { value: 'neuropsychology', label: 'Neuropsychology' },
+  { value: 'behavioral_analysis', label: 'Behavioral Analysis' },
+];
+
 const CptCodesManagement = () => {
   const { data: cptCodes, isLoading } = useCptCodes();
+  const { data: practiceInfo } = usePracticeInfo();
   const deleteCptCode = useDeleteCptCode();
   const updateCptCode = useUpdateCptCode();
 
@@ -44,7 +62,6 @@ const CptCodesManagement = () => {
       currency: 'USD'
     }).format(amount);
   };
-
 
   if (isLoading) {
     return (
@@ -143,14 +160,23 @@ const CptCodesManagement = () => {
                   </div>
                 </TableCell>
                 
-                {/* Specialty Type - Editable */}
+                {/* Specialty Type - Dropdown */}
                 <TableCell>
-                  <Input
-                    value={cptCode.specialty_type || ''}
-                    onChange={(e) => handleFieldUpdate(cptCode.code, 'specialty_type', e.target.value)}
-                    className="h-8"
-                    placeholder="Type..."
-                  />
+                  <Select
+                    value={cptCode.specialty_type || practiceInfo?.primary_specialty || ''}
+                    onValueChange={(value) => handleFieldUpdate(cptCode.code, 'specialty_type', value)}
+                  >
+                    <SelectTrigger className="h-8 w-full">
+                      <SelectValue placeholder="Select specialty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specialtyTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 
                 {/* Online Scheduling Toggle */}
@@ -310,6 +336,7 @@ const Settings = () => {
         practice_city: '',
         practice_state: '',
         practice_zip: '',
+        primary_specialty: null,
         logo_url: null,
         banner_url: null,
       });
@@ -534,6 +561,25 @@ const Settings = () => {
                           placeholder="Enter zip code"
                           disabled={!isEditing}
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="primarySpecialty">Specialty Type</Label>
+                        <Select
+                          value={formData.primary_specialty || ''}
+                          onValueChange={(value) => handleFieldChange('primary_specialty', value)}
+                          disabled={!isEditing}
+                        >
+                          <SelectTrigger id="primarySpecialty">
+                            <SelectValue placeholder="Select specialty type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {specialtyTypeOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
