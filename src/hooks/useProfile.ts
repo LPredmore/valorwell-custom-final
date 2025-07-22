@@ -1,87 +1,85 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import type { Database } from '@/integrations/supabase/types';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type UserRole = Database['public']['Enums']['user_role'];
+interface Profile {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UserRole {
+  id: string;
+  user_id: string;
+  role: 'admin' | 'clinician' | 'client';
+  created_at: string;
+}
 
 export const useProfile = () => {
-  const { user } = useAuth();
-  
   return useQuery({
-    queryKey: ['profile', user?.id],
+    queryKey: ['profile'],
     queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      // Use RPC call to get profile data since profiles table might not be in types yet
+      const { data, error } = await supabase.rpc('get_user_profile', { user_id: user.id });
       if (error) throw error;
-      return data as Profile;
+      return data;
     },
-    enabled: !!user?.id,
   });
 };
 
 export const useUserRole = () => {
-  const { user } = useAuth();
-  
   return useQuery({
-    queryKey: ['user-role', user?.id],
+    queryKey: ['user-role'],
     queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      // Use RPC call to get user role
+      const { data, error } = await supabase.rpc('get_user_role', { user_id: user.id });
       if (error) throw error;
-      return data.role as UserRole;
+      return data as 'admin' | 'clinician' | 'client';
     },
-    enabled: !!user?.id,
   });
 };
 
 export const useUpdateProfile = () => {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
-    mutationFn: async (updates: Partial<Profile>) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single();
-      
+    mutationFn: async (profileData: Partial<Profile>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      // Use RPC call to update profile
+      const { data, error } = await supabase.rpc('update_user_profile', {
+        user_id: user.id,
+        profile_data: profileData
+      });
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
-        title: 'Profile Updated',
-        description: 'Your profile has been successfully updated.',
+        title: 'Success',
+        description: 'Profile updated successfully',
       });
     },
     onError: (error) => {
       toast({
         variant: 'destructive',
-        title: 'Update Failed',
-        description: error.message,
+        title: 'Error',
+        description: 'Failed to update profile',
       });
-    },
+    }
   });
 };

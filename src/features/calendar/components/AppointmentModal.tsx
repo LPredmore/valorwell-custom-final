@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AppointmentEvent, AppointmentStatus } from '../types/calendar';
 import { format } from 'date-fns';
+import { useCreateDailyRoom } from '@/features/telehealth/hooks/useTelehealth';
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -30,11 +32,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     notes: '',
     start_at: '',
     end_at: '',
-    status: 'scheduled' as AppointmentStatus
+    status: 'scheduled' as AppointmentStatus,
+    enableTelehealth: false
   });
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const createDailyRoomMutation = useCreateDailyRoom();
 
   const { data: clients = [] } = useQuery({
     queryKey: ['clients'],
@@ -51,13 +55,26 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const createAppointmentMutation = useMutation({
     mutationFn: async (appointmentData: typeof formData) => {
+      let video_room_url = null;
+      
+      // Create Daily.co room if telehealth is enabled
+      if (appointmentData.enableTelehealth) {
+        const roomName = `appt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const roomData = await createDailyRoomMutation.mutateAsync({ roomName });
+        video_room_url = roomData.url;
+      }
+
       const { data, error } = await supabase
         .from('appointments')
         .insert([{
-          ...appointmentData,
+          client_id: appointmentData.client_id,
           clinician_id: '00000000-0000-0000-0000-000000000000', // Replace with actual clinician ID
+          type: appointmentData.type,
+          notes: appointmentData.notes,
+          status: appointmentData.status,
           start_at: new Date(appointmentData.start_at).toISOString(),
-          end_at: new Date(appointmentData.end_at).toISOString()
+          end_at: new Date(appointmentData.end_at).toISOString(),
+          video_room_url
         }])
         .select()
         .single();
@@ -221,6 +238,17 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 required
               />
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="telehealth"
+              checked={formData.enableTelehealth}
+              onCheckedChange={(checked) => 
+                setFormData({ ...formData, enableTelehealth: checked })
+              }
+            />
+            <Label htmlFor="telehealth">Enable Telehealth Video Session</Label>
           </div>
 
           {selectedEvent && (
