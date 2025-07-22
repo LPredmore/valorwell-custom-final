@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, Video, FileText, Clock, AlertCircle, Plus } from 'lucide-react';
+import { Calendar, Users, Video, FileText, Clock, AlertCircle, Plus, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useAppointments } from '@/features/calendar/hooks/useAppointments';
 import { Link } from 'react-router-dom';
@@ -78,134 +78,181 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Welcome back, {user?.email?.split('@')[0]}
-          </h1>
-          <p className="text-muted-foreground">
-            Here's what's happening with your practice today.
-          </p>
+    <div className="h-full">
+      {/* Header with Logo and User Info */}
+      <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center gap-4">
+          {/* Placeholder Logo - Easy to replace for whitelabel */}
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-lg">VW</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">ValorWell</h1>
+            <p className="text-sm text-muted-foreground">Clinician Dashboard</p>
+          </div>
         </div>
-        <Button asChild>
-          <Link to="/appointments/new">
-            <Plus className="h-4 w-4 mr-2" />
-            New Appointment
-          </Link>
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">Good afternoon,</p>
+            <p className="font-medium">Test Therapist</p>
+          </div>
+          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+            <User className="h-5 w-5 text-muted-foreground" />
+          </div>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Upcoming Appointments */}
-        <Card>
-          <CardHeader>
+      {/* Three Column Layout */}
+      <div className="grid grid-cols-3 gap-6 p-6 h-[calc(100%-88px)]">
+        {/* Today's Appointments */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
+              <Calendar className="h-5 w-5" />
               Today's Appointments
             </CardTitle>
-            <CardDescription>
-              Your schedule for today
-            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {upcomingAppointments.length > 0 ? (
-                upcomingAppointments.map((appointment) => (
-                  <div
-                    key={appointment.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{appointment.client}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {appointment.type}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{appointment.time}</p>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          appointment.status === 'scheduled'
-                            ? 'bg-green-100 text-green-800'
-                            : appointment.status === 'documented'
-                            ? 'bg-blue-100 text-blue-800'
-                            : appointment.status === 'no show'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {appointment.status}
-                      </span>
-                    </div>
+          <CardContent className="flex-1 overflow-auto">
+            {todayAppointments.length > 0 ? (
+              <div className="space-y-4">
+                {todayAppointments.map((appointment) => (
+                  <div key={appointment.id} className="text-center text-muted-foreground">
+                    <p>No appointments scheduled for today.</p>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No appointments scheduled for today</p>
-                  <Button asChild className="mt-4">
-                    <Link to="/appointments/new">Schedule Appointment</Link>
-                  </Button>
-                </div>
-              )}
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <p>No appointments scheduled for today.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Outstanding Documentation */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Outstanding Documentation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-auto space-y-4">
+            {/* Sample outstanding documentation items */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <User className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">Bobby zzzBoucher</span>
+              </div>
+              <div className="text-sm text-muted-foreground mb-2">
+                <Calendar className="h-4 w-4 inline mr-1" />
+                Jul 16, 2025
+              </div>
+              <div className="text-sm text-muted-foreground mb-3">
+                <Clock className="h-4 w-4 inline mr-1" />
+                10:00 AM - 11:00 AM (Chicago (-05:00))
+              </div>
+              <p className="text-sm mb-3">therapy_session</p>
+              <Button className="w-full mb-2">
+                <FileText className="h-4 w-4 mr-2" />
+                Document Session
+              </Button>
+              <div className="flex items-center gap-2 text-red-600 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                Session Did Not Occur
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <User className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">Mr Deeds</span>
+              </div>
+              <div className="text-sm text-muted-foreground mb-2">
+                <Calendar className="h-4 w-4 inline mr-1" />
+                Jul 16, 2025
+              </div>
+              <div className="text-sm text-muted-foreground mb-3">
+                <Clock className="h-4 w-4 inline mr-1" />
+                10:00 AM - 11:00 AM (Chicago (-05:00))
+              </div>
+              <p className="text-sm mb-3">therapy_session</p>
+              <Button className="w-full mb-2">
+                <FileText className="h-4 w-4 mr-2" />
+                Document Session
+              </Button>
+              <div className="flex items-center gap-2 text-red-600 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                Session Did Not Occur
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Alerts */}
-        <Card>
-          <CardHeader>
+        {/* Upcoming Appointments */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Recent Alerts
+              <Clock className="h-5 w-5" />
+              Upcoming Appointments
             </CardTitle>
-            <CardDescription>
-              Important notifications and updates
-            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 overflow-auto space-y-4">
+            {/* Sample upcoming appointments */}
             <div className="space-y-4">
-              {alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="flex items-start gap-3 p-3 border rounded-lg"
-                >
-                  <AlertCircle
-                    className={`h-4 w-4 mt-0.5 ${
-                      alert.type === 'warning'
-                        ? 'text-orange-500'
-                        : 'text-blue-500'
-                    }`}
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {alert.time}
-                    </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                    <Clock className="h-4 w-4" />
+                    10:00 AM - 11:00 AM (Chicago (-05:00))
                   </div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    <Calendar className="h-4 w-4 inline mr-1" />
+                    Jul 23, 2025
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Bobby zzzBoucher</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">therapy_session</p>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                    <Clock className="h-4 w-4" />
+                    10:00 AM - 11:00 AM (Chicago (-05:00))
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    <Calendar className="h-4 w-4 inline mr-1" />
+                    Jul 30, 2025
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Bobby zzzBoucher</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">therapy_session</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                    <Clock className="h-4 w-4" />
+                    10:00 AM - 11:00 AM (Chicago (-05:00))
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    <Calendar className="h-4 w-4 inline mr-1" />
+                    Aug 6, 2025
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Bobby zzzBoucher</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">therapy_session</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
