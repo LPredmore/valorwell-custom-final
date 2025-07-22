@@ -3,10 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
-  Calendar,
   Users,
-  Video,
-  FileText,
   CreditCard,
   BarChart3,
   Settings,
@@ -17,9 +14,6 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Profile', href: '/clinicianprof', icon: Settings },
   { name: 'Clients', href: '/myclients', icon: Users },
-  { name: 'Appointments', href: '/appointments', icon: Calendar },
-  { name: 'Telehealth', href: '/telehealth', icon: Video },
-  { name: 'Documentation', href: '/documentation', icon: FileText },
   { name: 'Billing', href: '/billing', icon: CreditCard },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },

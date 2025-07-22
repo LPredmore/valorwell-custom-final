@@ -14,13 +14,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Profile } from "./pages/Profile";
 import { ClinicianProfile } from "./pages/ClinicianProfile";
 import Clients from "./pages/Clients";
-import ClientNew from "./pages/ClientNew";
-import ClientEdit from "./pages/ClientEdit";
 import ClientDetails from "./pages/ClientDetails";
-import Appointments from "./pages/Appointments";
-import AppointmentNew from "./pages/AppointmentNew";
-import TelehealthSession from "./pages/TelehealthSession";
-import AdminUserCreation from "./pages/AdminUserCreation";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -38,7 +32,6 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/admin/create-user" element={<AdminUserCreation />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Layout>
@@ -67,44 +60,11 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
-              <Route path="/clients/new" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ClientNew />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/clients/:id/edit" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ClientEdit />
-                  </Layout>
-                </ProtectedRoute>
-              } />
               <Route path="/clients/:id" element={
                 <ProtectedRoute>
                   <Layout>
                     <ClientDetails />
                   </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/appointments" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Appointments />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/appointments/new" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <AppointmentNew />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/telehealth/:appointmentId" element={
-                <ProtectedRoute>
-                  <TelehealthSession />
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
