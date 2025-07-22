@@ -5,21 +5,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { Layout } from "./components/layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { RoleGuard } from "./components/RoleGuard";
+import { Layout } from "./components/layout/Layout";
 import Index from "./pages/Index";
-import { Login } from "./pages/Login";
-import { Signup } from "./pages/Signup";
-import { Dashboard } from "./pages/Dashboard";
-import Appointments from "./pages/Appointments";
-import AppointmentNew from "./pages/AppointmentNew";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import Clients from "./pages/Clients";
 import ClientNew from "./pages/ClientNew";
 import ClientEdit from "./pages/ClientEdit";
-import ClientDetailsPage from "./pages/ClientDetails";
-import { Profile } from "./pages/Profile";
+import ClientDetails from "./pages/ClientDetails";
+import Appointments from "./pages/Appointments";
+import AppointmentNew from "./pages/AppointmentNew";
 import TelehealthSession from "./pages/TelehealthSession";
+import AdminUserCreation from "./pages/AdminUserCreation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,120 +28,80 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/appointments"
-                element={
-                  <ProtectedRoute>
-                    <RoleGuard allowedRoles={['clinician']}>
-                      <Layout>
-                        <Appointments />
-                      </Layout>
-                    </RoleGuard>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/appointments/new"
-                element={
-                  <ProtectedRoute>
-                    <RoleGuard allowedRoles={['clinician']}>
-                      <Layout>
-                        <AppointmentNew />
-                      </Layout>
-                    </RoleGuard>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/telehealth/:appointmentId"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <TelehealthSession />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clients"
-                element={
-                  <ProtectedRoute>
-                    <RoleGuard allowedRoles={['clinician']}>
-                      <Layout>
-                        <Clients />
-                      </Layout>
-                    </RoleGuard>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clients/new"
-                element={
-                  <ProtectedRoute>
-                    <RoleGuard allowedRoles={['clinician']}>
-                      <Layout>
-                        <ClientNew />
-                      </Layout>
-                    </RoleGuard>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clients/:id/edit"
-                element={
-                  <ProtectedRoute>
-                    <RoleGuard allowedRoles={['clinician']}>
-                      <Layout>
-                        <ClientEdit />
-                      </Layout>
-                    </RoleGuard>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clients/:id"
-                element={
-                  <ProtectedRoute>
-                    <RoleGuard allowedRoles={['clinician']}>
-                      <Layout>
-                        <ClientDetailsPage />
-                      </Layout>
-                    </RoleGuard>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Profile />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/admin/create-user" element={<AdminUserCreation />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/clients" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Clients />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/clients/new" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClientNew />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/clients/:id/edit" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClientEdit />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/clients/:id" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ClientDetails />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/appointments" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Appointments />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/appointments/new" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AppointmentNew />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/telehealth/:appointmentId" element={
+                <ProtectedRoute>
+                  <TelehealthSession />
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </AuthProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
