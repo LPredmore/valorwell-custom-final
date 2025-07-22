@@ -17,7 +17,7 @@ type Profile = {
 type UserRole = Database['public']['Enums']['user_role'];
 
 export const useProfile = () => {
-  return useQuery({
+  return useQuery<Profile | null, Error>({
     queryKey: ['profile'],
     queryFn: async (): Promise<Profile | null> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -33,7 +33,7 @@ export const useProfile = () => {
 };
 
 export const useUserRole = () => {
-  return useQuery({
+  return useQuery<UserRole | null, Error>({
     queryKey: ['user-role'],
     queryFn: async (): Promise<UserRole | null> => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -52,8 +52,8 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  return useMutation({
-    mutationFn: async (profileData: Partial<Profile>) => {
+  return useMutation<Profile, Error, Partial<Profile>>({
+    mutationFn: async (profileData: Partial<Profile>): Promise<Profile> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 

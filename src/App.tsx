@@ -8,18 +8,18 @@ import { AuthProvider } from "./context/AuthContext";
 import { Layout } from "./components/layout/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { RoleGuard } from "./components/RoleGuard";
-import { Index } from "./pages/Index";
+import Index from "./pages/Index";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
-import { Appointments } from "./pages/Appointments";
-import { AppointmentNew } from "./pages/AppointmentNew";
-import { Clients } from "./pages/Clients";
-import { ClientNew } from "./pages/ClientNew";
-import { ClientEdit } from "./pages/ClientEdit";
-import { ClientDetails } from "./pages/ClientDetails";
+import Appointments from "./pages/Appointments";
+import AppointmentNew from "./pages/AppointmentNew";
+import Clients from "./pages/Clients";
+import ClientNew from "./pages/ClientNew";
+import ClientEdit from "./pages/ClientEdit";
+import ClientDetailsPage from "./pages/ClientDetails";
 import { Profile } from "./pages/Profile";
-import { TelehealthSession } from "./pages/TelehealthSession";
-import { NotFound } from "./pages/NotFound";
+import TelehealthSession from "./pages/TelehealthSession";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -120,7 +120,7 @@ function App() {
                   <ProtectedRoute>
                     <RoleGuard allowedRoles={['clinician']}>
                       <Layout>
-                        <ClientDetails />
+                        <ClientDetailsPage />
                       </Layout>
                     </RoleGuard>
                   </ProtectedRoute>
