@@ -1084,7 +1084,7 @@ export type Database = {
         | "America/Anchorage"
         | "Pacific/Honolulu"
         | "America/Phoenix"
-      user_role: "client" | "clinician"
+      user_role: "client" | "clinician" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1222,7 +1222,7 @@ export const Constants = {
         "Pacific/Honolulu",
         "America/Phoenix",
       ],
-      user_role: ["client", "clinician"],
+      user_role: ["client", "clinician", "admin"],
     },
   },
 } as const
