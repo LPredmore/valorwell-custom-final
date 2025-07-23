@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { AppointmentCalendar } from '@/features/calendar/components/AppointmentCalendar';
+import { SyncStatus } from '@/features/calendar/components/SyncStatus';
 
 export const Calendar: React.FC = () => {
   return (
@@ -14,6 +15,9 @@ export const Calendar: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Sync Status */}
+      <SyncStatus />
 
       {/* Calendar Component */}
       <div className="space-y-4">

@@ -18,6 +18,7 @@ import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import NylasCallback from "./pages/NylasCallback";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,7 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
+              <Route path="/nylas/callback" element={<NylasCallback />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
