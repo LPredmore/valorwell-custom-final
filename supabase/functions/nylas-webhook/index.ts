@@ -8,17 +8,33 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle Nylas challenge verification (GET request)
+  if (req.method === 'GET') {
+    const url = new URL(req.url);
+    const challenge = url.searchParams.get('challenge');
+    
+    if (challenge) {
+      console.log('Nylas webhook challenge received:', challenge);
+      return new Response(challenge, {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      });
+    }
+    
+    return new Response('Challenge parameter missing', { status: 400 });
+  }
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const nylasClientSecret = Deno.env.get('NYLAS_CLIENT_SECRET');
+    const nylasWebhookSecret = Deno.env.get('NYLAS_WEBHOOK_SECRET');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!nylasClientSecret || !supabaseUrl || !supabaseServiceKey) {
+    if (!nylasWebhookSecret || !supabaseUrl || !supabaseServiceKey) {
       console.error('Missing required environment variables');
       return new Response(
         JSON.stringify({ error: 'Server configuration error' }),
@@ -42,7 +58,7 @@ serve(async (req) => {
     }
 
     // Verify webhook signature
-    const expectedSignature = createHmac('sha256', nylasClientSecret)
+    const expectedSignature = createHmac('sha256', nylasWebhookSecret)
       .update(body)
       .digest('hex');
 

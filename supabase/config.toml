@@ -19,3 +19,9 @@ enabled = true
 
 [functions.nylas-webhook]
 verify_jwt = false
+
+[functions.nylas-calendars]
+verify_jwt = false
+
+[functions.nylas-exchange]
+verify_jwt = false
