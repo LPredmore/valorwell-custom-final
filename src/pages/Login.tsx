@@ -15,8 +15,30 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Log any URL parameters that might indicate OAuth callback
+  useEffect(() => {
+    console.log('[LOGIN_PAGE] Component mounted');
+    console.log('[LOGIN_PAGE] Current URL:', window.location.href);
+    console.log('[LOGIN_PAGE] URL params:', window.location.search);
+    console.log('[LOGIN_PAGE] URL hash:', window.location.hash);
+    
+    // Check for OAuth-related parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code')) {
+      console.log('[LOGIN_PAGE] OAuth authorization code detected:', urlParams.get('code'));
+    }
+    if (urlParams.has('error')) {
+      console.log('[LOGIN_PAGE] OAuth error detected:', urlParams.get('error'));
+      console.log('[LOGIN_PAGE] OAuth error description:', urlParams.get('error_description'));
+    }
+    if (urlParams.has('state')) {
+      console.log('[LOGIN_PAGE] OAuth state parameter:', urlParams.get('state'));
+    }
+  }, []);
+
   // Redirect if already authenticated
   if (user && !loading) {
+    console.log('[LOGIN_PAGE] User authenticated, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -35,16 +57,54 @@ export const Login: React.FC = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log('[GOOGLE_SIGNIN] Starting Google sign-in process...');
     setIsSubmitting(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`
+    
+    try {
+      // Log current auth state before attempting sign-in
+      const { data: currentSession } = await supabase.auth.getSession();
+      console.log('[GOOGLE_SIGNIN] Current session before OAuth:', currentSession);
+      
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      console.log('[GOOGLE_SIGNIN] Redirect URL:', redirectUrl);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      });
+      
+      console.log('[GOOGLE_SIGNIN] OAuth response data:', data);
+      
+      if (error) {
+        console.error('[GOOGLE_SIGNIN] OAuth error:', {
+          message: error.message,
+          status: error.status,
+          details: error
+        });
+        
+        // Try to get more specific error information
+        if (error.message.includes('unauthorized_client')) {
+          console.error('[GOOGLE_SIGNIN] Unauthorized client - check Google OAuth configuration');
+        } else if (error.message.includes('invalid_request')) {
+          console.error('[GOOGLE_SIGNIN] Invalid request - check redirect URLs in Google Console');
+        } else if (error.message.includes('access_denied')) {
+          console.error('[GOOGLE_SIGNIN] Access denied - user cancelled or permissions issue');
+        }
+      } else {
+        console.log('[GOOGLE_SIGNIN] OAuth initiated successfully');
+        // Note: The actual sign-in completion happens in the callback
       }
-    });
-    if (error) {
-      console.error('Google sign-in error:', error);
+      
+    } catch (exception) {
+      console.error('[GOOGLE_SIGNIN] Unexpected exception:', exception);
     }
+    
     setIsSubmitting(false);
   };
 
