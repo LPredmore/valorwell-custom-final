@@ -1,4 +1,5 @@
-NYLAS_CLIENT_ID=51e0429b-2859-4aed-9a8d-d9612d529853
-NYLAS_CLIENT_SECRET=nyk_v0_cYdKD0KYwTltL0IePqFpiMRLgBdF1F3Slvw7X85VsL2xtm7vHHDHcyC4MJTMxeYK
-VITE_SUPABASE_URL=cjkhwaetdfobwjqmxufx
+# ---------- Browser (Vite) ----------
+VITE_NYLAS_CLIENT_ID=51e0429b-2859-4aed-9a8d-d9612d529853
+VITE_NYLAS_CALLBACK_URI=https://valorwell-custom-final.lovable.app/nylas/callback
+VITE_SUPABASE_URL=https://cjkhwaetdfobwjqmxufx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqa2h3YWV0ZGZvYndqcW14dWZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxMjIxNjYsImV4cCI6MjA2ODY5ODE2Nn0.iWCHu9AXIa_0dgZp_on2UmsGEUyaKZlXWeqqm4mmCdo
