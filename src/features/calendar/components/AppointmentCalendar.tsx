@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppointmentEvent } from '../types/calendar';
 import { AppointmentModal } from './AppointmentModal';
+import { AvailabilityMenu } from './AvailabilityMenu';
+import { useClinicianAvailability } from '../hooks/useClinicianAvailability';
 import { utcToBrowserTime, formatInTimezone, getTimezoneAbbreviation, DATE_FORMATS } from '@/utils/date';
+import { Settings } from 'lucide-react';
 
 const localizer = momentLocalizer(moment);
 
@@ -17,8 +20,11 @@ export const AppointmentCalendar: React.FC = () => {
   const [view, setView] = useState<View>('week');
   const [date, setDate] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
+  const [showAvailabilityMenu, setShowAvailabilityMenu] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<AppointmentEvent | null>(null);
+
+  const { data: availability } = useClinicianAvailability();
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['appointments', date],
@@ -99,6 +105,33 @@ export const AppointmentCalendar: React.FC = () => {
     };
   };
 
+  // Get calendar min/max times from availability settings
+  const getCalendarTimes = () => {
+    const defaultStart = new Date(0, 0, 0, 8, 0, 0); // 8:00 AM
+    const defaultEnd = new Date(0, 0, 0, 21, 0, 0); // 9:00 PM
+
+    if (!availability) {
+      return { min: defaultStart, max: defaultEnd };
+    }
+
+    let min = defaultStart;
+    let max = defaultEnd;
+
+    if (availability.clinician_calendar_start_time) {
+      const [hours, minutes] = availability.clinician_calendar_start_time.split(':').map(Number);
+      min = new Date(0, 0, 0, hours, minutes, 0);
+    }
+
+    if (availability.clinician_calendar_end_time) {
+      const [hours, minutes] = availability.clinician_calendar_end_time.split(':').map(Number);
+      max = new Date(0, 0, 0, hours, minutes, 0);
+    }
+
+    return { min, max };
+  };
+
+  const { min, max } = getCalendarTimes();
+
   if (isLoading) {
     return (
       <Card>
@@ -120,6 +153,15 @@ export const AppointmentCalendar: React.FC = () => {
             </span>
           </CardTitle>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAvailabilityMenu(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Availability
+            </Button>
             <Button
               variant={view === 'day' ? 'default' : 'outline'}
               size="sm"
@@ -162,8 +204,8 @@ export const AppointmentCalendar: React.FC = () => {
               timeslots={4}
               defaultView="week"
               views={['month', 'week', 'day']}
-              min={new Date(0, 0, 0, 8, 0, 0)}
-              max={new Date(0, 0, 0, 20, 0, 0)}
+              min={min}
+              max={max}
               popup
               showMultiDayTimes
               formats={{
@@ -184,6 +226,11 @@ export const AppointmentCalendar: React.FC = () => {
         onClose={() => setShowModal(false)}
         selectedSlot={selectedSlot}
         selectedEvent={selectedEvent}
+      />
+
+      <AvailabilityMenu
+        isOpen={showAvailabilityMenu}
+        onClose={() => setShowAvailabilityMenu(false)}
       />
     </div>
   );
