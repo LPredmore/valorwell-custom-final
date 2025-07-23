@@ -19,6 +19,8 @@ import ClientDetails from "./pages/ClientDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import NylasCallback from "./pages/NylasCallback";
+import { TemplatesPage } from "./features/templates/pages/TemplatesPage";
+import { CreateTemplatePage } from "./features/templates/pages/CreateTemplatePage";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +82,20 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/templates" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TemplatesPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/templates/create" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateTemplatePage />
                   </Layout>
                 </ProtectedRoute>
               } />
