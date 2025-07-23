@@ -14,27 +14,36 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [waitingForOAuth, setWaitingForOAuth] = useState(false);
 
-  // Log any URL parameters that might indicate OAuth callback
+  // Handle OAuth callback detection and redirect
   useEffect(() => {
     console.log('[LOGIN_PAGE] Component mounted');
     console.log('[LOGIN_PAGE] Current URL:', window.location.href);
-    console.log('[LOGIN_PAGE] URL params:', window.location.search);
     console.log('[LOGIN_PAGE] URL hash:', window.location.hash);
     
-    // Check for OAuth-related parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('code')) {
-      console.log('[LOGIN_PAGE] OAuth authorization code detected:', urlParams.get('code'));
-    }
-    if (urlParams.has('error')) {
-      console.log('[LOGIN_PAGE] OAuth error detected:', urlParams.get('error'));
-      console.log('[LOGIN_PAGE] OAuth error description:', urlParams.get('error_description'));
-    }
-    if (urlParams.has('state')) {
-      console.log('[LOGIN_PAGE] OAuth state parameter:', urlParams.get('state'));
+    // Check if OAuth tokens are present in hash
+    if (window.location.hash.includes('access_token')) {
+      console.log('[LOGIN_PAGE] OAuth tokens detected in URL hash - waiting for auth state update');
+      setWaitingForOAuth(true);
+      
+      // Set up a timeout for redirect in case auth state doesn't update
+      const redirectTimeout = setTimeout(() => {
+        console.log('[LOGIN_PAGE] Timeout reached - forcing redirect to dashboard');
+        window.location.href = '/dashboard';
+      }, 5000);
+      
+      return () => clearTimeout(redirectTimeout);
     }
   }, []);
+
+  // Handle redirect after successful OAuth authentication
+  useEffect(() => {
+    if (user && waitingForOAuth) {
+      console.log('[LOGIN_PAGE] OAuth authentication complete, redirecting to dashboard');
+      window.location.href = '/dashboard';
+    }
+  }, [user, waitingForOAuth]);
 
   // Redirect if already authenticated
   if (user && !loading) {
@@ -65,7 +74,7 @@ export const Login: React.FC = () => {
       const { data: currentSession } = await supabase.auth.getSession();
       console.log('[GOOGLE_SIGNIN] Current session before OAuth:', currentSession);
       
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `${window.location.origin}/login`;
       console.log('[GOOGLE_SIGNIN] Redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -108,10 +117,15 @@ export const Login: React.FC = () => {
     setIsSubmitting(false);
   };
 
-  if (loading) {
+  if (loading || waitingForOAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        {waitingForOAuth && (
+          <p className="mt-4 text-center text-muted-foreground">
+            Completing Google sign-in...
+          </p>
+        )}
       </div>
     );
   }
