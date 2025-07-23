@@ -5,13 +5,19 @@ import { NYLAS_CLIENT_ID, CALLBACK_URI } from '@/config';
 
 export function ConnectCalendar() {
   const handleConnect = () => {
+    // Generate CSRF state and store it for verification
+    const state = crypto.randomUUID();
+    localStorage.setItem('nylas_oauth_state', state);
+    console.log('[CONNECT_CALENDAR] Generated OAuth state:', state);
+    
     const url = new URL('https://api.nylas.com/oauth/authorize');
     url.searchParams.set('client_id', NYLAS_CLIENT_ID);
     url.searchParams.set('redirect_uri', CALLBACK_URI);
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', 'calendar.read_write,email.read_only');
-    url.searchParams.set('state', crypto.randomUUID()); // CSRF protection
+    url.searchParams.set('state', state);
     
+    console.log('[CONNECT_CALENDAR] Redirecting to OAuth URL:', url.toString());
     window.location.href = url.toString();
   };
 

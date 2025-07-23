@@ -18,25 +18,58 @@ export default function NylasCallback() {
       try {
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
+        const state = params.get('state');
         const error = params.get('error');
 
+        console.log('[NYLAS_CALLBACK] Processing OAuth callback with params:', {
+          code: code ? `present (length: ${code.length})` : 'missing',
+          state: state ? `present (${state})` : 'missing',
+          error: error || 'none'
+        });
+
+        // Verify CSRF state
+        const storedState = localStorage.getItem('nylas_oauth_state');
+        console.log('[NYLAS_CALLBACK] State verification:', {
+          received: state,
+          stored: storedState,
+          matches: state === storedState
+        });
+
+        if (state !== storedState) {
+          setError('Security error: Invalid OAuth state. Please try connecting again.');
+          setLoading(false);
+          return;
+        }
+
+        // Clear stored state
+        localStorage.removeItem('nylas_oauth_state');
+
         if (error) {
-          setError(`OAuth error: ${error}`);
+          console.log('[NYLAS_CALLBACK] OAuth error received:', error);
+          setError(`OAuth authorization failed: ${error}`);
           setLoading(false);
           return;
         }
 
         if (!code) {
-          setError('Missing authorization code from Nylas');
+          console.log('[NYLAS_CALLBACK] Missing authorization code');
+          setError('Authorization failed: No code received from Nylas');
           setLoading(false);
           return;
         }
 
         if (!session?.access_token) {
-          setError('You must be logged in to connect your calendar');
+          console.log('[NYLAS_CALLBACK] Missing user session');
+          setError('Authentication required: Please log in and try again');
           setLoading(false);
           return;
         }
+
+        console.log('[NYLAS_CALLBACK] Starting token exchange with:', {
+          endpoint: NYLAS_EXCHANGE_ENDPOINT,
+          hasToken: !!session.access_token,
+          codeLength: code.length
+        });
 
         const response = await fetch(NYLAS_EXCHANGE_ENDPOINT, {
           method: 'POST',
@@ -47,25 +80,39 @@ export default function NylasCallback() {
           body: JSON.stringify({ code }),
         });
 
+        console.log('[NYLAS_CALLBACK] Exchange response:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+
         const data = await response.json();
+        console.log('[NYLAS_CALLBACK] Exchange response data:', data);
 
         if (!response.ok) {
-          throw new Error(data.error || 'Token exchange failed');
+          const errorMessage = data.error || `HTTP ${response.status}: ${response.statusText}`;
+          console.error('[NYLAS_CALLBACK] Exchange failed:', errorMessage);
+          throw new Error(errorMessage);
         }
 
         if (data.success) {
+          console.log('[NYLAS_CALLBACK] Token exchange successful');
           setSuccess(true);
           setLoading(false);
           setTimeout(() => {
             navigate('/calendar?sync=success');
           }, 2000);
         } else {
-          setError(data.error || 'Unknown error occurred');
+          const errorMessage = data.error || 'Token exchange completed but returned no success flag';
+          console.error('[NYLAS_CALLBACK] Exchange unsuccessful:', errorMessage);
+          setError(errorMessage);
           setLoading(false);
         }
       } catch (err) {
-        console.error('OAuth callback error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to connect calendar');
+        console.error('[NYLAS_CALLBACK] Fatal error during OAuth callback:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to connect calendar';
+        console.error('[NYLAS_CALLBACK] Setting error state:', errorMessage);
+        setError(`Connection failed: ${errorMessage}`);
         setLoading(false);
       }
     };
@@ -74,6 +121,9 @@ export default function NylasCallback() {
   }, [session, navigate]);
 
   const handleRetry = () => {
+    console.log('[NYLAS_CALLBACK] User requested retry, redirecting to calendar');
+    // Clear any remaining OAuth state
+    localStorage.removeItem('nylas_oauth_state');
     navigate('/calendar');
   };
 
