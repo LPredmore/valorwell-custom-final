@@ -86,30 +86,35 @@ export const AvailabilityForm: React.FC<AvailabilityFormProps> = ({ availability
                 {day.label}
               </h4>
               <div className="grid grid-cols-1 gap-3">
-                {[1, 2, 3].map((slot) => (
-                  <div key={slot} className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor={`clinician_availability_start_${day.key}_${slot}`}>
-                        Slot {slot} Start
-                      </Label>
-                      <Input
-                        id={`clinician_availability_start_${day.key}_${slot}`}
-                        type="time"
-                        {...register(`clinician_availability_start_${day.key}_${slot}`)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`clinician_availability_end_${day.key}_${slot}`}>
-                        Slot {slot} End
-                      </Label>
-                      <Input
-                        id={`clinician_availability_end_${day.key}_${slot}`}
-                        type="time"
-                        {...register(`clinician_availability_end_${day.key}_${slot}`)}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  {[1, 2, 3].map((slot) => {
+                    const startFieldName = `clinician_availability_start_${day.key}_${slot}` as keyof ClinicianAvailability;
+                    const endFieldName = `clinician_availability_end_${day.key}_${slot}` as keyof ClinicianAvailability;
+                    
+                    return (
+                      <div key={slot} className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor={startFieldName}>
+                            Slot {slot} Start
+                          </Label>
+                          <Input
+                            id={startFieldName}
+                            type="time"
+                            {...register(startFieldName)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={endFieldName}>
+                            Slot {slot} End
+                          </Label>
+                          <Input
+                            id={endFieldName}
+                            type="time"
+                            {...register(endFieldName)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           ))}
