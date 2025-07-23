@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppointmentEvent } from '../types/calendar';
 import { AppointmentModal } from './AppointmentModal';
+import { utcToBrowserTime, formatInTimezone, getTimezoneAbbreviation, DATE_FORMATS } from '@/utils/date';
 
 const localizer = momentLocalizer(moment);
 
@@ -46,8 +47,8 @@ export const AppointmentCalendar: React.FC = () => {
       return data.map(appointment => ({
         id: appointment.id,
         title: `${appointment.clients.profiles?.first_name || 'Unknown'} ${appointment.clients.profiles?.last_name || 'Client'}`,
-        start: new Date(appointment.start_at),
-        end: new Date(appointment.end_at),
+        start: utcToBrowserTime(appointment.start_at),
+        end: utcToBrowserTime(appointment.end_at),
         resource: appointment
       }));
     },
@@ -111,11 +112,39 @@ export const AppointmentCalendar: React.FC = () => {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Appointment Calendar</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="flex items-center gap-2">
+            Appointment Calendar
+            <span className="text-sm font-normal text-muted-foreground">
+              ({getTimezoneAbbreviation()})
+            </span>
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant={view === 'day' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setView('day')}
+            >
+              Day
+            </Button>
+            <Button
+              variant={view === 'week' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setView('week')}
+            >
+              Week
+            </Button>
+            <Button
+              variant={view === 'month' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setView('month')}
+            >
+              Month
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="h-96">
+          <div className="h-[600px]">
             <Calendar
               localizer={localizer}
               events={appointments}
@@ -135,6 +164,16 @@ export const AppointmentCalendar: React.FC = () => {
               views={['month', 'week', 'day']}
               min={new Date(0, 0, 0, 8, 0, 0)}
               max={new Date(0, 0, 0, 20, 0, 0)}
+              popup
+              showMultiDayTimes
+              formats={{
+                timeGutterFormat: 'h:mm A',
+                eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                  `${localizer?.format(start, 'h:mm A', culture)} - ${localizer?.format(end, 'h:mm A', culture)}`,
+                agendaTimeFormat: 'h:mm A',
+                agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                  `${localizer?.format(start, 'h:mm A', culture)} - ${localizer?.format(end, 'h:mm A', culture)}`,
+              }}
             />
           </div>
         </CardContent>

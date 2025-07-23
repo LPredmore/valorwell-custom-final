@@ -13,6 +13,7 @@ import { Signup } from "./pages/Signup";
 import { Dashboard } from "./pages/Dashboard";
 import { Profile } from "./pages/Profile";
 import { ClinicianProfile } from "./pages/ClinicianProfile";
+import Calendar from "./pages/Calendar";
 import Clients from "./pages/Clients";
 import ClientDetails from "./pages/ClientDetails";
 import Settings from "./pages/Settings";
@@ -50,6 +51,13 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ClinicianProfile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/calendar" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Calendar />
                   </Layout>
                 </ProtectedRoute>
               } />

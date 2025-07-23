@@ -8,11 +8,13 @@ import {
   BarChart3,
   Settings,
   Home,
+  Calendar,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Profile', href: '/clinicianprof', icon: Settings },
+  { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Clients', href: '/myclients', icon: Users },
   { name: 'Billing', href: '/billing', icon: CreditCard },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
