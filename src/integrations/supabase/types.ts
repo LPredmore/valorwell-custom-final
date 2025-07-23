@@ -1008,6 +1008,100 @@ export type Database = {
         }
         Relationships: []
       }
+      nylas_accounts: {
+        Row: {
+          access_token: string
+          account_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nylas_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nylas_events: {
+        Row: {
+          account_id: string
+          calendar_id: string
+          created_at: string
+          description: string | null
+          event_id: string
+          location: string | null
+          metadata: Json | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          when_data: Json | null
+          when_end: string | null
+          when_start: string | null
+        }
+        Insert: {
+          account_id: string
+          calendar_id: string
+          created_at?: string
+          description?: string | null
+          event_id: string
+          location?: string | null
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          when_data?: Json | null
+          when_end?: string | null
+          when_start?: string | null
+        }
+        Update: {
+          account_id?: string
+          calendar_id?: string
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          location?: string | null
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          when_data?: Json | null
+          when_end?: string | null
+          when_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nylas_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practiceinfo: {
         Row: {
           banner_url: string | null
