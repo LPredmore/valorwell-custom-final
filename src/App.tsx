@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import NylasCallback from "./pages/NylasCallback";
 import { TemplatesPage } from "./features/templates/pages/TemplatesPage";
 import { CreateTemplatePage } from "./features/templates/pages/CreateTemplatePage";
+import { EditTemplatePage } from "./features/templates/pages/EditTemplatePage";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,13 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <CreateTemplatePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/templates/edit/:id" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EditTemplatePage />
                   </Layout>
                 </ProtectedRoute>
               } />

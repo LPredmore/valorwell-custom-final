@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateTemplate } from '../hooks/useTemplates';
+import { useTemplates, useUpdateTemplate } from '../hooks/useTemplates';
 import { useToast } from '@/hooks/use-toast';
 
 const templateSchema = z.object({
@@ -21,12 +21,16 @@ const templateSchema = z.object({
 
 type TemplateFormData = z.infer<typeof templateSchema>;
 
-export const CreateTemplatePage: React.FC = () => {
+export const EditTemplatePage: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const createTemplate = useCreateTemplate();
+  const { data: templates, isLoading } = useTemplates();
+  const updateTemplate = useUpdateTemplate();
   const [formSchema, setFormSchema] = useState<any>(null);
   const [creator, setCreator] = useState<SurveyCreator | null>(null);
+
+  const template = templates?.find(t => t.id === id);
 
   const form = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
@@ -36,22 +40,39 @@ export const CreateTemplatePage: React.FC = () => {
     },
   });
 
-  // Initialize SurveyJS Creator
-  React.useEffect(() => {
-    const surveyCreator = new SurveyCreator({
-      showLogicTab: true,
-      showTranslationTab: false,
-      showEmbededSurveyTab: false,
-    });
-    
-    surveyCreator.onModified.add((sender, options) => {
-      setFormSchema(sender.JSON);
-    });
-    
-    setCreator(surveyCreator);
-  }, []);
+  // Initialize SurveyJS Creator and load template data
+  useEffect(() => {
+    if (template) {
+      // Set form values
+      form.reset({
+        name: template.name,
+        description: template.description || '',
+      });
+
+      // Initialize creator with template schema
+      const surveyCreator = new SurveyCreator({
+        showLogicTab: true,
+        showTranslationTab: false,
+        showEmbededSurveyTab: false,
+      });
+
+      // Load existing schema if available
+      if (template.schema_json) {
+        surveyCreator.JSON = template.schema_json;
+        setFormSchema(template.schema_json);
+      }
+
+      surveyCreator.onModified.add((sender, options) => {
+        setFormSchema(sender.JSON);
+      });
+
+      setCreator(surveyCreator);
+    }
+  }, [template, form]);
 
   const onSubmit = async (data: TemplateFormData) => {
+    if (!id || !template) return;
+
     try {
       if (!formSchema) {
         toast({
@@ -62,26 +83,37 @@ export const CreateTemplatePage: React.FC = () => {
         return;
       }
 
-      await createTemplate.mutateAsync({
-        name: data.name,
-        description: data.description,
-        schema_json: formSchema,
+      await updateTemplate.mutateAsync({
+        id,
+        updates: {
+          name: data.name,
+          description: data.description,
+          schema_json: formSchema,
+        },
       });
 
       toast({
-        title: 'Template created',
-        description: `"${data.name}" has been created successfully.`,
+        title: 'Template updated',
+        description: `"${data.name}" has been updated successfully.`,
       });
 
       navigate('/templates');
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to create template. Please try again.',
+        description: 'Failed to update template. Please try again.',
         variant: 'destructive',
       });
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!template) {
+    return <div>Template not found</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -91,9 +123,9 @@ export const CreateTemplatePage: React.FC = () => {
           Back to Templates
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create Template</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Template</h1>
           <p className="text-muted-foreground">
-            Create a new form template for your practice
+            Modify your form template
           </p>
         </div>
       </div>
@@ -151,8 +183,8 @@ export const CreateTemplatePage: React.FC = () => {
               </div>
 
               <div className="flex gap-3">
-                <Button type="submit" disabled={createTemplate.isPending}>
-                  {createTemplate.isPending ? 'Creating...' : 'Create Template'}
+                <Button type="submit" disabled={updateTemplate.isPending}>
+                  {updateTemplate.isPending ? 'Updating...' : 'Update Template'}
                 </Button>
                 <Button
                   type="button"
