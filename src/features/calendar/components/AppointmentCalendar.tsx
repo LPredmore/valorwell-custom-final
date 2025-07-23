@@ -12,7 +12,7 @@ import { AppointmentModal } from './AppointmentModal';
 import { AvailabilityMenu } from './AvailabilityMenu';
 import { useClinicianAvailability } from '../hooks/useClinicianAvailability';
 import { utcToBrowserTime, formatInTimezone, getTimezoneAbbreviation, DATE_FORMATS } from '@/utils/date';
-import { Settings } from 'lucide-react';
+import { Settings, Plus } from 'lucide-react';
 
 const localizer = momentLocalizer(moment);
 
@@ -152,15 +152,35 @@ export const AppointmentCalendar: React.FC = () => {
               ({getTimezoneAbbreviation()})
             </span>
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAvailabilityMenu(true)}
-            className="flex items-center gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            Availability
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => {
+                const now = new Date();
+                const defaultSlot = {
+                  start: now,
+                  end: new Date(now.getTime() + 60 * 60 * 1000) // 1 hour later
+                };
+                setSelectedSlot(defaultSlot);
+                setSelectedEvent(null);
+                setShowModal(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Appointment
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAvailabilityMenu(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Availability
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-[600px]">
