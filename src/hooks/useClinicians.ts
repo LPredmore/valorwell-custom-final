@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,26 +24,78 @@ export const useClinicians = () => {
   return useQuery({
     queryKey: ['clinicians'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinicians')
-        .select(`
-          *,
-          profile:profiles(
-            first_name,
-            last_name,
-            email,
-            phone,
-            role
-          )
-        `)
-        .order('created_at', { ascending: false });
+      console.log('🔄 [CLINICIANS_QUERY] Starting fetch of clinicians data...');
+      const startTime = Date.now();
+      
+      try {
+        const { data, error } = await supabase
+          .from('clinicians')
+          .select(`
+            *,
+            profile:profiles(
+              first_name,
+              last_name,
+              email,
+              phone,
+              role
+            )
+          `)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching clinicians:', error);
+        const endTime = Date.now();
+        console.log(`⏱️ [CLINICIANS_QUERY] Query completed in ${endTime - startTime}ms`);
+
+        if (error) {
+          console.error('❌ [CLINICIANS_QUERY] Database error:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+            error: error
+          });
+          throw error;
+        }
+
+        console.log('✅ [CLINICIANS_QUERY] Successfully fetched clinicians:', {
+          count: data?.length || 0,
+          clinicians: data?.map(c => ({
+            id: c.id,
+            profile_id: c.profile_id,
+            profile_email: c.profile?.email,
+            profile_name: `${c.profile?.first_name || ''} ${c.profile?.last_name || ''}`.trim(),
+            profile_role: c.profile?.role,
+            created_at: c.created_at
+          })) || []
+        });
+
+        // Validate the data structure
+        if (data) {
+          data.forEach((clinician, index) => {
+            if (!clinician.id) {
+              console.warn(`⚠️ [CLINICIANS_QUERY] Clinician at index ${index} missing id`);
+            }
+            if (!clinician.profile_id) {
+              console.warn(`⚠️ [CLINICIANS_QUERY] Clinician ${clinician.id} missing profile_id`);
+            }
+            if (!clinician.profile) {
+              console.warn(`⚠️ [CLINICIANS_QUERY] Clinician ${clinician.id} missing profile data`);
+            } else if (!clinician.profile.email) {
+              console.warn(`⚠️ [CLINICIANS_QUERY] Clinician ${clinician.id} profile missing email`);
+            }
+          });
+        }
+
+        return data as any;
+      } catch (error) {
+        const endTime = Date.now();
+        console.error(`💥 [CLINICIANS_QUERY] Unexpected error after ${endTime - startTime}ms:`, {
+          name: error?.name || 'unknown',
+          message: error?.message || 'no message',
+          stack: error?.stack || 'no stack',
+          error: error
+        });
         throw error;
       }
-
-      return data as any;
     },
   });
 };
@@ -52,17 +105,53 @@ export const useDeleteClinician = () => {
 
   return useMutation({
     mutationFn: async (clinicianId: string) => {
-      const { error } = await supabase
-        .from('clinicians')
-        .delete()
-        .eq('id', clinicianId);
+      console.log('🗑️ [DELETE_CLINICIAN] Starting deletion for clinician:', clinicianId);
+      const startTime = Date.now();
+      
+      try {
+        const { error } = await supabase
+          .from('clinicians')
+          .delete()
+          .eq('id', clinicianId);
 
-      if (error) {
+        const endTime = Date.now();
+        console.log(`⏱️ [DELETE_CLINICIAN] Delete operation completed in ${endTime - startTime}ms`);
+
+        if (error) {
+          console.error('❌ [DELETE_CLINICIAN] Database error:', {
+            clinicianId,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+            error: error
+          });
+          throw error;
+        }
+
+        console.log('✅ [DELETE_CLINICIAN] Successfully deleted clinician:', clinicianId);
+      } catch (error) {
+        const endTime = Date.now();
+        console.error(`💥 [DELETE_CLINICIAN] Unexpected error after ${endTime - startTime}ms:`, {
+          clinicianId,
+          name: error?.name || 'unknown',
+          message: error?.message || 'no message',
+          stack: error?.stack || 'no stack',
+          error: error
+        });
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data, clinicianId) => {
+      console.log('🔄 [DELETE_CLINICIAN] Invalidating clinicians query cache after successful deletion');
       queryClient.invalidateQueries({ queryKey: ['clinicians'] });
+      console.log('✅ [DELETE_CLINICIAN] Cache invalidation completed for clinician:', clinicianId);
     },
+    onError: (error, clinicianId) => {
+      console.error('💥 [DELETE_CLINICIAN] Mutation failed for clinician:', {
+        clinicianId,
+        error: error
+      });
+    }
   });
 };

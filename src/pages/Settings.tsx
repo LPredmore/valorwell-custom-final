@@ -51,7 +51,6 @@ const CptCodesManagement = () => {
     }).format(amount);
   };
 
-
   if (isLoading) {
     return (
       <Card>
@@ -229,7 +228,10 @@ const StaffManagement = () => {
   };
 
   const handleSendInvite = async () => {
+    console.log('🔄 [STAFF_INVITE] Starting invitation process for:', inviteEmail);
+    
     if (!isValidEmail(inviteEmail)) {
+      console.log('❌ [STAFF_INVITE] Invalid email format:', inviteEmail);
       toast({
         title: "Invalid Email",
         description: "Please enter a valid email address.",
@@ -239,9 +241,16 @@ const StaffManagement = () => {
     }
 
     setIsInviting(true);
+    console.log('🔄 [STAFF_INVITE] Set inviting state to true');
+    
     try {
-      const generatedPassword = crypto.randomUUID(); // Generate a random password
-      const { error } = await supabase.auth.signUp({
+      // Generate a random password for the new clinician
+      const generatedPassword = crypto.randomUUID();
+      console.log('🔑 [STAFF_INVITE] Generated password (length):', generatedPassword.length);
+      console.log('🔑 [STAFF_INVITE] Generated password (first 8 chars):', generatedPassword.substring(0, 8) + '...');
+      
+      // Prepare the signup data
+      const signUpData = {
         email: inviteEmail,
         password: generatedPassword,
         options: {
@@ -251,23 +260,72 @@ const StaffManagement = () => {
             password: generatedPassword // Pass password in metadata for storage
           }
         }
+      };
+      
+      console.log('📝 [STAFF_INVITE] Signup data prepared:', {
+        email: signUpData.email,
+        password: signUpData.password.substring(0, 8) + '...',
+        options: {
+          emailRedirectTo: signUpData.options.emailRedirectTo,
+          data: {
+            role: signUpData.options.data.role,
+            password: signUpData.options.data.password.substring(0, 8) + '...'
+          }
+        }
       });
-
+      
+      console.log('🚀 [STAFF_INVITE] Calling supabase.auth.signUp...');
+      const startTime = Date.now();
+      
+      const { data, error } = await supabase.auth.signUp(signUpData);
+      
+      const endTime = Date.now();
+      console.log(`⏱️ [STAFF_INVITE] signUp completed in ${endTime - startTime}ms`);
+      
       if (error) {
+        console.error('❌ [STAFF_INVITE] Supabase auth.signUp error:', {
+          message: error.message,
+          status: error.status,
+          code: error.code || 'no_code',
+          details: error
+        });
+        
         toast({
           title: "Invitation Failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
+        console.log('✅ [STAFF_INVITE] Supabase auth.signUp success:', {
+          user_id: data.user?.id,
+          user_email: data.user?.email,
+          user_created_at: data.user?.created_at,
+          session: data.session ? 'present' : 'null'
+        });
+        
+        // Log the user metadata that was stored
+        if (data.user?.user_metadata) {
+          console.log('📋 [STAFF_INVITE] User metadata stored:', data.user.user_metadata);
+        }
+        
         toast({
           title: "Invitation Sent",
           description: `An invitation has been sent to ${inviteEmail}`,
         });
+        
+        console.log('✅ [STAFF_INVITE] Toast notification sent successfully');
         setInviteEmail('');
         setIsInviteDialogOpen(false);
+        console.log('🔄 [STAFF_INVITE] UI state reset - email cleared, dialog closed');
       }
     } catch (error) {
+      console.error('💥 [STAFF_INVITE] Unexpected error during invitation process:', {
+        name: error?.name || 'unknown',
+        message: error?.message || 'no message',
+        stack: error?.stack || 'no stack',
+        error: error
+      });
+      
       toast({
         title: "Error",
         description: "Failed to send invitation. Please try again.",
@@ -275,6 +333,7 @@ const StaffManagement = () => {
       });
     } finally {
       setIsInviting(false);
+      console.log('🔄 [STAFF_INVITE] Set inviting state to false - process complete');
     }
   };
 
