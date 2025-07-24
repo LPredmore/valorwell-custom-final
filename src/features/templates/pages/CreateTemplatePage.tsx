@@ -3,16 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft } from 'lucide-react';
-import { SurveyCreatorComponent, SurveyCreator } from 'survey-creator-react';
-import 'survey-creator-core/survey-creator-core.css';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCreateTemplate } from '../hooks/useTemplates';
 import { useToast } from '@/hooks/use-toast';
+import { TemplateSelector } from '../components/TemplateSelector';
+import { JsonEditor } from '../components/JsonEditor';
+import { FormPreview } from '../components/FormPreview';
+import { PrebuiltTemplate } from '../data/prebuiltTemplates';
 
 const templateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -25,8 +28,9 @@ export const CreateTemplatePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const createTemplate = useCreateTemplate();
+  const [selectedTemplate, setSelectedTemplate] = useState<PrebuiltTemplate | null>(undefined);
   const [formSchema, setFormSchema] = useState<any>(null);
-  const [creator, setCreator] = useState<SurveyCreator | null>(null);
+  const [activeTab, setActiveTab] = useState('editor');
 
   const form = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
@@ -36,20 +40,24 @@ export const CreateTemplatePage: React.FC = () => {
     },
   });
 
-  // Initialize SurveyJS Creator
-  React.useEffect(() => {
-    const surveyCreator = new SurveyCreator({
-      showLogicTab: true,
-      showTranslationTab: false,
-      showEmbededSurveyTab: false,
-    });
-    
-    surveyCreator.onModified.add((sender, options) => {
-      setFormSchema(sender.JSON);
-    });
-    
-    setCreator(surveyCreator);
-  }, []);
+  // Handle template selection
+  const handleTemplateSelection = (template: PrebuiltTemplate | null) => {
+    setSelectedTemplate(template);
+    if (template) {
+      setFormSchema(template.schema_json);
+      // Auto-fill form fields with template name and description
+      form.setValue('name', template.name);
+      form.setValue('description', template.description);
+    } else {
+      // Reset to blank schema for custom creation
+      setFormSchema({
+        title: 'New Form',
+        elements: []
+      });
+      form.setValue('name', '');
+      form.setValue('description', '');
+    }
+  };
 
   const onSubmit = async (data: TemplateFormData) => {
     try {
@@ -136,22 +144,77 @@ export const CreateTemplatePage: React.FC = () => {
                 )}
               />
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium mb-2">Form Builder</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Design your form using the drag-and-drop builder below.
-                  </p>
+              {selectedTemplate === undefined ? (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium mb-2">Template Selection</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Choose a template to get started quickly, or create a custom form from scratch.
+                    </p>
+                  </div>
+                  <TemplateSelector
+                    onSelectTemplate={handleTemplateSelection}
+                    selectedTemplateId={selectedTemplate?.id}
+                  />
                 </div>
-                <div className="border rounded-lg overflow-hidden min-h-[600px]">
-                  {creator && (
-                    <SurveyCreatorComponent creator={creator} />
-                  )}
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium mb-2">Form Builder</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedTemplate 
+                          ? `Customize the ${selectedTemplate.name} template` 
+                          : 'Create your custom form using JSON editor'
+                        }
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedTemplate(undefined)}
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Change Template
+                    </Button>
+                  </div>
+                  
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList>
+                      <TabsTrigger value="editor">JSON Editor</TabsTrigger>
+                      <TabsTrigger value="preview">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="editor" className="space-y-4">
+                      <JsonEditor
+                        value={formSchema}
+                        onChange={setFormSchema}
+                        height="500px"
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="preview" className="space-y-4">
+                      {formSchema ? (
+                        <FormPreview schema={formSchema} />
+                      ) : (
+                        <div className="p-8 text-center text-muted-foreground">
+                          <p>No form schema to preview. Please create your form in the JSON editor.</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-3">
-                <Button type="submit" disabled={createTemplate.isPending}>
+                <Button 
+                  type="submit" 
+                  disabled={createTemplate.isPending || selectedTemplate === undefined}
+                >
                   {createTemplate.isPending ? 'Creating...' : 'Create Template'}
                 </Button>
                 <Button

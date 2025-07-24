@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft } from 'lucide-react';
-import { SurveyCreatorComponent, SurveyCreator } from 'survey-creator-react';
-import 'survey-creator-core/survey-creator-core.css';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTemplates, useUpdateTemplate } from '../hooks/useTemplates';
 import { useToast } from '@/hooks/use-toast';
+import { JsonEditor } from '../components/JsonEditor';
+import { FormPreview } from '../components/FormPreview';
 
 const templateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -28,7 +29,7 @@ export const EditTemplatePage: React.FC = () => {
   const { data: templates, isLoading } = useTemplates();
   const updateTemplate = useUpdateTemplate();
   const [formSchema, setFormSchema] = useState<any>(null);
-  const [creator, setCreator] = useState<SurveyCreator | null>(null);
+  const [activeTab, setActiveTab] = useState('editor');
 
   const template = templates?.find(t => t.id === id);
 
@@ -40,33 +41,14 @@ export const EditTemplatePage: React.FC = () => {
     },
   });
 
-  // Initialize SurveyJS Creator and load template data
-  useEffect(() => {
+  // Load template data
+  React.useEffect(() => {
     if (template) {
-      // Set form values
       form.reset({
         name: template.name,
         description: template.description || '',
       });
-
-      // Initialize creator with template schema
-      const surveyCreator = new SurveyCreator({
-        showLogicTab: true,
-        showTranslationTab: false,
-        showEmbededSurveyTab: false,
-      });
-
-      // Load existing schema if available
-      if (template.schema_json) {
-        surveyCreator.JSON = template.schema_json;
-        setFormSchema(template.schema_json);
-      }
-
-      surveyCreator.onModified.add((sender, options) => {
-        setFormSchema(sender.JSON);
-      });
-
-      setCreator(surveyCreator);
+      setFormSchema(template.schema_json);
     }
   }, [template, form]);
 
@@ -172,14 +154,37 @@ export const EditTemplatePage: React.FC = () => {
                 <div>
                   <h3 className="font-medium mb-2">Form Builder</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Design your form using the drag-and-drop builder below.
+                    Edit your form using the JSON editor below.
                   </p>
                 </div>
-                <div className="border rounded-lg overflow-hidden min-h-[600px]">
-                  {creator && (
-                    <SurveyCreatorComponent creator={creator} />
-                  )}
-                </div>
+                
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList>
+                    <TabsTrigger value="editor">JSON Editor</TabsTrigger>
+                    <TabsTrigger value="preview">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="editor" className="space-y-4">
+                    <JsonEditor
+                      value={formSchema}
+                      onChange={setFormSchema}
+                      height="500px"
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="preview" className="space-y-4">
+                    {formSchema ? (
+                      <FormPreview schema={formSchema} />
+                    ) : (
+                      <div className="p-8 text-center text-muted-foreground">
+                        <p>No form schema to preview.</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div className="flex gap-3">
