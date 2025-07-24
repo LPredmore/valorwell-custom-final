@@ -14,6 +14,8 @@ import { useTemplates, useUpdateTemplate } from '../hooks/useTemplates';
 import { useToast } from '@/hooks/use-toast';
 import { JsonEditor } from '../components/JsonEditor';
 import { FormPreview } from '../components/FormPreview';
+import { FormBuilder, createFormBuilderSchema, getFormBuilderOutput } from '../components/builder/FormBuilder';
+import { FormSchema } from '../components/builder/utils/schemaConverter';
 
 const templateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -29,7 +31,8 @@ export const EditTemplatePage: React.FC = () => {
   const { data: templates, isLoading } = useTemplates();
   const updateTemplate = useUpdateTemplate();
   const [formSchema, setFormSchema] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('editor');
+  const [builderSchema, setBuilderSchema] = useState<FormSchema>(createFormBuilderSchema());
+  const [activeTab, setActiveTab] = useState('builder');
 
   const template = templates?.find(t => t.id === id);
 
@@ -49,6 +52,7 @@ export const EditTemplatePage: React.FC = () => {
         description: template.description || '',
       });
       setFormSchema(template.schema_json);
+      setBuilderSchema(createFormBuilderSchema(template.schema_json));
     }
   }, [template, form]);
 
@@ -56,7 +60,13 @@ export const EditTemplatePage: React.FC = () => {
     if (!id || !template) return;
 
     try {
-      if (!formSchema) {
+      // Get the current schema based on active tab
+      let currentSchema = formSchema;
+      if (activeTab === 'builder') {
+        currentSchema = getFormBuilderOutput(builderSchema);
+      }
+
+      if (!currentSchema) {
         toast({
           title: 'Error',
           description: 'Please design your form before saving.',
@@ -70,7 +80,7 @@ export const EditTemplatePage: React.FC = () => {
         updates: {
           name: data.name,
           description: data.description,
-          schema_json: formSchema,
+          schema_json: currentSchema,
         },
       });
 
@@ -160,6 +170,7 @@ export const EditTemplatePage: React.FC = () => {
                 
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList>
+                    <TabsTrigger value="builder">Form Builder</TabsTrigger>
                     <TabsTrigger value="editor">JSON Editor</TabsTrigger>
                     <TabsTrigger value="preview">
                       <Eye className="h-4 w-4 mr-2" />
@@ -167,17 +178,31 @@ export const EditTemplatePage: React.FC = () => {
                     </TabsTrigger>
                   </TabsList>
                   
+                  <TabsContent value="builder" className="space-y-4">
+                    <div className="border rounded-lg overflow-hidden">
+                      <FormBuilder
+                        schema={builderSchema}
+                        onChange={setBuilderSchema}
+                      />
+                    </div>
+                  </TabsContent>
+                  
                   <TabsContent value="editor" className="space-y-4">
                     <JsonEditor
-                      value={formSchema}
-                      onChange={setFormSchema}
+                      value={activeTab === 'builder' ? getFormBuilderOutput(builderSchema) : formSchema}
+                      onChange={(value) => {
+                        setFormSchema(value);
+                        if (activeTab === 'editor') {
+                          setBuilderSchema(createFormBuilderSchema(value));
+                        }
+                      }}
                       height="500px"
                     />
                   </TabsContent>
                   
                   <TabsContent value="preview" className="space-y-4">
-                    {formSchema ? (
-                      <FormPreview schema={formSchema} />
+                    {(activeTab === 'builder' ? getFormBuilderOutput(builderSchema) : formSchema) ? (
+                      <FormPreview schema={activeTab === 'builder' ? getFormBuilderOutput(builderSchema) : formSchema} />
                     ) : (
                       <div className="p-8 text-center text-muted-foreground">
                         <p>No form schema to preview.</p>

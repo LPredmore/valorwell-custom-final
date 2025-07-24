@@ -15,7 +15,9 @@ import { useToast } from '@/hooks/use-toast';
 import { TemplateSelector } from '../components/TemplateSelector';
 import { JsonEditor } from '../components/JsonEditor';
 import { FormPreview } from '../components/FormPreview';
+import { FormBuilder, createFormBuilderSchema, getFormBuilderOutput } from '../components/builder/FormBuilder';
 import { PrebuiltTemplate } from '../data/prebuiltTemplates';
+import { FormSchema } from '../components/builder/utils/schemaConverter';
 
 const templateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -30,7 +32,8 @@ export const CreateTemplatePage: React.FC = () => {
   const createTemplate = useCreateTemplate();
   const [selectedTemplate, setSelectedTemplate] = useState<PrebuiltTemplate | null>(undefined);
   const [formSchema, setFormSchema] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('editor');
+  const [builderSchema, setBuilderSchema] = useState<FormSchema>(createFormBuilderSchema());
+  const [activeTab, setActiveTab] = useState('builder');
 
   const form = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
@@ -45,6 +48,7 @@ export const CreateTemplatePage: React.FC = () => {
     setSelectedTemplate(template);
     if (template) {
       setFormSchema(template.schema_json);
+      setBuilderSchema(createFormBuilderSchema(template.schema_json));
       // Auto-fill form fields with template name and description
       form.setValue('name', template.name);
       form.setValue('description', template.description);
@@ -54,6 +58,7 @@ export const CreateTemplatePage: React.FC = () => {
         title: 'New Form',
         elements: []
       });
+      setBuilderSchema(createFormBuilderSchema());
       form.setValue('name', '');
       form.setValue('description', '');
     }
@@ -61,10 +66,16 @@ export const CreateTemplatePage: React.FC = () => {
 
   const onSubmit = async (data: TemplateFormData) => {
     try {
-      if (!formSchema) {
+      // Get the current schema based on active tab
+      let currentSchema = formSchema;
+      if (activeTab === 'builder') {
+        currentSchema = getFormBuilderOutput(builderSchema);
+      }
+
+      if (!currentSchema || (currentSchema.elements && currentSchema.elements.length === 0 && builderSchema.fields.length === 0)) {
         toast({
           title: 'Error',
-          description: 'Please design your form before saving.',
+          description: 'Please add at least one field to your form.',
           variant: 'destructive',
         });
         return;
@@ -73,7 +84,7 @@ export const CreateTemplatePage: React.FC = () => {
       await createTemplate.mutateAsync({
         name: data.name,
         description: data.description,
-        schema_json: formSchema,
+        schema_json: currentSchema,
       });
 
       toast({
@@ -182,6 +193,7 @@ export const CreateTemplatePage: React.FC = () => {
                   
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>
+                      <TabsTrigger value="builder">Form Builder</TabsTrigger>
                       <TabsTrigger value="editor">JSON Editor</TabsTrigger>
                       <TabsTrigger value="preview">
                         <Eye className="h-4 w-4 mr-2" />
@@ -189,20 +201,34 @@ export const CreateTemplatePage: React.FC = () => {
                       </TabsTrigger>
                     </TabsList>
                     
+                    <TabsContent value="builder" className="space-y-4">
+                      <div className="border rounded-lg overflow-hidden">
+                        <FormBuilder
+                          schema={builderSchema}
+                          onChange={setBuilderSchema}
+                        />
+                      </div>
+                    </TabsContent>
+                    
                     <TabsContent value="editor" className="space-y-4">
                       <JsonEditor
-                        value={formSchema}
-                        onChange={setFormSchema}
+                        value={activeTab === 'builder' ? getFormBuilderOutput(builderSchema) : formSchema}
+                        onChange={(value) => {
+                          setFormSchema(value);
+                          if (activeTab === 'editor') {
+                            setBuilderSchema(createFormBuilderSchema(value));
+                          }
+                        }}
                         height="500px"
                       />
                     </TabsContent>
                     
                     <TabsContent value="preview" className="space-y-4">
-                      {formSchema ? (
-                        <FormPreview schema={formSchema} />
+                      {(activeTab === 'builder' ? getFormBuilderOutput(builderSchema) : formSchema) ? (
+                        <FormPreview schema={activeTab === 'builder' ? getFormBuilderOutput(builderSchema) : formSchema} />
                       ) : (
                         <div className="p-8 text-center text-muted-foreground">
-                          <p>No form schema to preview. Please create your form in the JSON editor.</p>
+                          <p>No form schema to preview. Please create your form first.</p>
                         </div>
                       )}
                     </TabsContent>
