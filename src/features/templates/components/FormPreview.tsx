@@ -1,7 +1,6 @@
 import React from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
-import 'survey-core/survey.css';
 
 interface FormPreviewProps {
   schema: any;
