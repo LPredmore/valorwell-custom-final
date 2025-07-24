@@ -244,6 +244,155 @@ export const prebuiltTemplates: PrebuiltTemplate[] = [
         }
       ]
     }
+  },
+  {
+    id: 'treatment-plan',
+    name: 'Treatment Plan',
+    description: 'Comprehensive treatment plan template with goals, objectives, diagnoses, and risk assessment.',
+    category: 'treatment',
+    schema_json: {
+      "title": "Treatment Plan Template",
+      "description": "Complete all required sections. Fields marked with * are mandatory.",
+      "logoPosition": "right",
+      "showProgressBar": "top",
+      "progressBarType": "pages",
+      "widthMode": "responsive",
+      "completedHtml": "<h3>Thank you. The Treatment Plan has been submitted.</h3>",
+      "pages": [
+        {
+          "name": "clientInfo",
+          "title": "1 · Client & Provider Information",
+          "elements": [
+            {
+              "type": "panel",
+              "name": "clientPanel",
+              "title": "Client Details",
+              "elements": [
+                { "type": "text", "name": "clientFullName", "title": "Full Name *", "isRequired": true },
+                { "type": "text", "name": "clientDOB", "title": "Date of Birth *", "inputType": "date", "isRequired": true },
+                { "type": "dropdown", "name": "clientGender", "title": "Gender Identity", "choices": ["Female", "Male", "Non-binary", "Other", "Prefer not to say"] }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "providerPanel",
+              "title": "Provider Details",
+              "elements": [
+                { "type": "text", "name": "therapistName", "title": "Treating Clinician *", "isRequired": true },
+                { "type": "text", "name": "therapistCredentials", "title": "Credentials / License #" },
+                { "type": "text", "name": "planDate", "title": "Plan Creation Date *", "inputType": "date", "isRequired": true }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "diagnosis",
+          "title": "2 · Presenting Problems & Diagnoses",
+          "elements": [
+            {
+              "type": "matrixdynamic",
+              "name": "diagnosisTable",
+              "title": "Primary & Secondary Diagnoses (add rows as needed)",
+              "addRowText": "Add Diagnosis",
+              "removeRowText": "Remove",
+              "minRowCount": 1,
+              "columns": [
+                { "name": "icd10", "title": "ICD-10 Code *", "cellType": "text", "isRequired": true },
+                { "name": "description", "title": "Description *", "cellType": "text", "isRequired": true },
+                { "name": "dxType", "title": "Type", "cellType": "dropdown", "choices": ["Primary", "Secondary", "Rule-Out"], "isRequired": true }
+              ]
+            },
+            {
+              "type": "matrixdynamic",
+              "name": "problemList",
+              "title": "Target Problems / Symptoms",
+              "addRowText": "Add Problem",
+              "removeRowText": "Remove",
+              "minRowCount": 1,
+              "columns": [
+                { "name": "problem", "title": "Problem / Symptom *", "cellType": "text", "isRequired": true },
+                { "name": "severity", "title": "Severity *", "cellType": "dropdown", "choices": ["Mild", "Moderate", "Severe"], "isRequired": true },
+                { "name": "functionalImpairment", "title": "Functional Impairment?", "cellType": "checkbox", "choices": ["Work", "School", "Social", "Family"] }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "goals",
+          "title": "3 · Goals, Objectives & Interventions",
+          "elements": [
+            {
+              "type": "paneldynamic",
+              "name": "goalPanel",
+              "title": "Treatment Goals",
+              "templateTitle": "Goal #{panelIndex}",
+              "panelAddText": "Add Another Goal",
+              "panelRemoveText": "Remove Goal",
+              "minPanelCount": 1,
+              "templateElements": [
+                { "type": "text", "name": "goalStatement", "title": "Goal Statement *", "isRequired": true, "placeholder": "e.g., Reduce depressive symptoms" },
+                { "type": "comment", "name": "goalRationale", "title": "Clinical Rationale", "placeholder": "Explain why this goal is clinically indicated" },
+                {
+                  "type": "paneldynamic",
+                  "name": "objectivePanel",
+                  "title": "Objectives",
+                  "templateTitle": "Objective #{panelIndex}",
+                  "panelAddText": "Add Objective",
+                  "templateElements": [
+                    { "type": "text", "name": "objectiveStatement", "title": "Objective *", "isRequired": true, "placeholder": "e.g., Client will identify three coping skills..." },
+                    { "type": "dropdown", "name": "targetDate", "title": "Expected Completion (Months)", "choices": [{ "value": 1, "text": "1 mo" }, { "value": 3, "text": "3 mo" }, { "value": 6, "text": "6 mo" }, { "value": 12, "text": "12 mo" }] },
+                    { "type": "checkbox", "name": "objectiveProgress", "title": "Progress Indicators (check all that apply)", "choices": ["Initiated", "In Progress", "Completed", "No Progress"], "showOtherItem": true },
+                    {
+                      "type": "matrixdynamic",
+                      "name": "interventionTable",
+                      "title": "Planned Interventions",
+                      "addRowText": "Add Intervention",
+                      "minRowCount": 1,
+                      "columns": [
+                        { "name": "interventionType", "title": "Modality *", "cellType": "dropdown", "isRequired": true, "choices": ["CBT", "DBT", "EMDR", "Psychoeducation", "Medication", "Family Therapy", "Other"] },
+                        { "name": "frequency", "title": "Frequency", "cellType": "dropdown", "choices": ["Weekly", "Biweekly", "Monthly", "PRN"] },
+                        { "name": "provider", "title": "Assigned Provider", "cellType": "text" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "riskPrognosis",
+          "title": "4 · Risk, Prognosis & Discharge",
+          "elements": [
+            { "type": "radiogroup", "name": "suicideRisk", "title": "Current Suicide / Self-Harm Risk *", "isRequired": true, "choices": ["None", "Low", "Moderate", "High"] },
+            { "type": "comment", "name": "riskMitigation", "title": "Risk Mitigation Plan", "visibleIf": "{suicideRisk} = 'Moderate' or {suicideRisk} = 'High'", "placeholder": "Detail safety plan, monitoring procedures, crisis contacts" },
+            { "type": "rating", "name": "prognosis", "title": "Overall Prognosis", "rateMin": 1, "rateMax": 5, "minRateDescription": "Poor", "maxRateDescription": "Excellent" },
+            { "type": "text", "name": "projectedDischarge", "title": "Projected Discharge Date", "inputType": "date" }
+          ]
+        },
+        {
+          "name": "reviewSchedule",
+          "title": "5 · Review Schedule",
+          "elements": [
+            { "type": "radiogroup", "name": "reviewInterval", "title": "Plan Review Frequency *", "isRequired": true, "choices": ["30 days", "60 days", "90 days", "Other"] },
+            { "type": "text", "name": "reviewIntervalOther", "title": "Specify Other Review Interval", "visibleIf": "{reviewInterval} = 'Other'" }
+          ]
+        },
+        {
+          "name": "signatures",
+          "title": "6 · Signatures & Consent",
+          "elements": [
+            { "type": "signaturepad", "name": "clientSignature", "title": "Client / Guardian Signature" },
+            { "type": "signaturepad", "name": "therapistSignature", "title": "Treating Clinician Signature *", "isRequired": true },
+            { "type": "text", "name": "signatureDate", "title": "Date Signed *", "inputType": "date", "isRequired": true }
+          ]
+        }
+      ],
+      "triggers": [{ "type": "complete", "expression": "{goalPanel.length} < 1" }],
+      "showQuestionNumbers": "off",
+      "requiredText": "*",
+      "showPreviewBeforeComplete": "showAnsweredQuestions"
+    }
   }
 ];
 
@@ -252,5 +401,6 @@ export const templateCategories = [
   { id: 'assessment', name: 'Assessments', description: 'Mental health and progress assessments' },
   { id: 'feedback', name: 'Feedback', description: 'Session and treatment feedback forms' },
   { id: 'legal', name: 'Legal', description: 'Consent forms and legal documentation' },
+  { id: 'treatment', name: 'Treatment Plans', description: 'Comprehensive treatment planning forms' },
   { id: 'custom', name: 'Custom', description: 'Custom forms created by users' }
 ];
