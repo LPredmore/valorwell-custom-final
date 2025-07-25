@@ -46,17 +46,46 @@ export const EditTemplatePage: React.FC = () => {
 
   // Load template data
   React.useEffect(() => {
+    console.log('🔄 [EDIT_TEMPLATE] Loading template data:', {
+      templateExists: !!template,
+      templateId: template?.id,
+      templateName: template?.name,
+      schemaType: typeof template?.schema_json,
+      schemaKeys: template?.schema_json ? Object.keys(template.schema_json) : [],
+    });
+    
     if (template) {
+      console.log('📝 [EDIT_TEMPLATE] Setting form data and schemas');
       form.reset({
         name: template.name,
         description: template.description || '',
       });
       setFormSchema(template.schema_json);
-      setBuilderSchema(createFormBuilderSchema(template.schema_json));
+      
+      const newBuilderSchema = createFormBuilderSchema(template.schema_json);
+      console.log('🏗️ [EDIT_TEMPLATE] Created builder schema:', {
+        builderRowsCount: newBuilderSchema.rows?.length || 0,
+        builderTitle: newBuilderSchema.title,
+        builderRows: newBuilderSchema.rows?.map(r => ({
+          id: r.id,
+          columnsCount: r.columns?.length || 0,
+          totalFields: r.columns?.reduce((sum, col) => sum + (col.fields?.length || 0), 0) || 0
+        })) || []
+      });
+      
+      setBuilderSchema(newBuilderSchema);
     }
   }, [template, form]);
 
   const onSubmit = async (data: TemplateFormData) => {
+    console.log('💾 [EDIT_TEMPLATE] Submit triggered:', {
+      templateId: id,
+      activeTab,
+      formData: data,
+      builderSchemaRows: builderSchema.rows?.length || 0,
+      formSchemaExists: !!formSchema
+    });
+    
     if (!id || !template) return;
 
     try {
@@ -64,9 +93,21 @@ export const EditTemplatePage: React.FC = () => {
       let currentSchema = formSchema;
       if (activeTab === 'builder') {
         currentSchema = getFormBuilderOutput(builderSchema);
+        console.log('🏗️ [EDIT_TEMPLATE] Using builder schema:', {
+          rowsCount: currentSchema?.elements?.length || 0,
+          builderRowsInput: builderSchema.rows?.length || 0,
+          builderTitle: builderSchema.title,
+          outputKeys: currentSchema ? Object.keys(currentSchema) : []
+        });
+      } else {
+        console.log('📝 [EDIT_TEMPLATE] Using JSON editor schema:', {
+          schemaExists: !!formSchema,
+          schemaKeys: formSchema ? Object.keys(formSchema) : []
+        });
       }
 
       if (!currentSchema) {
+        console.log('❌ [EDIT_TEMPLATE] No schema to save');
         toast({
           title: 'Error',
           description: 'Please design your form before saving.',
@@ -74,6 +115,12 @@ export const EditTemplatePage: React.FC = () => {
         });
         return;
       }
+
+      console.log('📤 [EDIT_TEMPLATE] Sending update request:', {
+        templateId: id,
+        schemaElementsCount: currentSchema?.elements?.length || 0,
+        schemaType: typeof currentSchema
+      });
 
       await updateTemplate.mutateAsync({
         id,
@@ -84,6 +131,7 @@ export const EditTemplatePage: React.FC = () => {
         },
       });
 
+      console.log('✅ [EDIT_TEMPLATE] Update successful');
       toast({
         title: 'Template updated',
         description: `"${data.name}" has been updated successfully.`,
@@ -91,6 +139,7 @@ export const EditTemplatePage: React.FC = () => {
 
       navigate('/templates');
     } catch (error) {
+      console.error('❌ [EDIT_TEMPLATE] Update failed:', error);
       toast({
         title: 'Error',
         description: 'Failed to update template. Please try again.',
