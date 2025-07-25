@@ -61,9 +61,9 @@ export function FormCanvas({
             items={rows.map(r => r.id)} 
             strategy={verticalListSortingStrategy}
           >
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <RowRenderer
-                key={row.id}
+                key={`row-${row.id}-${index}-${row.columns.length}`}
                 row={row}
                 selectedField={selectedField}
                 onSelectField={onSelectField}

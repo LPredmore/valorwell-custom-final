@@ -20,14 +20,32 @@ export function ColumnDropZone({
   onSelectField, 
   onDeleteField
 }: ColumnDropZoneProps) {
+  const dropZoneId = `column-${rowId}-${column.id}`;
+  
+  console.log('ColumnDropZone rendering:', {
+    dropZoneId,
+    columnId: column.id,
+    rowId,
+    fieldsCount: column.fields.length,
+    fields: column.fields.map(f => ({ id: f.id, title: f.title }))
+  });
+  
   const { isOver, setNodeRef } = useDroppable({
-    id: `column-${rowId}-${column.id}`,
+    id: dropZoneId,
     data: {
       type: 'column',
       rowId,
       columnId: column.id
     }
   });
+  
+  // Log when drop zone registration changes
+  React.useEffect(() => {
+    console.log('Drop zone registered/updated:', dropZoneId);
+    return () => {
+      console.log('Drop zone unregistered:', dropZoneId);
+    };
+  }, [dropZoneId]);
 
   const isEmpty = column.fields.length === 0;
 
@@ -58,7 +76,7 @@ export function ColumnDropZone({
             <div className="space-y-3">
               {column.fields.map((field) => (
                 <FieldRenderer
-                  key={field.id}
+                  key={`field-${field.id}-${rowId}-${column.id}`}
                   field={field}
                   isSelected={selectedField?.id === field.id}
                   onSelect={onSelectField}

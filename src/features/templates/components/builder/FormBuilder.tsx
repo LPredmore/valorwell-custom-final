@@ -63,46 +63,63 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     const { active, over } = event;
     setDraggedField(null);
 
-    console.log('Drag end event:', { active: active.id, over: over?.id, data: active.data.current });
+    console.log('=== DRAG END EVENT ===');
+    console.log('Active:', { id: active.id, data: active.data.current });
+    console.log('Over:', { id: over?.id, data: over?.data?.current });
+    console.log('Current Schema:', currentSchema);
 
-    if (!over) return;
+    if (!over) {
+      console.log('No drop target found');
+      return;
+    }
 
     // Handle dropping a new field from palette
     if (active.data.current?.fieldType || active.data.current?.dataBoundField) {
       let newField;
       
-      // Check if it's a data-bound field
-      if (active.data.current?.dataBoundField) {
-        const dataBoundField = active.data.current.dataBoundField;
-        const defaultProps = {
-          title: dataBoundField.label,
-          name: dataBoundField.columnName,
-          isRequired: false,
-          isReadOnly: dataBoundField.isReadOnly || false,
-          inputType: dataBoundField.dataType === 'date' ? 'date' : 
-                    dataBoundField.dataType === 'number' ? 'number' : 'text'
-        };
-        newField = createDataBoundField(
-          dataBoundField.fieldType,
-          defaultProps,
-          dataBoundField.tableName,
-          dataBoundField.columnName,
-          dataBoundField.dataType,
-          dataBoundField.isReadOnly || false
-        );
-      } else {
-        // Regular field type
-        const fieldType = active.data.current.fieldType;
-        newField = createNewField(fieldType.surveyType, fieldType.defaultProps);
+      try {
+        // Check if it's a data-bound field
+        if (active.data.current?.dataBoundField) {
+          const dataBoundField = active.data.current.dataBoundField;
+          console.log('Creating data-bound field:', dataBoundField);
+          
+          const defaultProps = {
+            title: dataBoundField.label,
+            name: dataBoundField.columnName,
+            isRequired: false,
+            isReadOnly: dataBoundField.isReadOnly || false,
+            inputType: dataBoundField.dataType === 'date' ? 'date' : 
+                      dataBoundField.dataType === 'number' ? 'number' : 'text'
+          };
+          
+          newField = createDataBoundField(
+            dataBoundField.fieldType,
+            defaultProps,
+            dataBoundField.tableName,
+            dataBoundField.columnName,
+            dataBoundField.dataType,
+            dataBoundField.isReadOnly || false
+          );
+        } else {
+          // Regular field type
+          const fieldType = active.data.current.fieldType;
+          console.log('Creating regular field:', fieldType);
+          newField = createNewField(fieldType.surveyType, fieldType.defaultProps);
+        }
+        
+        console.log('Successfully created field:', newField);
+      } catch (error) {
+        console.error('Error creating field:', error);
+        return;
       }
-      
-      console.log('Created new field:', newField);
       
       // Find the target drop zone
       const dropTarget = over.id.toString();
+      console.log('Drop target:', dropTarget);
       
       if (dropTarget === 'form-canvas') {
         // Drop on empty canvas - create new row
+        console.log('Dropping on empty canvas');
         const newRow = createDefaultRow();
         newRow.columns[0].fields = [newField];
         
@@ -110,44 +127,60 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
           ...currentSchema,
           rows: [...currentSchema.rows, newRow]
         };
-        console.log('Updating schema with new row:', updatedSchema);
+        console.log('New schema after canvas drop:', updatedSchema);
         onChange(updatedSchema);
       } else if (dropTarget.startsWith('column-')) {
         // Drop on specific column
+        console.log('Dropping on column');
         const [, rowId, columnId] = dropTarget.split('-');
+        console.log('Target row:', rowId, 'Target column:', columnId);
+        
+        // Create a deep copy of the schema to ensure React sees the change
         const newRows = currentSchema.rows.map(row => {
           if (row.id === rowId) {
+            console.log('Found target row:', row);
             return {
               ...row,
               columns: row.columns.map(column => {
                 if (column.id === columnId) {
-                  return {
+                  console.log('Found target column:', column);
+                  const updatedColumn = {
                     ...column,
                     fields: [...column.fields, newField]
                   };
+                  console.log('Updated column:', updatedColumn);
+                  return updatedColumn;
                 }
-                return column;
+                return { ...column };
               })
             };
           }
-          return row;
+          return { ...row };
         });
         
         const updatedSchema = {
           ...currentSchema,
           rows: newRows
         };
-        console.log('Updating schema with new field:', updatedSchema);
+        console.log('New schema after column drop:', updatedSchema);
+        
+        // Force a state update by using a callback
         onChange(updatedSchema);
+        
+        // Set a timeout to ensure the update is processed
+        setTimeout(() => {
+          console.log('Delayed schema check:', updatedSchema);
+        }, 100);
       }
       
       setSelectedField(newField);
       return;
     }
 
-    // Handle reordering existing fields (simplified for now)
+    // Handle reordering existing fields
     const allFields = getAllFieldsFromRows(currentSchema.rows);
     if (active.id !== over.id && allFields.find(f => f.id === active.id)) {
+      console.log('Handling field reordering (not implemented)');
       // For now, just maintain the same structure
       // TODO: Implement proper row/column reordering
     }

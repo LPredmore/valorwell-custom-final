@@ -134,9 +134,9 @@ export function RowRenderer({
             gridTemplateColumns: `repeat(${row.columns.length}, 1fr)`
           }}
         >
-          {row.columns.map((column) => (
+          {row.columns.map((column, index) => (
             <ColumnDropZone
-              key={column.id}
+              key={`column-${row.id}-${column.id}-${index}`}
               column={column}
               rowId={row.id}
               selectedField={selectedField}
