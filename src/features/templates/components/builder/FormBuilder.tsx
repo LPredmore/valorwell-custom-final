@@ -13,7 +13,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { FieldPalette } from './FieldPalette';
 import { FormCanvas } from './FormCanvas';
 import { FieldEditor } from './FieldEditor';
-import { FormField, FormSchema, createNewField, convertToSurveyJS, convertFromSurveyJS } from './utils/schemaConverter';
+import { FormField, FormSchema, FormRow, createNewField, convertToSurveyJS, convertFromSurveyJS, createDefaultRow, migrateFieldsToRows, getAllFieldsFromRows } from './utils/schemaConverter';
 import { getFieldTypeById } from './utils/fieldTypes';
 
 interface FormBuilderProps {
@@ -24,6 +24,24 @@ interface FormBuilderProps {
 export function FormBuilder({ schema, onChange }: FormBuilderProps) {
   const [selectedField, setSelectedField] = useState<FormField | null>(null);
   const [draggedField, setDraggedField] = useState<string | null>(null);
+
+  // Ensure schema has rows (migrate from legacy format if needed)
+  const currentSchema = React.useMemo(() => {
+    if (!schema.rows || schema.rows.length === 0) {
+      if (schema.fields && schema.fields.length > 0) {
+        return {
+          ...schema,
+          rows: migrateFieldsToRows(schema.fields)
+        };
+      } else {
+        return {
+          ...schema,
+          rows: []
+        };
+      }
+    }
+    return schema;
+  }, [schema]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -48,30 +66,58 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     if (!over) return;
 
     // Handle dropping a new field from palette
-    if (over.id === 'form-canvas' && active.data.current?.fieldType) {
+    if (active.data.current?.fieldType) {
       const fieldType = active.data.current.fieldType;
       const newField = createNewField(fieldType.surveyType, fieldType.defaultProps);
       
-      onChange({
-        ...schema,
-        fields: [...schema.fields, newField]
-      });
+      // Find the target drop zone
+      const dropTarget = over.id.toString();
+      
+      if (dropTarget === 'form-canvas') {
+        // Drop on empty canvas - create new row
+        const newRow = createDefaultRow();
+        newRow.columns[0].fields = [newField];
+        
+        onChange({
+          ...currentSchema,
+          rows: [...currentSchema.rows, newRow]
+        });
+      } else if (dropTarget.startsWith('column-')) {
+        // Drop on specific column
+        const [, rowId, columnId] = dropTarget.split('-');
+        const newRows = currentSchema.rows.map(row => {
+          if (row.id === rowId) {
+            return {
+              ...row,
+              columns: row.columns.map(column => {
+                if (column.id === columnId) {
+                  return {
+                    ...column,
+                    fields: [...column.fields, newField]
+                  };
+                }
+                return column;
+              })
+            };
+          }
+          return row;
+        });
+        
+        onChange({
+          ...currentSchema,
+          rows: newRows
+        });
+      }
       
       setSelectedField(newField);
       return;
     }
 
-    // Handle reordering existing fields
-    if (active.id !== over.id && schema.fields.find(f => f.id === active.id)) {
-      const oldIndex = schema.fields.findIndex(f => f.id === active.id);
-      const newIndex = schema.fields.findIndex(f => f.id === over.id);
-      
-      const newFields = arrayMove(schema.fields, oldIndex, newIndex);
-      
-      onChange({
-        ...schema,
-        fields: newFields
-      });
+    // Handle reordering existing fields (simplified for now)
+    const allFields = getAllFieldsFromRows(currentSchema.rows);
+    if (active.id !== over.id && allFields.find(f => f.id === active.id)) {
+      // For now, just maintain the same structure
+      // TODO: Implement proper row/column reordering
     }
   }, [schema, onChange]);
 
@@ -80,30 +126,42 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
   }, []);
 
   const handleUpdateField = useCallback((updatedField: FormField) => {
-    const newFields = schema.fields.map(field =>
-      field.id === updatedField.id ? updatedField : field
-    );
+    const newRows = currentSchema.rows.map(row => ({
+      ...row,
+      columns: row.columns.map(column => ({
+        ...column,
+        fields: column.fields.map(field =>
+          field.id === updatedField.id ? updatedField : field
+        )
+      }))
+    }));
     
     onChange({
-      ...schema,
-      fields: newFields
+      ...currentSchema,
+      rows: newRows
     });
     
     setSelectedField(updatedField);
-  }, [schema, onChange]);
+  }, [currentSchema, onChange]);
 
   const handleDeleteField = useCallback((fieldId: string) => {
-    const newFields = schema.fields.filter(field => field.id !== fieldId);
+    const newRows = currentSchema.rows.map(row => ({
+      ...row,
+      columns: row.columns.map(column => ({
+        ...column,
+        fields: column.fields.filter(field => field.id !== fieldId)
+      }))
+    }));
     
     onChange({
-      ...schema,
-      fields: newFields
+      ...currentSchema,
+      rows: newRows
     });
     
     if (selectedField?.id === fieldId) {
       setSelectedField(null);
     }
-  }, [schema, onChange, selectedField]);
+  }, [currentSchema, onChange, selectedField]);
 
   const handleCloseEditor = useCallback(() => {
     setSelectedField(null);
@@ -120,10 +178,32 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       <div className="flex h-full min-h-[600px] bg-background">
         <FieldPalette />
         <FormCanvas
-          fields={schema.fields}
+          rows={currentSchema.rows}
           selectedField={selectedField}
           onSelectField={handleSelectField}
           onDeleteField={handleDeleteField}
+          onAddRow={() => {
+            onChange({
+              ...currentSchema,
+              rows: [...currentSchema.rows, createDefaultRow()]
+            });
+          }}
+          onUpdateRow={(rowId: string, updatedRow: FormRow) => {
+            const newRows = currentSchema.rows.map(row =>
+              row.id === rowId ? updatedRow : row
+            );
+            onChange({
+              ...currentSchema,
+              rows: newRows
+            });
+          }}
+          onDeleteRow={(rowId: string) => {
+            const newRows = currentSchema.rows.filter(row => row.id !== rowId);
+            onChange({
+              ...currentSchema,
+              rows: newRows
+            });
+          }}
         />
         <FieldEditor
           field={selectedField}
@@ -144,7 +224,7 @@ export function createFormBuilderSchema(surveySchema?: any): FormSchema {
   return {
     title: 'Untitled Form',
     description: '',
-    fields: []
+    rows: []
   };
 }
 

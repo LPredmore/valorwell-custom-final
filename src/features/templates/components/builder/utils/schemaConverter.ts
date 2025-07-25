@@ -16,13 +16,36 @@ export interface FormField {
   columns?: string[];
   rowsData?: string[];
   elements?: FormField[];
+  columnSpan?: number;
+  rowId?: string;
   [key: string]: any;
+}
+
+export interface FormColumn {
+  id: string;
+  width: number; // percentage (e.g., 50 for 50%)
+  fields: FormField[];
+}
+
+export interface RowSettings {
+  columnCount: number;
+  columnWidths: number[];
+  gap: number;
+  alignment: 'start' | 'center' | 'end';
+}
+
+export interface FormRow {
+  id: string;
+  columns: FormColumn[];
+  settings: RowSettings;
 }
 
 export interface FormSchema {
   title: string;
   description?: string;
-  fields: FormField[];
+  rows: FormRow[];
+  // Keep fields for backward compatibility during migration
+  fields?: FormField[];
 }
 
 export function createNewField(fieldType: string, defaultProps: Record<string, any>): FormField {
@@ -35,16 +58,87 @@ export function createNewField(fieldType: string, defaultProps: Record<string, a
   };
 }
 
+export function createDefaultRow(): FormRow {
+  return {
+    id: uuidv4(),
+    columns: [{
+      id: uuidv4(),
+      width: 100,
+      fields: []
+    }],
+    settings: {
+      columnCount: 1,
+      columnWidths: [100],
+      gap: 16,
+      alignment: 'start'
+    }
+  };
+}
+
+export function createRowWithColumns(columnCount: number): FormRow {
+  const columnWidth = Math.floor(100 / columnCount);
+  const columns = Array.from({ length: columnCount }, () => ({
+    id: uuidv4(),
+    width: columnWidth,
+    fields: []
+  }));
+
+  return {
+    id: uuidv4(),
+    columns,
+    settings: {
+      columnCount,
+      columnWidths: Array(columnCount).fill(columnWidth),
+      gap: 16,
+      alignment: 'start'
+    }
+  };
+}
+
 export function convertToSurveyJS(schema: FormSchema): any {
+  // Handle both new row-based schema and legacy field-based schema
+  let elements: any[] = [];
+  
+  if (schema.rows && schema.rows.length > 0) {
+    // New row-based schema
+    elements = schema.rows.flatMap(convertRowToSurveyJS);
+  } else if (schema.fields && schema.fields.length > 0) {
+    // Legacy field-based schema
+    elements = schema.fields.map(convertFieldToSurveyJS);
+  }
+
   const surveySchema = {
     title: schema.title,
     description: schema.description,
     showQuestionNumbers: 'off',
     widthMode: 'responsive',
-    elements: schema.fields.map(convertFieldToSurveyJS)
+    elements
   };
 
   return surveySchema;
+}
+
+function convertRowToSurveyJS(row: FormRow): any[] {
+  // If single column, return fields directly
+  if (row.columns.length === 1) {
+    return row.columns[0].fields.map(convertFieldToSurveyJS);
+  }
+
+  // For multi-column, create a panel with columns
+  const panelElements = row.columns.map(column => ({
+    type: 'panel',
+    name: `panel_${column.id}`,
+    elements: column.fields.map(convertFieldToSurveyJS),
+    startWithNewLine: false,
+    width: `${column.width}%`
+  }));
+
+  return [{
+    type: 'panel',
+    name: `row_${row.id}`,
+    elements: panelElements,
+    startWithNewLine: true
+  }];
 }
 
 function convertFieldToSurveyJS(field: FormField): any {
@@ -105,11 +199,48 @@ function convertFieldToSurveyJS(field: FormField): any {
 }
 
 export function convertFromSurveyJS(surveySchema: any): FormSchema {
+  const fields = (surveySchema.elements || []).map(convertFieldFromSurveyJS);
+  
+  // Convert legacy fields to row-based structure
+  const rows = fields.length > 0 ? [createRowWithFields(fields)] : [];
+  
   return {
     title: surveySchema.title || 'Untitled Form',
     description: surveySchema.description,
-    fields: (surveySchema.elements || []).map(convertFieldFromSurveyJS)
+    rows,
+    fields // Keep for backward compatibility
   };
+}
+
+function createRowWithFields(fields: FormField[]): FormRow {
+  return {
+    id: uuidv4(),
+    columns: [{
+      id: uuidv4(),
+      width: 100,
+      fields
+    }],
+    settings: {
+      columnCount: 1,
+      columnWidths: [100],
+      gap: 16,
+      alignment: 'start'
+    }
+  };
+}
+
+// Migration helper for existing schemas
+export function migrateFieldsToRows(fields: FormField[]): FormRow[] {
+  if (fields.length === 0) return [];
+  
+  return [createRowWithFields(fields)];
+}
+
+// Helper to get all fields from a row-based schema
+export function getAllFieldsFromRows(rows: FormRow[]): FormField[] {
+  return rows.flatMap(row => 
+    row.columns.flatMap(column => column.fields)
+  );
 }
 
 function convertFieldFromSurveyJS(element: any): FormField {
