@@ -214,7 +214,14 @@ export const createRecurringAppointments = async (
   appointmentData: CreateAppointmentData
 ): Promise<{ data: any; error: any }> => {
   try {
+    console.log('createRecurringAppointments called with:', appointmentData);
+    
     if (!appointmentData.is_recurring || !appointmentData.frequency || !appointmentData.repeat_until) {
+      console.log('Missing recurring data:', {
+        is_recurring: appointmentData.is_recurring,
+        frequency: appointmentData.frequency,
+        repeat_until: appointmentData.repeat_until
+      });
       return {
         data: null,
         error: { message: 'Recurring appointment data is incomplete' }
@@ -291,7 +298,12 @@ export const createRecurringAppointments = async (
     let currentStart = new Date(startDate);
     let currentEnd = new Date(endDate);
 
+    console.log('Starting to create recurring appointments with group ID:', recurringGroupId);
+    console.log('Will create appointments from', currentStart, 'to', repeatUntil, 'with interval', intervalDays, 'days');
+
     while (currentStart <= repeatUntil) {
+      console.log('Creating appointment for:', currentStart.toISOString());
+      
       const appointmentResult = await supabase
         .from('appointments')
         .insert({
@@ -307,6 +319,7 @@ export const createRecurringAppointments = async (
       if (appointmentResult.error) {
         console.error('Error creating recurring appointment:', appointmentResult.error);
       } else {
+        console.log('Successfully created appointment:', appointmentResult.data);
         appointments.push(appointmentResult.data);
       }
 
@@ -314,6 +327,7 @@ export const createRecurringAppointments = async (
       currentEnd.setDate(currentEnd.getDate() + intervalDays);
     }
 
+    console.log('Final result - created', appointments.length, 'appointments');
     return { 
       data: { 
         appointments,
