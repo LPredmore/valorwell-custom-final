@@ -19,6 +19,7 @@ import { AppointmentEvent, AppointmentStatus } from '../types/calendar';
 import { format } from 'date-fns';
 import { useCreateDailyRoom } from '@/features/telehealth/hooks/useTelehealth';
 import { useAuth } from '@/context/AuthContext';
+import { createRecurringAppointments } from '@/services/appointmentService';
 
 interface AppointmentType {
   id: number;
@@ -269,6 +270,59 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     }
   }, [selectedSlot, selectedEvent]);
 
+  const createRecurringMutation = useMutation({
+    mutationFn: async (appointmentData: typeof formData) => {
+      if (!currentClinician?.id) {
+        throw new Error('Clinician ID not found. Please ensure you are logged in as a clinician.');
+      }
+
+      // Calculate start and end times
+      const hour24 = appointmentData.ampm === 'PM' && appointmentData.hour !== '12' 
+        ? parseInt(appointmentData.hour) + 12 
+        : appointmentData.ampm === 'AM' && appointmentData.hour === '12'
+        ? 0
+        : parseInt(appointmentData.hour);
+      
+      const startDate = new Date(appointmentData.date!);
+      startDate.setHours(hour24, parseInt(appointmentData.minute), 0, 0);
+      
+      const endDate = new Date(startDate);
+      endDate.setMinutes(endDate.getMinutes() + parseInt(appointmentData.plannedLength));
+
+      const recurringData = {
+        client_id: appointmentData.client_id,
+        clinician_id: currentClinician.id,
+        type: appointmentData.type,
+        notes: appointmentData.notes,
+        status: appointmentData.status,
+        start_at: startDate.toISOString(),
+        end_at: endDate.toISOString(),
+        is_recurring: true,
+        frequency: appointmentData.frequency as 'weekly' | 'every-2-weeks' | 'every-3-weeks' | 'every-4-weeks',
+        repeat_until: appointmentData.repeatUntil!
+      };
+
+      const result = await createRecurringAppointments(recurringData);
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({
+        title: 'Success',
+        description: 'Recurring appointments created successfully',
+      });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to create recurring appointments',
+      });
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -277,6 +331,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         ...formData,
         id: selectedEvent.id
       });
+    } else if (formData.isRecurring) {
+      createRecurringMutation.mutate(formData);
     } else {
       createAppointmentMutation.mutate(formData);
     }
@@ -539,9 +595,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </Button>
             <Button 
               type="submit" 
-              disabled={createAppointmentMutation.isPending || updateAppointmentMutation.isPending}
+              disabled={createAppointmentMutation.isPending || updateAppointmentMutation.isPending || createRecurringMutation.isPending}
             >
-              {selectedEvent ? 'Update' : 'Create'} Appointment
+              {selectedEvent ? 'Update' : formData.isRecurring ? 'Create Recurring' : 'Create'} Appointment
             </Button>
           </div>
         </form>
