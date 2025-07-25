@@ -18,6 +18,12 @@ export interface FormField {
   elements?: FormField[];
   columnSpan?: number;
   rowId?: string;
+  // Data binding properties
+  isDataBound?: boolean;
+  tableName?: string;
+  columnName?: string;
+  dataType?: string;
+  isReadOnly?: boolean;
   [key: string]: any;
 }
 
@@ -54,6 +60,28 @@ export function createNewField(fieldType: string, defaultProps: Record<string, a
     type: fieldType,
     name: defaultProps.name || `field_${Date.now()}`,
     title: defaultProps.title || 'New Field',
+    ...defaultProps
+  };
+}
+
+export function createDataBoundField(
+  fieldType: string, 
+  defaultProps: Record<string, any>,
+  tableName: string,
+  columnName: string,
+  dataType: string,
+  isReadOnly: boolean = false
+): FormField {
+  return {
+    id: `databound_${tableName}_${columnName}_${Date.now()}`,
+    type: fieldType,
+    name: defaultProps.name || columnName,
+    title: defaultProps.title || columnName,
+    isDataBound: true,
+    tableName,
+    columnName,
+    dataType,
+    isReadOnly,
     ...defaultProps
   };
 }
@@ -142,12 +170,26 @@ function convertRowToSurveyJS(row: FormRow): any[] {
 }
 
 function convertFieldToSurveyJS(field: FormField): any {
-  const baseField = {
+  const baseField: any = {
     type: field.type,
     name: field.name,
     title: field.title,
     isRequired: field.isRequired || false
   };
+
+  // Add data binding information
+  if (field.isDataBound) {
+    baseField.dataBound = {
+      tableName: field.tableName,
+      columnName: field.columnName,
+      dataType: field.dataType,
+      isReadOnly: field.isReadOnly
+    };
+    
+    if (field.isReadOnly) {
+      baseField.readOnly = true;
+    }
+  }
 
   // Add type-specific properties
   switch (field.type) {

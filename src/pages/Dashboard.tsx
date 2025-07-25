@@ -128,10 +128,12 @@ export const Dashboard: React.FC = () => {
                     {format(new Date(appointment.start_at), 'h:mm a')} - {format(new Date(appointment.end_at), 'h:mm a')}
                   </div>
                   <p className="text-sm mb-3">{appointment.type}</p>
-                  <Button className="w-full mb-2">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Document Session
-                  </Button>
+                  <Link to={`/templates/session-documentation?client_id=${appointment.client_id}&appointment_id=${appointment.id}`}>
+                    <Button className="w-full mb-2">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Document Session
+                    </Button>
+                  </Link>
                   {appointment.status === 'no show' && (
                     <div className="flex items-center gap-2 text-red-600 text-sm">
                       <AlertCircle className="h-4 w-4" />

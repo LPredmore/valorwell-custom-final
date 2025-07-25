@@ -11,16 +11,22 @@ import {
   PenTool, 
   Grid3X3, 
   Folder,
-  RadioIcon
+  RadioIcon,
+  User,
+  Users
 } from 'lucide-react';
 
 export interface FieldType {
   id: string;
   name: string;
   icon: typeof Type;
-  category: 'basic' | 'selection' | 'advanced';
+  category: 'basic' | 'selection' | 'advanced' | 'client' | 'clinician';
   surveyType: string;
   defaultProps: Record<string, any>;
+  isDataBound?: boolean;
+  tableName?: string;
+  columnName?: string;
+  dataType?: string;
 }
 
 export const FIELD_TYPES: FieldType[] = [
@@ -200,15 +206,17 @@ export const FIELD_TYPES: FieldType[] = [
 ];
 
 export const FIELD_CATEGORIES = [
-  { id: 'basic', name: 'Basic Fields' },
-  { id: 'selection', name: 'Selection Fields' },
-  { id: 'advanced', name: 'Advanced Fields' }
+  { id: 'basic', name: 'Basic Fields', icon: Type },
+  { id: 'selection', name: 'Selection Fields', icon: ChevronDown },
+  { id: 'advanced', name: 'Advanced Fields', icon: Grid3X3 },
+  { id: 'client', name: 'Client Fields', icon: User },
+  { id: 'clinician', name: 'Clinician Fields', icon: Users }
 ] as const;
 
 export function getFieldTypeById(id: string): FieldType | undefined {
   return FIELD_TYPES.find(type => type.id === id);
 }
 
-export function getFieldTypesByCategory(category: FieldType['category']): FieldType[] {
+export function getFieldTypesByCategory(category: string): FieldType[] {
   return FIELD_TYPES.filter(type => type.category === category);
 }
