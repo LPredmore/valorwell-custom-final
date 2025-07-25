@@ -84,22 +84,28 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     const { active, over } = event;
     setDraggedField(null);
 
-    console.log('=== DRAG END EVENT ===');
-    console.log('Active ID:', active.id);
-    console.log('Over ID:', over?.id);
-    console.log('Active data:', active.data.current);
-    console.log('Over data:', over?.data?.current);
+    console.log('🎯 [DRAG_END] === EVENT START ===');
+    console.log('🎯 [DRAG_END] Active ID:', active.id);
+    console.log('🎯 [DRAG_END] Over ID:', over?.id);
+    console.log('🎯 [DRAG_END] Active data:', active.data.current);
+    console.log('🎯 [DRAG_END] Over data:', over?.data?.current);
+    console.log('🔄 [SCHEMA] Current rows count:', currentSchema.rows.length);
+    console.log('🔄 [SCHEMA] Current rows:', currentSchema.rows.map(r => ({ 
+      id: r.id, 
+      columns: r.columns.length,
+      columnIds: r.columns.map(c => c.id)
+    })));
 
     if (!over) {
-      console.log('❌ NO DROP TARGET - drag cancelled');
+      console.log('❌ [DRAG_END] NO DROP TARGET - drag cancelled');
       return;
     }
 
-    console.log('✅ Valid drop target found:', over.id);
+    console.log('✅ [DRAG_END] Valid drop target found:', over.id);
 
     // Only handle new field drops from palette
     if (!active.data.current?.fieldType && !active.data.current?.dataBoundField) {
-      console.log('❌ Not a field from palette');
+      console.log('❌ [DRAG_END] Not a field from palette');
       return;
     }
 
@@ -108,7 +114,7 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     try {
       if (active.data.current?.dataBoundField) {
         const dataBoundField = active.data.current.dataBoundField;
-        console.log('📝 Creating data-bound field:', dataBoundField.label);
+        console.log('📝 [FIELD_CREATE] Creating data-bound field:', dataBoundField.label);
         
         const defaultProps = {
           title: dataBoundField.label,
@@ -129,21 +135,21 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
         );
       } else {
         const fieldType = active.data.current.fieldType;
-        console.log('📝 Creating regular field:', fieldType.surveyType);
+        console.log('📝 [FIELD_CREATE] Creating regular field:', fieldType.surveyType);
         newField = createNewField(fieldType.surveyType, fieldType.defaultProps || {});
       }
       
-      console.log('✅ Field created successfully:', newField.id, newField.title);
+      console.log('✅ [FIELD_CREATE] Field created successfully:', newField.id, newField.title);
     } catch (error) {
-      console.error('❌ Field creation failed:', error);
+      console.error('❌ [FIELD_CREATE] Field creation failed:', error);
       return;
     }
     
     const dropTarget = over.id.toString();
-    console.log('🎯 Drop target:', dropTarget);
+    console.log('🎯 [DROP_TARGET] Target identified:', dropTarget);
     
     if (dropTarget === 'form-canvas') {
-      console.log('📋 Dropping on empty canvas');
+      console.log('📋 [CANVAS_DROP] Dropping on empty canvas');
       const newRow = createDefaultRow();
       newRow.columns[0].fields = [newField];
       
@@ -152,19 +158,19 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
         rows: [...currentSchema.rows, newRow]
       };
       
-      console.log('📋 Canvas drop - new schema:', updatedSchema.rows.length, 'rows');
+      console.log('📋 [CANVAS_DROP] New schema:', updatedSchema.rows.length, 'rows');
       onChange(updatedSchema);
       setSelectedField(newField);
       return;
     }
     
     if (dropTarget.startsWith('column_')) {
-      console.log('📦 Dropping on column');
+      console.log('📦 [COLUMN_DROP] Dropping on column');
       const parts = dropTarget.split('_');
-      console.log('🔍 Parsing target:', parts);
+      console.log('🔍 [COLUMN_DROP] Parsing target:', parts);
       
       if (parts.length !== 3) {
-        console.error('❌ Invalid column target format:', dropTarget);
+        console.error('❌ [COLUMN_DROP] Invalid column target format:', dropTarget, 'Expected 3 parts, got:', parts.length);
         toast({
           title: 'Drop Failed',
           description: 'Invalid column format. Please try again.',
@@ -174,12 +180,13 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       }
       
       const [, rowId, columnId] = parts;
-      console.log('🎯 Target Row ID:', rowId, 'Column ID:', columnId);
+      console.log('🎯 [COLUMN_DROP] Target Row ID:', rowId, 'Column ID:', columnId);
       
       // Verify row and column exist BEFORE attempting update
       const targetRow = currentSchema.rows.find(row => row.id === rowId);
       if (!targetRow) {
-        console.error('❌ Target row not found:', rowId);
+        console.error('❌ [COLUMN_DROP] Target row not found:', rowId);
+        console.error('❌ [COLUMN_DROP] Available rows:', currentSchema.rows.map(r => r.id));
         toast({
           title: 'Drop Failed',
           description: 'Target row no longer exists. The form layout may have changed.',
@@ -190,7 +197,8 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
 
       const targetColumn = targetRow.columns.find(col => col.id === columnId);
       if (!targetColumn) {
-        console.error('❌ Target column not found:', columnId);
+        console.error('❌ [COLUMN_DROP] Target column not found:', columnId);
+        console.error('❌ [COLUMN_DROP] Available columns in row:', targetRow.columns.map(c => c.id));
         toast({
           title: 'Drop Failed', 
           description: 'Target column no longer exists. Try refreshing the form layout.',
@@ -203,10 +211,10 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       let updated = false;
       const newRows = currentSchema.rows.map(row => {
         if (row.id === rowId) {
-          console.log('✅ Found target row');
+          console.log('✅ [COLUMN_DROP] Found target row');
           const newColumns = row.columns.map(column => {
             if (column.id === columnId) {
-              console.log('✅ Found target column, adding field');
+              console.log('✅ [COLUMN_DROP] Found target column, adding field');
               updated = true;
               return {
                 ...column,
@@ -221,7 +229,7 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       });
       
       if (!updated) {
-        console.error('❌ Could not find target row/column:', rowId, columnId);
+        console.error('❌ [COLUMN_DROP] Could not find target row/column:', rowId, columnId);
         toast({
           title: 'Drop Failed',
           description: 'Could not add field. Please try again.',
@@ -235,13 +243,14 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
         rows: newRows
       };
       
-      console.log('📦 Column drop - field added successfully');
+      console.log('📦 [COLUMN_DROP] Field added successfully');
+      console.log('🔄 [SCHEMA] Updated schema rows count:', updatedSchema.rows.length);
       onChange(updatedSchema);
       setSelectedField(newField);
       return;
     }
     
-    console.log('❌ Unknown drop target:', dropTarget);
+    console.log('❌ [DRAG_END] Unknown drop target:', dropTarget);
   }, [currentSchema, onChange]);
 
   const handleSelectField = useCallback((field: FormField) => {

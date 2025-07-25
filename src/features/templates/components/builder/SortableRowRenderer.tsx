@@ -18,7 +18,11 @@ function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
   const handleColumnCountChange = (columnCount: number) => {
     const currentColumnCount = row.columns.length;
     
+    console.log('🏗️ [COLUMN_CHANGE] Changing column count from', currentColumnCount, 'to', columnCount);
+    console.log('🏗️ [COLUMN_CHANGE] Current columns:', row.columns.map(c => ({ id: c.id, fields: c.fields.length })));
+    
     if (columnCount === currentColumnCount) {
+      console.log('🏗️ [COLUMN_CHANGE] No change needed');
       return; // No change needed
     }
     
@@ -28,23 +32,28 @@ function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
     for (let i = 0; i < columnCount; i++) {
       if (i < row.columns.length) {
         // Preserve existing column with same ID
-        newColumns.push({
+        const preservedColumn = {
           ...row.columns[i],
           width: Math.floor(100 / columnCount)
-        });
+        };
+        newColumns.push(preservedColumn);
+        console.log('🏗️ [COLUMN_CHANGE] Preserved column:', preservedColumn.id);
       } else {
         // Create new column only when needed
-        newColumns.push({
+        const newColumn = {
           id: crypto.randomUUID(),
           width: Math.floor(100 / columnCount),
           fields: []
-        });
+        };
+        newColumns.push(newColumn);
+        console.log('🏗️ [COLUMN_CHANGE] Created new column:', newColumn.id);
       }
     }
     
     // Handle field redistribution when reducing columns
     if (columnCount < currentColumnCount) {
       const orphanedFields = row.columns.slice(columnCount).flatMap(col => col.fields);
+      console.log('🏗️ [COLUMN_CHANGE] Redistributing orphaned fields:', orphanedFields.length);
       newColumns[0].fields.push(...orphanedFields);
     }
     
@@ -58,6 +67,7 @@ function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
       }
     };
     
+    console.log('🏗️ [COLUMN_CHANGE] Updated row columns:', updatedRow.columns.map(c => ({ id: c.id, fields: c.fields.length })));
     onUpdateRow(row.id, updatedRow);
   };
 

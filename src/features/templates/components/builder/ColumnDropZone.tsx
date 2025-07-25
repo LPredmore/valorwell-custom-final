@@ -20,9 +20,9 @@ export function ColumnDropZone({
   onSelectField, 
   onDeleteField
 }: ColumnDropZoneProps) {
-  const dropZoneId = `column-${rowId}-${column.id}`;
+  const dropZoneId = `column_${rowId}_${column.id}`;
   
-  console.log('ColumnDropZone rendering:', {
+  console.log('🏗️ [COLUMN_DROP_ZONE] Rendering:', {
     dropZoneId,
     columnId: column.id,
     rowId,
@@ -41,9 +41,9 @@ export function ColumnDropZone({
   
   // Log when drop zone registration changes
   React.useEffect(() => {
-    console.log('Drop zone registered/updated:', dropZoneId);
+    console.log('📍 [DROP_ZONE] Registered:', dropZoneId);
     return () => {
-      console.log('Drop zone unregistered:', dropZoneId);
+      console.log('📍 [DROP_ZONE] Unregistered:', dropZoneId);
     };
   }, [dropZoneId]);
 
