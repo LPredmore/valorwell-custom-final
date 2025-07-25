@@ -11,17 +11,13 @@ export const Profile: React.FC = () => {
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    phone: '',
+    email: '',
   });
 
   React.useEffect(() => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
+        email: profile.email || '',
       });
     }
   }, [profile]);
@@ -55,36 +51,6 @@ export const Profile: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  value={formData.first_name}
-                  onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                  placeholder="Enter your first name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  value={formData.last_name}
-                  onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                  placeholder="Enter your last name"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Enter your phone number"
-              />
-            </div>
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -98,20 +64,11 @@ export const Profile: React.FC = () => {
                 Email cannot be changed here. Please contact support if needed.
               </p>
             </div>
-            <Button 
-              type="submit" 
-              disabled={updateProfile.isPending}
-              className="w-full"
-            >
-              {updateProfile.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                'Update Profile'
-              )}
-            </Button>
+            <div className="text-center py-4">
+              <p className="text-muted-foreground">
+                Personal information like name and phone are managed in your role-specific profile.
+              </p>
+            </div>
           </form>
         </CardContent>
       </Card>

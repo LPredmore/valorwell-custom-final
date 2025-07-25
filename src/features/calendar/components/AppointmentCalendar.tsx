@@ -38,11 +38,8 @@ export const AppointmentCalendar: React.FC = () => {
           *,
           clients!inner(
             id,
-            profiles (
-              first_name,
-              last_name,
-              email
-            )
+            first_name,
+            last_name
           )
         `)
         .gte('start_at', startOfMonth)
@@ -52,7 +49,7 @@ export const AppointmentCalendar: React.FC = () => {
 
       return data.map(appointment => ({
         id: appointment.id,
-        title: `${appointment.clients.profiles?.first_name || 'Unknown'} ${appointment.clients.profiles?.last_name || 'Client'}`,
+        title: `${appointment.clients.first_name || 'Unknown'} ${appointment.clients.last_name || 'Client'}`,
         start: utcToBrowserTime(appointment.start_at),
         end: utcToBrowserTime(appointment.end_at),
         resource: appointment

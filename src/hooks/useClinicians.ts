@@ -5,19 +5,15 @@ import { supabase } from '@/integrations/supabase/client';
 export interface Clinician {
   id: string;
   profile_id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
   clinician_professional_name?: string;
   clinician_npi_number?: string;
   clinician_accepting_new_clients?: boolean;
   created_at: string;
   updated_at: string;
-  // Related profile data
-  profile?: {
-    first_name?: string;
-    last_name?: string;
-    email: string;
-    phone?: string;
-    role: 'client' | 'clinician' | 'admin';
-  };
 }
 
 export const useClinicians = () => {
@@ -31,14 +27,7 @@ export const useClinicians = () => {
         const { data, error } = await supabase
           .from('clinicians')
           .select(`
-            *,
-            profile:profiles(
-              first_name,
-              last_name,
-              email,
-              phone,
-              role
-            )
+            *
           `)
           .order('created_at', { ascending: false });
 
@@ -61,9 +50,8 @@ export const useClinicians = () => {
           clinicians: data?.map(c => ({
             id: c.id,
             profile_id: c.profile_id,
-            profile_email: c.profile?.email,
-            profile_name: `${c.profile?.first_name || ''} ${c.profile?.last_name || ''}`.trim(),
-            profile_role: c.profile?.role,
+            // email: c.email,
+            name: `${c.first_name || ''} ${c.last_name || ''}`.trim(),
             created_at: c.created_at
           })) || []
         });
@@ -76,11 +64,6 @@ export const useClinicians = () => {
             }
             if (!clinician.profile_id) {
               console.warn(`⚠️ [CLINICIANS_QUERY] Clinician ${clinician.id} missing profile_id`);
-            }
-            if (!clinician.profile) {
-              console.warn(`⚠️ [CLINICIANS_QUERY] Clinician ${clinician.id} missing profile data`);
-            } else if (!clinician.profile.email) {
-              console.warn(`⚠️ [CLINICIANS_QUERY] Clinician ${clinician.id} profile missing email`);
             }
           });
         }

@@ -410,16 +410,16 @@ const StaffManagement = () => {
                   to="/clinicianprof" 
                   className="text-foreground hover:text-primary font-medium cursor-pointer"
                 >
-                  {clinician.profile?.first_name} {clinician.profile?.last_name}
+                  {clinician.first_name} {clinician.last_name}
                 </Link>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                {clinician.profile?.email}
+                {clinician.email}
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                {clinician.profile?.phone || '—'}
+                {clinician.phone || '—'}
               </div>
               <div>
                 <Badge variant={getStatusVariant(clinician.clinician_accepting_new_clients)}>

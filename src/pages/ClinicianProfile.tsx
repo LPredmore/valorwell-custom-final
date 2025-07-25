@@ -16,14 +16,13 @@ export const ClinicianProfile: React.FC = () => {
           <Avatar className="h-20 w-20">
             <AvatarImage src="/placeholder.svg" />
             <AvatarFallback className="text-lg font-semibold">
-              {profile?.first_name?.[0] || 'T'}
-              {profile?.last_name?.[0] || 'T'}
+              TT
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-bold text-foreground">
-                {profile?.first_name || 'Test'} {profile?.last_name || 'Therapist'}
+                Test Therapist
               </h1>
             </div>
             <p className="text-muted-foreground mb-3">NotReal Therapist, LPC</p>
@@ -47,7 +46,7 @@ export const ClinicianProfile: React.FC = () => {
                 <label className="text-sm font-medium text-muted-foreground">First Name</label>
                 <Edit className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-foreground">{profile?.first_name || 'Test'}</p>
+              <p className="text-foreground">Test</p>
             </div>
             
             <div className="space-y-2">
@@ -55,7 +54,7 @@ export const ClinicianProfile: React.FC = () => {
                 <label className="text-sm font-medium text-muted-foreground">Last Name</label>
                 <Edit className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-foreground">{profile?.last_name || 'Therapist'}</p>
+              <p className="text-foreground">Therapist</p>
             </div>
             
             <div className="space-y-2">
@@ -81,7 +80,7 @@ export const ClinicianProfile: React.FC = () => {
                 <label className="text-sm font-medium text-muted-foreground">Phone</label>
                 <Edit className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-foreground">{profile?.phone || '(555) 123-4567'}</p>
+              <p className="text-foreground">(555) 123-4567</p>
             </div>
           </div>
           

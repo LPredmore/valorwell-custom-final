@@ -21,9 +21,7 @@ export const ProfileMenu: React.FC = () => {
 
   if (!user) return null;
 
-  const displayName = profile?.first_name && profile?.last_name 
-    ? `${profile.first_name} ${profile.last_name}`
-    : user.email;
+  const displayName = user.email;
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {

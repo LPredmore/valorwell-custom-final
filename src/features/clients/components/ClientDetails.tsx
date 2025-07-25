@@ -21,17 +21,7 @@ export const ClientDetails: React.FC = () => {
       const { data, error } = await supabase
         .from('clients')
         .select(`
-          *,
-          profiles (
-            first_name,
-            last_name,
-            email,
-            phone,
-            date_of_birth,
-            city,
-            state,
-            zip_code
-          )
+          *
         `)
         .eq('id', id)
         .single();
@@ -85,7 +75,7 @@ export const ClientDetails: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center">
               <User className="h-8 w-8 mr-3" />
-              {client.profiles?.first_name || 'Unknown'} {client.profiles?.last_name || 'User'}
+              {client.first_name || 'Unknown'} {client.last_name || 'User'}
             </h1>
             <Badge className={getStatusColor(client.client_status)}>
               {client.client_status || 'Unknown'}
@@ -108,11 +98,11 @@ export const ClientDetails: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">First Name</p>
-                <p className="font-medium">{client.profiles?.first_name || 'Not provided'}</p>
+                <p className="font-medium">{client.first_name || 'Not provided'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Last Name</p>
-                <p className="font-medium">{client.profiles?.last_name || 'Not provided'}</p>
+                <p className="font-medium">{client.last_name || 'Not provided'}</p>
               </div>
             </div>
             <div>
@@ -121,7 +111,7 @@ export const ClientDetails: React.FC = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Date of Birth</p>
-              <p className="font-medium">{client.profiles?.date_of_birth || 'Not provided'}</p>
+              <p className="font-medium">{client.date_of_birth || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Gender</p>
@@ -144,14 +134,14 @@ export const ClientDetails: React.FC = () => {
               <Mail className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{client.profiles?.email || 'Not provided'}</p>
+                <p className="font-medium">Not provided</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Phone className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">{client.profiles?.phone || 'Not provided'}</p>
+                <p className="font-medium">{client.phone || 'Not provided'}</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -163,7 +153,7 @@ export const ClientDetails: React.FC = () => {
                     <>
                       <p>{client.client_address}</p>
                       <p>
-                        {client.profiles?.city}, {client.profiles?.state} {client.profiles?.zip_code}
+                        {client.city}, {client.state} {client.zip_code}
                       </p>
                     </>
                   )}

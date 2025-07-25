@@ -18,9 +18,9 @@ interface Client {
   client_preferred_name: string;
   first_name: string;
   last_name: string;
-  email: string;
-  phone: string;
-  date_of_birth: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
   created_at: string;
 }
 

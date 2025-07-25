@@ -30,12 +30,8 @@ export const useAppointments = (dateRange?: { start: Date; end: Date }) => {
           *,
           clients!inner(
             id,
-            profiles!inner(
-              first_name,
-              last_name,
-              email,
-              phone
-            )
+            first_name,
+            last_name
           )
         `)
         .order('start_at');
