@@ -37,7 +37,7 @@ export type Database = {
       }
       appointments: {
         Row: {
-          appointment_recurring: string | null
+          appointment_recurring: boolean | null
           buffer_after: number | null
           buffer_before: number | null
           client_email: string | null
@@ -67,7 +67,7 @@ export type Database = {
           video_room_url: string | null
         }
         Insert: {
-          appointment_recurring?: string | null
+          appointment_recurring?: boolean | null
           buffer_after?: number | null
           buffer_before?: number | null
           client_email?: string | null
@@ -90,14 +90,14 @@ export type Database = {
           real_time_update_source?: string | null
           recurring_group_id?: string | null
           start_at: string
-          status: Database["public"]["Enums"]["appointment_status"]
+          status?: Database["public"]["Enums"]["appointment_status"]
           template_id?: string | null
           type: string
           updated_at?: string
           video_room_url?: string | null
         }
         Update: {
-          appointment_recurring?: string | null
+          appointment_recurring?: boolean | null
           buffer_after?: number | null
           buffer_before?: number | null
           client_email?: string | null
