@@ -16,18 +16,48 @@ interface RowControlsProps {
 
 function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
   const handleColumnCountChange = (columnCount: number) => {
-    const updatedRow = createRowWithColumns(columnCount);
-    // Preserve existing fields by distributing them across columns
-    const allFields = row.columns.flatMap(col => col.fields);
-    const fieldsPerColumn = Math.ceil(allFields.length / columnCount);
+    const currentColumnCount = row.columns.length;
     
-    for (let i = 0; i < columnCount; i++) {
-      const startIdx = i * fieldsPerColumn;
-      const endIdx = startIdx + fieldsPerColumn;
-      updatedRow.columns[i].fields = allFields.slice(startIdx, endIdx);
+    if (columnCount === currentColumnCount) {
+      return; // No change needed
     }
     
-    updatedRow.id = row.id; // Keep the same ID
+    // Create new columns array, preserving existing columns where possible
+    const newColumns = [];
+    
+    for (let i = 0; i < columnCount; i++) {
+      if (i < row.columns.length) {
+        // Preserve existing column with same ID
+        newColumns.push({
+          ...row.columns[i],
+          width: Math.floor(100 / columnCount)
+        });
+      } else {
+        // Create new column only when needed
+        newColumns.push({
+          id: crypto.randomUUID(),
+          width: Math.floor(100 / columnCount),
+          fields: []
+        });
+      }
+    }
+    
+    // Handle field redistribution when reducing columns
+    if (columnCount < currentColumnCount) {
+      const orphanedFields = row.columns.slice(columnCount).flatMap(col => col.fields);
+      newColumns[0].fields.push(...orphanedFields);
+    }
+    
+    const updatedRow = {
+      ...row,
+      columns: newColumns,
+      settings: {
+        ...row.settings,
+        columnCount,
+        columnWidths: Array(columnCount).fill(Math.floor(100 / columnCount))
+      }
+    };
+    
     onUpdateRow(row.id, updatedRow);
   };
 

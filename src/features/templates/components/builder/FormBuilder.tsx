@@ -15,6 +15,7 @@ import { FormCanvas } from './FormCanvas';
 import { FieldEditor } from './FieldEditor';
 import { FormField, FormSchema, FormRow, createNewField, createDataBoundField, convertToSurveyJS, convertFromSurveyJS, createDefaultRow, migrateFieldsToRows, getAllFieldsFromRows } from './utils/schemaConverter';
 import { getFieldTypeById } from './utils/fieldTypes';
+import { useToast } from '@/hooks/use-toast';
 
 interface FormBuilderProps {
   schema: FormSchema;
@@ -24,6 +25,26 @@ interface FormBuilderProps {
 export function FormBuilder({ schema, onChange }: FormBuilderProps) {
   const [selectedField, setSelectedField] = useState<FormField | null>(null);
   const [draggedField, setDraggedField] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Add validation for drop targets
+  const validateDropTarget = useCallback((dropTarget: string, schema: FormSchema) => {
+    if (dropTarget === 'form-canvas') return true;
+    
+    if (dropTarget.startsWith('column_')) {
+      const parts = dropTarget.split('_');
+      if (parts.length !== 3) return false;
+      
+      const [, rowId, columnId] = parts;
+      const row = schema.rows.find(r => r.id === rowId);
+      if (!row) return false;
+      
+      const column = row.columns.find(c => c.id === columnId);
+      return !!column;
+    }
+    
+    return false;
+  }, []);
 
   // Ensure schema has rows (migrate from legacy format if needed)
   const currentSchema = React.useMemo(() => {
@@ -137,18 +158,46 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       return;
     }
     
-    if (dropTarget.startsWith('column-')) {
+    if (dropTarget.startsWith('column_')) {
       console.log('📦 Dropping on column');
-      const parts = dropTarget.split('-');
+      const parts = dropTarget.split('_');
       console.log('🔍 Parsing target:', parts);
       
       if (parts.length !== 3) {
         console.error('❌ Invalid column target format:', dropTarget);
+        toast({
+          title: 'Drop Failed',
+          description: 'Invalid column format. Please try again.',
+          variant: 'destructive',
+        });
         return;
       }
       
       const [, rowId, columnId] = parts;
       console.log('🎯 Target Row ID:', rowId, 'Column ID:', columnId);
+      
+      // Verify row and column exist BEFORE attempting update
+      const targetRow = currentSchema.rows.find(row => row.id === rowId);
+      if (!targetRow) {
+        console.error('❌ Target row not found:', rowId);
+        toast({
+          title: 'Drop Failed',
+          description: 'Target row no longer exists. The form layout may have changed.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const targetColumn = targetRow.columns.find(col => col.id === columnId);
+      if (!targetColumn) {
+        console.error('❌ Target column not found:', columnId);
+        toast({
+          title: 'Drop Failed', 
+          description: 'Target column no longer exists. Try refreshing the form layout.',
+          variant: 'destructive',
+        });
+        return;
+      }
       
       // Find and update the target row/column
       let updated = false;
@@ -173,6 +222,11 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       
       if (!updated) {
         console.error('❌ Could not find target row/column:', rowId, columnId);
+        toast({
+          title: 'Drop Failed',
+          description: 'Could not add field. Please try again.',
+          variant: 'destructive',
+        });
         return;
       }
       
