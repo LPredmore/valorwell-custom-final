@@ -63,6 +63,8 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     const { active, over } = event;
     setDraggedField(null);
 
+    console.log('Drag end event:', { active: active.id, over: over?.id, data: active.data.current });
+
     if (!over) return;
 
     // Handle dropping a new field from palette
@@ -86,6 +88,8 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
         newField = createNewField(fieldType.surveyType, fieldType.defaultProps);
       }
       
+      console.log('Created new field:', newField);
+      
       // Find the target drop zone
       const dropTarget = over.id.toString();
       
@@ -94,10 +98,12 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
         const newRow = createDefaultRow();
         newRow.columns[0].fields = [newField];
         
-        onChange({
+        const updatedSchema = {
           ...currentSchema,
           rows: [...currentSchema.rows, newRow]
-        });
+        };
+        console.log('Updating schema with new row:', updatedSchema);
+        onChange(updatedSchema);
       } else if (dropTarget.startsWith('column-')) {
         // Drop on specific column
         const [, rowId, columnId] = dropTarget.split('-');
@@ -119,10 +125,12 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
           return row;
         });
         
-        onChange({
+        const updatedSchema = {
           ...currentSchema,
           rows: newRows
-        });
+        };
+        console.log('Updating schema with new field:', updatedSchema);
+        onChange(updatedSchema);
       }
       
       setSelectedField(newField);
@@ -135,7 +143,7 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       // For now, just maintain the same structure
       // TODO: Implement proper row/column reordering
     }
-  }, [schema, onChange]);
+  }, [currentSchema, onChange]);
 
   const handleSelectField = useCallback((field: FormField) => {
     setSelectedField(field);

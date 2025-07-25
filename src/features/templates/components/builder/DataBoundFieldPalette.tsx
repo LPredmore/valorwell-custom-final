@@ -21,25 +21,13 @@ function DraggableDataBoundField({ field }: DraggableDataBoundFieldProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `databound_${field.id}`,
     data: { 
-      fieldType: {
-        id: field.id,
-        name: field.name,
-        icon: field.icon,
-        category: field.category,
-        surveyType: field.surveyType,
-        isDataBound: true,
+      dataBoundField: {
         tableName: field.tableName,
         columnName: field.columnName,
+        fieldType: field.surveyType,
+        label: field.name,
         dataType: field.dataType,
-        defaultProps: {
-          title: field.name,
-          name: field.columnName,
-          isRequired: false,
-          isReadOnly: field.isReadOnly || false,
-          inputType: field.dataType === 'date' ? 'date' : 
-                    field.dataType === 'number' ? 'number' : 'text',
-          description: field.description
-        }
+        isReadOnly: field.isReadOnly || false
       }
     }
   });
