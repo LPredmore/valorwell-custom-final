@@ -3,20 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
-type Profile = {
-  id: string;
-  role: Database['public']['Enums']['user_role'];
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-  date_of_birth?: string;
-  city?: string;
-  state?: string;
-  zip_code?: string;
-  created_at: string;
-  updated_at: string;
-};
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 export const useProfile = () => {
   return useQuery<Profile, Error>({
@@ -60,8 +48,8 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  return useMutation<Profile, Error, Partial<Profile>>({
-    mutationFn: async (profileData: Partial<Profile>): Promise<Profile> => {
+  return useMutation<Profile, Error, ProfileUpdate>({
+    mutationFn: async (profileData: ProfileUpdate): Promise<Profile> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
