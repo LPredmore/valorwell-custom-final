@@ -2,9 +2,15 @@
 import React from 'react';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { usePracticeInfo } from '@/hooks/usePracticeInfo';
+import { useAuth } from '@/context/AuthContext';
+import { useClinicians } from '@/hooks/useClinicians';
 
 export const Header: React.FC = () => {
   const { data: practiceInfo } = usePracticeInfo();
+  const { user } = useAuth();
+  const { data: clinicians } = useClinicians();
+  
+  const currentClinician = clinicians?.find(c => c.profile_id === user?.id);
 
   return (
     <header className="h-16 border-b border-border bg-background px-6 flex items-center justify-between">
@@ -30,6 +36,11 @@ export const Header: React.FC = () => {
       </div>
       
       <div className="flex items-center space-x-4">
+        {currentClinician && (
+          <span className="text-sm font-medium text-foreground">
+            {currentClinician.first_name} {currentClinician.last_name}
+          </span>
+        )}
         <ProfileMenu />
       </div>
     </header>

@@ -79,31 +79,8 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="h-full">
-      {/* Header with Logo and User Info */}
-      <div className="flex items-center justify-between p-6 border-b">
-        <div className="flex items-center gap-4">
-          {/* Placeholder Logo - Easy to replace for whitelabel */}
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">VW</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">ValorWell</h1>
-            <p className="text-sm text-muted-foreground">Clinician Dashboard</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Good afternoon,</p>
-            <p className="font-medium">Test Therapist</p>
-          </div>
-          <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-            <User className="h-5 w-5 text-muted-foreground" />
-          </div>
-        </div>
-      </div>
-
       {/* Three Column Layout */}
-      <div className="grid grid-cols-3 gap-6 p-6 h-[calc(100%-88px)]">
+      <div className="grid grid-cols-3 gap-6 p-6 h-full">
         {/* Today's Appointments */}
         <Card className="flex flex-col">
           <CardHeader className="pb-4">
