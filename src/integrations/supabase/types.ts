@@ -239,7 +239,6 @@ export type Database = {
           eligibility_status_primary: string | null
           eligibility_status_secondary: string | null
           eligibility_status_tertiary: string | null
-          email: string | null
           first_name: string | null
           id: string
           last_name: string | null
@@ -366,7 +365,6 @@ export type Database = {
           eligibility_status_primary?: string | null
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
-          email?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
@@ -493,7 +491,6 @@ export type Database = {
           eligibility_status_primary?: string | null
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
-          email?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
@@ -581,7 +578,6 @@ export type Database = {
           clinician_type: string | null
           created_at: string
           date_of_birth: string | null
-          email: string | null
           first_name: string | null
           id: string
           last_google_sync: string | null
@@ -660,7 +656,6 @@ export type Database = {
           clinician_type?: string | null
           created_at?: string
           date_of_birth?: string | null
-          email?: string | null
           first_name?: string | null
           id?: string
           last_google_sync?: string | null
@@ -739,7 +734,6 @@ export type Database = {
           clinician_type?: string | null
           created_at?: string
           date_of_birth?: string | null
-          email?: string | null
           first_name?: string | null
           id?: string
           last_google_sync?: string | null
@@ -1212,49 +1206,28 @@ export type Database = {
       }
       profiles: {
         Row: {
-          city: string | null
           created_at: string
-          date_of_birth: string | null
           email: string
-          first_name: string | null
           id: string
-          last_name: string | null
           password: string | null
-          phone: string | null
           role: Database["public"]["Enums"]["user_role"]
-          state: Database["public"]["Enums"]["states"] | null
           updated_at: string
-          zip_code: string | null
         }
         Insert: {
-          city?: string | null
           created_at?: string
-          date_of_birth?: string | null
           email: string
-          first_name?: string | null
           id: string
-          last_name?: string | null
           password?: string | null
-          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          state?: Database["public"]["Enums"]["states"] | null
           updated_at?: string
-          zip_code?: string | null
         }
         Update: {
-          city?: string | null
           created_at?: string
-          date_of_birth?: string | null
           email?: string
-          first_name?: string | null
           id?: string
-          last_name?: string | null
           password?: string | null
-          phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          state?: Database["public"]["Enums"]["states"] | null
           updated_at?: string
-          zip_code?: string | null
         }
         Relationships: []
       }
