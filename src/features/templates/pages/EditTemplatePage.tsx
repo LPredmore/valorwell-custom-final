@@ -34,6 +34,21 @@ export const EditTemplatePage: React.FC = () => {
   const [builderSchema, setBuilderSchema] = useState<FormSchema>(createFormBuilderSchema());
   const [activeTab, setActiveTab] = useState('builder');
 
+  // Add logging whenever builderSchema changes
+  React.useEffect(() => {
+    console.log('🔄 [EDIT_TEMPLATE] Builder schema updated:', {
+      rowsCount: builderSchema.rows?.length || 0,
+      title: builderSchema.title,
+      totalFields: builderSchema.rows?.reduce((sum, row) => 
+        sum + row.columns.reduce((colSum, col) => colSum + col.fields.length, 0), 0) || 0,
+      rows: builderSchema.rows?.map(r => ({
+        id: r.id,
+        columnsCount: r.columns?.length || 0,
+        fields: r.columns?.flatMap(col => col.fields.map(f => ({ id: f.id, title: f.title }))) || []
+      })) || []
+    });
+  }, [builderSchema]);
+
   const template = templates?.find(t => t.id === id);
 
   const form = useForm<TemplateFormData>({
@@ -119,7 +134,8 @@ export const EditTemplatePage: React.FC = () => {
       console.log('📤 [EDIT_TEMPLATE] Sending update request:', {
         templateId: id,
         schemaElementsCount: currentSchema?.elements?.length || 0,
-        schemaType: typeof currentSchema
+        schemaType: typeof currentSchema,
+        fullSchema: JSON.stringify(currentSchema, null, 2)
       });
 
       await updateTemplate.mutateAsync({

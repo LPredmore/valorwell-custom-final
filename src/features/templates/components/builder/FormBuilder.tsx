@@ -349,10 +349,28 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
 
 // Helper function to initialize FormBuilder with existing SurveyJS schema
 export function createFormBuilderSchema(surveySchema?: any): FormSchema {
+  console.log('🔄 [CREATE_BUILDER_SCHEMA] Converting existing schema:', {
+    schemaExists: !!surveySchema,
+    schemaType: typeof surveySchema,
+    schemaKeys: surveySchema ? Object.keys(surveySchema) : [],
+    elementsCount: surveySchema?.elements?.length || 0
+  });
+
   if (surveySchema && surveySchema.elements) {
-    return convertFromSurveyJS(surveySchema);
+    const result = convertFromSurveyJS(surveySchema);
+    console.log('✅ [CREATE_BUILDER_SCHEMA] Conversion complete:', {
+      resultRowsCount: result.rows?.length || 0,
+      resultTitle: result.title,
+      resultRows: result.rows?.map(r => ({
+        id: r.id,
+        columnsCount: r.columns?.length || 0,
+        totalFields: r.columns?.reduce((sum, col) => sum + (col.fields?.length || 0), 0) || 0
+      })) || []
+    });
+    return result;
   }
   
+  console.log('📝 [CREATE_BUILDER_SCHEMA] Creating new empty schema');
   return {
     title: 'Untitled Form',
     description: '',
@@ -362,5 +380,24 @@ export function createFormBuilderSchema(surveySchema?: any): FormSchema {
 
 // Helper function to convert FormBuilder schema to SurveyJS
 export function getFormBuilderOutput(schema: FormSchema): any {
-  return convertToSurveyJS(schema);
+  console.log('🔄 [FORM_BUILDER_OUTPUT] Converting schema:', {
+    inputRowsCount: schema.rows?.length || 0,
+    inputTitle: schema.title,
+    inputRows: schema.rows?.map(r => ({
+      id: r.id,
+      columnsCount: r.columns?.length || 0,
+      totalFields: r.columns?.reduce((sum, col) => sum + (col.fields?.length || 0), 0) || 0
+    })) || []
+  });
+
+  const output = convertToSurveyJS(schema);
+  
+  console.log('✅ [FORM_BUILDER_OUTPUT] Conversion complete:', {
+    outputElementsCount: output?.elements?.length || 0,
+    outputTitle: output?.title,
+    outputKeys: output ? Object.keys(output) : [],
+    fullOutput: JSON.stringify(output, null, 2)
+  });
+
+  return output;
 }

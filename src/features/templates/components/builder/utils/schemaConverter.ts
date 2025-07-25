@@ -124,13 +124,23 @@ export function createRowWithColumns(columnCount: number): FormRow {
 }
 
 export function convertToSurveyJS(schema: FormSchema): any {
+  console.log('🔄 [CONVERT_TO_SURVEYJS] Starting conversion:', {
+    schemaTitle: schema.title,
+    rowsCount: schema.rows?.length || 0,
+    fieldsCount: schema.fields?.length || 0,
+    totalFields: schema.rows?.reduce((sum, row) => 
+      sum + row.columns.reduce((colSum, col) => colSum + col.fields.length, 0), 0) || 0
+  });
+  
   // Handle both new row-based schema and legacy field-based schema
   let elements: any[] = [];
   
   if (schema.rows && schema.rows.length > 0) {
+    console.log('📋 [CONVERT_TO_SURVEYJS] Converting row-based schema');
     // New row-based schema
     elements = schema.rows.flatMap(convertRowToSurveyJS);
   } else if (schema.fields && schema.fields.length > 0) {
+    console.log('📋 [CONVERT_TO_SURVEYJS] Converting legacy field-based schema');
     // Legacy field-based schema
     elements = schema.fields.map(convertFieldToSurveyJS);
   }
@@ -142,6 +152,12 @@ export function convertToSurveyJS(schema: FormSchema): any {
     widthMode: 'responsive',
     elements
   };
+
+  console.log('✅ [CONVERT_TO_SURVEYJS] Conversion complete:', {
+    outputElementsCount: elements.length,
+    outputTitle: surveySchema.title,
+    outputKeys: Object.keys(surveySchema)
+  });
 
   return surveySchema;
 }
@@ -241,17 +257,33 @@ function convertFieldToSurveyJS(field: FormField): any {
 }
 
 export function convertFromSurveyJS(surveySchema: any): FormSchema {
+  console.log('🔄 [CONVERT_FROM_SURVEYJS] Starting conversion:', {
+    surveyTitle: surveySchema.title,
+    elementsCount: surveySchema.elements?.length || 0,
+    elementsTypes: surveySchema.elements?.map((e: any) => e.type) || []
+  });
+  
   const fields = (surveySchema.elements || []).map(convertFieldFromSurveyJS);
   
   // Convert legacy fields to row-based structure
   const rows = fields.length > 0 ? [createRowWithFields(fields)] : [];
   
-  return {
+  const result = {
     title: surveySchema.title || 'Untitled Form',
     description: surveySchema.description,
     rows,
     fields // Keep for backward compatibility
   };
+  
+  console.log('✅ [CONVERT_FROM_SURVEYJS] Conversion complete:', {
+    resultTitle: result.title,
+    resultRowsCount: result.rows.length,
+    resultFieldsCount: result.fields.length,
+    resultTotalFields: result.rows.reduce((sum, row) => 
+      sum + row.columns.reduce((colSum, col) => colSum + col.fields.length, 0), 0)
+  });
+
+  return result;
 }
 
 function createRowWithFields(fields: FormField[]): FormRow {
