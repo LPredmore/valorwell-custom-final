@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_types: {
+        Row: {
+          created_at: string
+          id: number
+          is_active: boolean | null
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_active?: boolean | null
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_active?: boolean | null
+          name?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_recurring: string | null
@@ -239,12 +260,13 @@ export type Database = {
           eligibility_status_primary: string | null
           eligibility_status_secondary: string | null
           eligibility_status_tertiary: string | null
+          email: string | null
           first_name: string | null
           id: string
           last_name: string | null
           phone: string | null
           profile_id: string | null
-          state: string | null
+          state: Database["public"]["Enums"]["states"] | null
           stripe_customer_id: string | null
           updated_at: string
           zip_code: string | null
@@ -365,12 +387,13 @@ export type Database = {
           eligibility_status_primary?: string | null
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
+          email?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
           phone?: string | null
           profile_id?: string | null
-          state?: string | null
+          state?: Database["public"]["Enums"]["states"] | null
           stripe_customer_id?: string | null
           updated_at?: string
           zip_code?: string | null
@@ -491,12 +514,13 @@ export type Database = {
           eligibility_status_primary?: string | null
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
+          email?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
           profile_id?: string | null
-          state?: string | null
+          state?: Database["public"]["Enums"]["states"] | null
           stripe_customer_id?: string | null
           updated_at?: string
           zip_code?: string | null
@@ -1273,6 +1297,7 @@ export type Database = {
     }
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
+      "Biological Sex": "Male" | "Female"
       specialty_type: "Mental Health" | "Speech Therapy"
       states:
         | "Alabama"
@@ -1468,6 +1493,7 @@ export const Constants = {
   public: {
     Enums: {
       appointment_status: ["scheduled", "documented", "no show", "cancelled"],
+      "Biological Sex": ["Male", "Female"],
       specialty_type: ["Mental Health", "Speech Therapy"],
       states: [
         "Alabama",
