@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AppointmentEvent, AppointmentStatus } from '../types/calendar';
 import { format } from 'date-fns';
 import { useCreateDailyRoom } from '@/features/telehealth/hooks/useTelehealth';
+import { useAuth } from '@/context/AuthContext';
 
 interface AppointmentType {
   id: number;
@@ -58,6 +59,25 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createDailyRoomMutation = useCreateDailyRoom();
+  const { user } = useAuth();
+
+  // Get current user's clinician ID
+  const { data: currentClinician } = useQuery({
+    queryKey: ['current-clinician', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('clinicians')
+        .select('id')
+        .eq('profile_id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   const { data: clients = [] } = useQuery({
     queryKey: ['clients'],
@@ -92,6 +112,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const createAppointmentMutation = useMutation({
     mutationFn: async (appointmentData: typeof formData) => {
+      if (!currentClinician?.id) {
+        throw new Error('Clinician ID not found. Please ensure you are logged in as a clinician.');
+      }
+
       let video_room_url = null;
       
       // Create Daily.co room if telehealth is enabled
@@ -118,7 +142,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         .from('appointments')
         .insert([{
           client_id: appointmentData.client_id,
-          clinician_id: '00000000-0000-0000-0000-000000000000', // Replace with actual clinician ID
+          clinician_id: currentClinician.id,
           type: appointmentData.type,
           notes: appointmentData.notes,
           status: appointmentData.status,
