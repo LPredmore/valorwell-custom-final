@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
@@ -48,7 +49,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     ampm: 'AM',
     plannedLength: '60',
     status: 'scheduled' as AppointmentStatus,
-    enableTelehealth: false
+    enableTelehealth: false,
+    isRecurring: false,
+    frequency: 'weekly',
+    repeatUntil: null as Date | null
   });
 
   const { toast } = useToast();
@@ -211,7 +215,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         ampm,
         plannedLength: '60',
         status: 'scheduled' as AppointmentStatus,
-        enableTelehealth: false
+        enableTelehealth: false,
+        isRecurring: false,
+        frequency: 'weekly',
+        repeatUntil: null
       });
     } else if (selectedEvent) {
       const startDate = selectedEvent.start;
@@ -230,7 +237,10 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         ampm,
         plannedLength: duration.toString(),
         status: selectedEvent.resource?.status || 'scheduled' as AppointmentStatus,
-        enableTelehealth: false
+        enableTelehealth: false,
+        isRecurring: false,
+        frequency: 'weekly',
+        repeatUntil: null
       });
     }
   }, [selectedSlot, selectedEvent]);
@@ -406,6 +416,66 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             />
             <Label htmlFor="telehealth">Enable Telehealth Video Session</Label>
           </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="recurring"
+              checked={formData.isRecurring}
+              onCheckedChange={(checked) => 
+                setFormData({ ...formData, isRecurring: checked as boolean })
+              }
+            />
+            <Label htmlFor="recurring">Recurring</Label>
+          </div>
+
+          {formData.isRecurring && (
+            <div className="space-y-4 p-4 border rounded-md bg-muted/20">
+              <div className="space-y-2">
+                <Label htmlFor="frequency">Frequency</Label>
+                <Select
+                  value={formData.frequency}
+                  onValueChange={(value) => setFormData({ ...formData, frequency: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="every-2-weeks">Every 2 Weeks</SelectItem>
+                    <SelectItem value="every-3-weeks">Every 3 Weeks</SelectItem>
+                    <SelectItem value="every-4-weeks">Every 4 Weeks</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Repeat Until</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.repeatUntil && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.repeatUntil ? format(formData.repeatUntil, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.repeatUntil}
+                      onSelect={(date) => setFormData({ ...formData, repeatUntil: date })}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          )}
 
           {selectedEvent && (
             <div className="space-y-2">
