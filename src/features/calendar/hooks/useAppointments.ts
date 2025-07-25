@@ -28,7 +28,7 @@ export const useAppointments = (dateRange?: { start: Date; end: Date }) => {
         .from('appointments')
         .select(`
           *,
-          clients!inner(
+          clients!appointments_client_id_fkey(
             id,
             first_name,
             last_name

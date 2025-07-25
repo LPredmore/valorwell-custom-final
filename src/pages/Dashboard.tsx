@@ -6,6 +6,7 @@ import { Calendar, Users, Video, FileText, Clock, AlertCircle, Plus, User } from
 import { useAuth } from '@/context/AuthContext';
 import { useAppointments } from '@/features/calendar/hooks/useAppointments';
 import { useProfile } from '@/hooks/useProfile';
+import { useClinicians } from '@/hooks/useClinicians';
 import { Link } from 'react-router-dom';
 import { format, isToday, startOfDay, endOfDay, isBefore, isAfter, startOfTomorrow } from 'date-fns';
 
@@ -17,10 +18,13 @@ export const Dashboard: React.FC = () => {
   // Fetch appointments for a wider range to get past and future appointments
   const { data: allAppointments = [] } = useAppointments();
 
+  // Get current clinician's ID from clinicians table
+  const { data: clinicians = [] } = useClinicians();
+  const currentClinician = clinicians.find(c => c.profile_id === profile?.id);
+  
   // Filter appointments for current clinician only
   const clinicianAppointments = allAppointments.filter(apt => {
-    // Get clinician profile_id from the appointments table via the clinicians join
-    return profile?.role === 'clinician' && apt.clinician_id;
+    return profile?.role === 'clinician' && apt.clinician_id === currentClinician?.id;
   });
 
   // Today's appointments
@@ -63,7 +67,9 @@ export const Dashboard: React.FC = () => {
                     <div className="flex items-center gap-3 mb-3">
                       <User className="h-5 w-5 text-muted-foreground" />
                        <span className="font-medium">
-                         {appointment.client_name || 'Unknown Client'}
+                        {appointment.clients?.first_name && appointment.clients?.last_name 
+                          ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+                          : 'Unknown Client'}
                        </span>
                     </div>
                     <div className="text-sm text-muted-foreground mb-2">
@@ -109,7 +115,9 @@ export const Dashboard: React.FC = () => {
                   <div className="flex items-center gap-3 mb-3">
                     <User className="h-5 w-5 text-muted-foreground" />
                      <span className="font-medium">
-                       {appointment.client_name || 'Unknown Client'}
+                        {appointment.clients?.first_name && appointment.clients?.last_name 
+                          ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+                          : 'Unknown Client'}
                      </span>
                   </div>
                   <div className="text-sm text-muted-foreground mb-2">
@@ -166,7 +174,9 @@ export const Dashboard: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                          <span className="font-medium">
-                           {appointment.client_name || 'Unknown Client'}
+                            {appointment.clients?.first_name && appointment.clients?.last_name 
+                              ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
+                              : 'Unknown Client'}
                          </span>
                       </div>
                       <p className="text-sm text-muted-foreground">{appointment.type}</p>
