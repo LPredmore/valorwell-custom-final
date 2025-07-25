@@ -328,6 +328,16 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate recurring appointments
+    if (formData.isRecurring && !formData.repeatUntil) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please select a "repeat until" date for recurring appointments.',
+      });
+      return;
+    }
+    
     if (selectedEvent) {
       updateAppointmentMutation.mutate({
         ...formData,
