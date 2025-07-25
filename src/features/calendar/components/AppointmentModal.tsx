@@ -178,6 +178,29 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const updateAppointmentMutation = useMutation({
     mutationFn: async (appointmentData: typeof formData & { id: string }) => {
+      // Get current appointment to check existing video room
+      const { data: currentAppointment, error: fetchError } = await supabase
+        .from('appointments')
+        .select('video_room_url')
+        .eq('id', appointmentData.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      let video_room_url = currentAppointment.video_room_url;
+      
+      // Handle telehealth room creation/removal
+      if (appointmentData.enableTelehealth && !currentAppointment.video_room_url) {
+        // Create new Daily.co room if telehealth enabled and no existing room
+        const roomName = `appt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const roomData = await createDailyRoomMutation.mutateAsync({ roomName });
+        video_room_url = roomData.url;
+      } else if (!appointmentData.enableTelehealth) {
+        // Remove video room URL if telehealth is disabled
+        video_room_url = null;
+      }
+      // If telehealth enabled and room exists, keep existing room
+
       // Calculate start and end times
       const hour24 = appointmentData.ampm === 'PM' && appointmentData.hour !== '12' 
         ? parseInt(appointmentData.hour) + 12 
@@ -199,7 +222,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           notes: appointmentData.notes,
           status: appointmentData.status,
           start_at: startDate.toISOString(),
-          end_at: endDate.toISOString()
+          end_at: endDate.toISOString(),
+          video_room_url
         })
         .eq('id', appointmentData.id)
         .select()
@@ -264,7 +288,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         ampm,
         plannedLength: duration.toString(),
         status: selectedEvent.resource?.status || 'scheduled' as AppointmentStatus,
-        enableTelehealth: false,
+        enableTelehealth: !!selectedEvent.resource?.video_room_url,
         isRecurring: false,
         frequency: 'weekly',
         repeatUntil: null
@@ -276,6 +300,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     mutationFn: async (appointmentData: typeof formData) => {
       if (!currentClinician?.id) {
         throw new Error('Clinician ID not found. Please ensure you are logged in as a clinician.');
+      }
+
+      let video_room_url = null;
+      
+      // Create Daily.co room if telehealth is enabled
+      if (appointmentData.enableTelehealth) {
+        const roomName = `recurring-appt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const roomData = await createDailyRoomMutation.mutateAsync({ roomName });
+        video_room_url = roomData.url;
       }
 
       // Calculate start and end times
@@ -301,7 +334,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         end_at: endDate.toISOString(),
         is_recurring: true,
         frequency: appointmentData.frequency as 'weekly' | 'every-2-weeks' | 'every-3-weeks' | 'every-4-weeks',
-        repeat_until: appointmentData.repeatUntil!
+        repeat_until: appointmentData.repeatUntil!,
+        video_room_url
       };
 
       const result = await createRecurringAppointments(recurringData);

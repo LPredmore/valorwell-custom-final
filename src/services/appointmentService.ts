@@ -21,6 +21,7 @@ export interface CreateAppointmentData {
   is_recurring?: boolean;
   frequency?: 'weekly' | 'every-2-weeks' | 'every-3-weeks' | 'every-4-weeks';
   repeat_until?: Date;
+  video_room_url?: string | null;
 }
 
 export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {
@@ -281,7 +282,7 @@ export const createRecurringAppointments = async (
       client_name: `${clientResult.data?.first_name || ''} ${clientResult.data?.last_name || ''}`.trim(),
       client_email: clientResult.data?.email,
       clinician_name: `${clinicianResult.data?.first_name || ''} ${clinicianResult.data?.last_name || ''}`.trim(),
-      video_room_url: null // Will be created per appointment if needed
+      video_room_url: appointmentData.video_room_url || null
     };
 
     // For now, create appointments one by one until the database function is working
