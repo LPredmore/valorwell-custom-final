@@ -27,20 +27,19 @@ export const Dashboard: React.FC = () => {
     return profile?.role === 'clinician' && apt.clinician_id === currentClinician?.id;
   });
 
-  // Today's appointments
+  // Today's appointments: scheduled today with status 'scheduled'
   const todayAppointments = clinicianAppointments.filter(apt => 
-    isToday(new Date(apt.start_at))
+    isToday(new Date(apt.start_at)) && apt.status === 'scheduled'
   );
 
-  // Outstanding documentation (today or before, excluding cancelled appointments)
+  // Outstanding documentation: scheduled today or before with status 'scheduled'
   const outstandingDocumentation = clinicianAppointments.filter(apt => {
     const appointmentDate = new Date(apt.start_at);
     return !isAfter(appointmentDate, endOfDay(today)) && 
-           apt.status !== 'cancelled' && 
-           apt.status !== 'documented';
+           apt.status === 'scheduled';
   });
 
-  // Future appointments (after today)
+  // Future appointments: scheduled after today (any status)
   const futureAppointments = clinicianAppointments.filter(apt => {
     const appointmentDate = new Date(apt.start_at);
     return isAfter(appointmentDate, endOfDay(today));
