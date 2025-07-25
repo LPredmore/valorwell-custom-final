@@ -229,13 +229,17 @@ export const createRecurringAppointments = async (
     }
 
     // Validate the base appointment
+    console.log('Starting validation for recurring appointments...');
     const validation = await validateAppointment(appointmentData);
+    console.log('Validation result:', validation);
     
     if (!validation.isValid) {
+      console.log('Validation failed with errors:', validation.errors);
+      console.log('Validation failed with conflicts:', validation.conflicts);
       return {
         data: null,
         error: {
-          message: 'Validation failed',
+          message: `Validation failed: ${validation.errors.join(', ')}`,
           details: {
             errors: validation.errors,
             conflicts: validation.conflicts
