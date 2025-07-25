@@ -315,10 +315,12 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       onClose();
     },
     onError: (error) => {
+      console.error('Recurring appointment error:', error);
+      const errorMessage = error?.message || 'Failed to create recurring appointments';
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to create recurring appointments',
+        description: errorMessage,
       });
     }
   });
