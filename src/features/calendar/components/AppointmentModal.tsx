@@ -7,12 +7,23 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AppointmentEvent, AppointmentStatus } from '../types/calendar';
 import { format } from 'date-fns';
 import { useCreateDailyRoom } from '@/features/telehealth/hooks/useTelehealth';
+
+interface AppointmentType {
+  id: number;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+}
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -29,10 +40,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     client_id: '',
-    type: 'therapy',
+    type: '',
     notes: '',
-    start_at: '',
-    end_at: '',
+    date: null as Date | null,
+    hour: '9',
+    minute: '00',
+    ampm: 'AM',
+    plannedLength: '60',
     status: 'scheduled' as AppointmentStatus,
     enableTelehealth: false
   });
@@ -58,6 +72,20 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     },
   });
 
+  const { data: appointmentTypes = [] } = useQuery<AppointmentType[]>({
+    queryKey: ['appointment-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appointment_types' as any)
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      return (data as unknown) as AppointmentType[];
+    },
+  });
+
   const createAppointmentMutation = useMutation({
     mutationFn: async (appointmentData: typeof formData) => {
       let video_room_url = null;
@@ -69,6 +97,19 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         video_room_url = roomData.url;
       }
 
+      // Calculate start and end times
+      const hour24 = appointmentData.ampm === 'PM' && appointmentData.hour !== '12' 
+        ? parseInt(appointmentData.hour) + 12 
+        : appointmentData.ampm === 'AM' && appointmentData.hour === '12'
+        ? 0
+        : parseInt(appointmentData.hour);
+      
+      const startDate = new Date(appointmentData.date!);
+      startDate.setHours(hour24, parseInt(appointmentData.minute), 0, 0);
+      
+      const endDate = new Date(startDate);
+      endDate.setMinutes(endDate.getMinutes() + parseInt(appointmentData.plannedLength));
+
       const { data, error } = await supabase
         .from('appointments')
         .insert([{
@@ -77,8 +118,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           type: appointmentData.type,
           notes: appointmentData.notes,
           status: appointmentData.status,
-          start_at: new Date(appointmentData.start_at).toISOString(),
-          end_at: new Date(appointmentData.end_at).toISOString(),
+          start_at: startDate.toISOString(),
+          end_at: endDate.toISOString(),
           video_room_url
         }])
         .select()
@@ -106,6 +147,19 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const updateAppointmentMutation = useMutation({
     mutationFn: async (appointmentData: typeof formData & { id: string }) => {
+      // Calculate start and end times
+      const hour24 = appointmentData.ampm === 'PM' && appointmentData.hour !== '12' 
+        ? parseInt(appointmentData.hour) + 12 
+        : appointmentData.ampm === 'AM' && appointmentData.hour === '12'
+        ? 0
+        : parseInt(appointmentData.hour);
+      
+      const startDate = new Date(appointmentData.date!);
+      startDate.setHours(hour24, parseInt(appointmentData.minute), 0, 0);
+      
+      const endDate = new Date(startDate);
+      endDate.setMinutes(endDate.getMinutes() + parseInt(appointmentData.plannedLength));
+
       const { data, error } = await supabase
         .from('appointments')
         .update({
@@ -113,8 +167,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           type: appointmentData.type,
           notes: appointmentData.notes,
           status: appointmentData.status,
-          start_at: new Date(appointmentData.start_at).toISOString(),
-          end_at: new Date(appointmentData.end_at).toISOString()
+          start_at: startDate.toISOString(),
+          end_at: endDate.toISOString()
         })
         .eq('id', appointmentData.id)
         .select()
@@ -142,22 +196,39 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   useEffect(() => {
     if (selectedSlot) {
+      const startDate = selectedSlot.start;
+      const hour12 = startDate.getHours() > 12 ? startDate.getHours() - 12 : startDate.getHours() === 0 ? 12 : startDate.getHours();
+      const ampm = startDate.getHours() >= 12 ? 'PM' : 'AM';
+      const minutes = Math.floor(startDate.getMinutes() / 15) * 15; // Round to nearest 15 minutes
+      
       setFormData({
         client_id: '',
-        type: 'therapy',
+        type: '',
         notes: '',
-        start_at: format(selectedSlot.start, "yyyy-MM-dd'T'HH:mm"),
-        end_at: format(selectedSlot.end, "yyyy-MM-dd'T'HH:mm"),
+        date: startDate,
+        hour: hour12.toString(),
+        minute: minutes.toString().padStart(2, '0'),
+        ampm,
+        plannedLength: '60',
         status: 'scheduled' as AppointmentStatus,
         enableTelehealth: false
       });
     } else if (selectedEvent) {
+      const startDate = selectedEvent.start;
+      const endDate = selectedEvent.end;
+      const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60)); // Duration in minutes
+      const hour12 = startDate.getHours() > 12 ? startDate.getHours() - 12 : startDate.getHours() === 0 ? 12 : startDate.getHours();
+      const ampm = startDate.getHours() >= 12 ? 'PM' : 'AM';
+      
       setFormData({
         client_id: selectedEvent.resource?.client_id || '',
-        type: selectedEvent.resource?.type || 'therapy',
+        type: selectedEvent.resource?.type || '',
         notes: selectedEvent.resource?.notes || '',
-        start_at: format(selectedEvent.start, "yyyy-MM-dd'T'HH:mm"),
-        end_at: format(selectedEvent.end, "yyyy-MM-dd'T'HH:mm"),
+        date: startDate,
+        hour: hour12.toString(),
+        minute: startDate.getMinutes().toString().padStart(2, '0'),
+        ampm,
+        plannedLength: duration.toString(),
         status: selectedEvent.resource?.status || 'scheduled' as AppointmentStatus,
         enableTelehealth: false
       });
@@ -213,37 +284,115 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               onValueChange={(value) => setFormData({ ...formData, type: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select appointment type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="therapy">Therapy Session</SelectItem>
-                <SelectItem value="consultation">Consultation</SelectItem>
-                <SelectItem value="follow-up">Follow-up</SelectItem>
-                <SelectItem value="assessment">Assessment</SelectItem>
+                {appointmentTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.name}>
+                    {type.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_at">Start Time</Label>
-              <Input
-                id="start_at"
-                type="datetime-local"
-                value={formData.start_at}
-                onChange={(e) => setFormData({ ...formData, start_at: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end_at">End Time</Label>
-              <Input
-                id="end_at"
-                type="datetime-local"
-                value={formData.end_at}
-                onChange={(e) => setFormData({ ...formData, end_at: e.target.value })}
-                required
-              />
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.date ? format(formData.date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.date}
+                  onSelect={(date) => setFormData({ ...formData, date })}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Start Time</Label>
+            <div className="grid grid-cols-4 gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Hour</Label>
+                <Select
+                  value={formData.hour}
+                  onValueChange={(value) => setFormData({ ...formData, hour: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
+                      <SelectItem key={hour} value={hour.toString()}>
+                        {hour}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Minutes</Label>
+                <Select
+                  value={formData.minute}
+                  onValueChange={(value) => setFormData({ ...formData, minute: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="00">00</SelectItem>
+                    <SelectItem value="15">15</SelectItem>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="45">45</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">AM/PM</Label>
+                <Select
+                  value={formData.ampm}
+                  onValueChange={(value) => setFormData({ ...formData, ampm: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="AM">AM</SelectItem>
+                    <SelectItem value="PM">PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Planned Length</Label>
+                <Select
+                  value={formData.plannedLength}
+                  onValueChange={(value) => setFormData({ ...formData, plannedLength: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="60">60 minutes</SelectItem>
+                    <SelectItem value="90">90 minutes</SelectItem>
+                    <SelectItem value="120">120 minutes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
