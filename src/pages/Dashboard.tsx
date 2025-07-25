@@ -5,77 +5,43 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Users, Video, FileText, Clock, AlertCircle, Plus, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useAppointments } from '@/features/calendar/hooks/useAppointments';
+import { useProfile } from '@/hooks/useProfile';
 import { Link } from 'react-router-dom';
-import { format, isToday, startOfDay, endOfDay } from 'date-fns';
+import { format, isToday, startOfDay, endOfDay, isBefore, isAfter, startOfTomorrow } from 'date-fns';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { data: profile } = useProfile();
   const today = new Date();
   
-  const { data: appointments = [] } = useAppointments({
-    start: startOfDay(today),
-    end: endOfDay(today)
+  // Fetch appointments for a wider range to get past and future appointments
+  const { data: allAppointments = [] } = useAppointments();
+
+  // Filter appointments for current clinician only
+  const clinicianAppointments = allAppointments.filter(apt => {
+    // Get clinician profile_id from the appointments table via the clinicians join
+    return profile?.role === 'clinician' && apt.clinician_id;
   });
 
-  const todayAppointments = appointments.filter(apt => 
+  // Today's appointments
+  const todayAppointments = clinicianAppointments.filter(apt => 
     isToday(new Date(apt.start_at))
   );
 
-  const upcomingAppointments = todayAppointments
-    .slice(0, 3)
-    .map(apt => ({
-      id: apt.id,
-      client: apt.client_name || 'Unknown Client',
-      time: format(new Date(apt.start_at), 'h:mm a'),
-      type: apt.type,
-      status: apt.status
-    }));
+  // Outstanding documentation (today or before, excluding cancelled appointments)
+  const outstandingDocumentation = clinicianAppointments.filter(apt => {
+    const appointmentDate = new Date(apt.start_at);
+    return !isAfter(appointmentDate, endOfDay(today)) && 
+           apt.status !== 'cancelled' && 
+           apt.status !== 'documented';
+  });
 
-  const stats = [
-    {
-      title: 'Today\'s Appointments',
-      value: todayAppointments.length.toString(),
-      description: `${todayAppointments.filter(apt => apt.status === 'scheduled').length} scheduled`,
-      icon: Calendar,
-      color: 'text-blue-600',
-    },
-    {
-      title: 'Active Clients',
-      value: '127',
-      description: '+5 this week',
-      icon: Users,
-      color: 'text-green-600',
-    },
-    {
-      title: 'Telehealth Sessions',
-      value: todayAppointments.filter(apt => apt.type === 'telehealth').length.toString(),
-      description: 'Scheduled today',
-      icon: Video,
-      color: 'text-purple-600',
-    },
-    {
-      title: 'Pending Documentation',
-      value: '12',
-      description: 'Requires attention',
-      icon: FileText,
-      color: 'text-orange-600',
-    },
-  ];
+  // Future appointments (after today)
+  const futureAppointments = clinicianAppointments.filter(apt => {
+    const appointmentDate = new Date(apt.start_at);
+    return isAfter(appointmentDate, endOfDay(today));
+  }).slice(0, 10); // Limit to first 10 future appointments
 
-  const alerts = [
-    {
-      id: 1,
-      message: 'John Doe missed their appointment yesterday',
-      type: 'warning',
-      time: '2 hours ago',
-    },
-    {
-      id: 2,
-      message: 'New client registration: Maria Garcia',
-      type: 'info',
-      time: '4 hours ago',
-    },
-  ];
 
   return (
     <div className="h-full">
@@ -93,8 +59,30 @@ export const Dashboard: React.FC = () => {
             {todayAppointments.length > 0 ? (
               <div className="space-y-4">
                 {todayAppointments.map((appointment) => (
-                  <div key={appointment.id} className="text-center text-muted-foreground">
-                    <p>No appointments scheduled for today.</p>
+                  <div key={appointment.id} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <User className="h-5 w-5 text-muted-foreground" />
+                       <span className="font-medium">
+                         {appointment.client_name || 'Unknown Client'}
+                       </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      <Calendar className="h-4 w-4 inline mr-1" />
+                      {format(new Date(appointment.start_at), 'MMM dd, yyyy')}
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-3">
+                      <Clock className="h-4 w-4 inline mr-1" />
+                      {format(new Date(appointment.start_at), 'h:mm a')} - {format(new Date(appointment.end_at), 'h:mm a')}
+                    </div>
+                    <p className="text-sm mb-3">{appointment.type}</p>
+                    <div className={`inline-flex items-center px-2 py-1 rounded text-xs ${
+                      appointment.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                      appointment.status === 'documented' ? 'bg-blue-100 text-blue-700' :
+                      appointment.status === 'no show' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {appointment.status}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -115,54 +103,41 @@ export const Dashboard: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto space-y-4">
-            {/* Sample outstanding documentation items */}
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <User className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Bobby zzzBoucher</span>
+            {outstandingDocumentation.length > 0 ? (
+              outstandingDocumentation.map((appointment) => (
+                <div key={appointment.id} className="border rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <User className="h-5 w-5 text-muted-foreground" />
+                     <span className="font-medium">
+                       {appointment.client_name || 'Unknown Client'}
+                     </span>
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    <Calendar className="h-4 w-4 inline mr-1" />
+                    {format(new Date(appointment.start_at), 'MMM dd, yyyy')}
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-3">
+                    <Clock className="h-4 w-4 inline mr-1" />
+                    {format(new Date(appointment.start_at), 'h:mm a')} - {format(new Date(appointment.end_at), 'h:mm a')}
+                  </div>
+                  <p className="text-sm mb-3">{appointment.type}</p>
+                  <Button className="w-full mb-2">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Document Session
+                  </Button>
+                  {appointment.status === 'no show' && (
+                    <div className="flex items-center gap-2 text-red-600 text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      Session Did Not Occur
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <p>No outstanding documentation.</p>
               </div>
-              <div className="text-sm text-muted-foreground mb-2">
-                <Calendar className="h-4 w-4 inline mr-1" />
-                Jul 16, 2025
-              </div>
-              <div className="text-sm text-muted-foreground mb-3">
-                <Clock className="h-4 w-4 inline mr-1" />
-                10:00 AM - 11:00 AM (Chicago (-05:00))
-              </div>
-              <p className="text-sm mb-3">therapy_session</p>
-              <Button className="w-full mb-2">
-                <FileText className="h-4 w-4 mr-2" />
-                Document Session
-              </Button>
-              <div className="flex items-center gap-2 text-red-600 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                Session Did Not Occur
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <User className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Mr Deeds</span>
-              </div>
-              <div className="text-sm text-muted-foreground mb-2">
-                <Calendar className="h-4 w-4 inline mr-1" />
-                Jul 16, 2025
-              </div>
-              <div className="text-sm text-muted-foreground mb-3">
-                <Clock className="h-4 w-4 inline mr-1" />
-                10:00 AM - 11:00 AM (Chicago (-05:00))
-              </div>
-              <p className="text-sm mb-3">therapy_session</p>
-              <Button className="w-full mb-2">
-                <FileText className="h-4 w-4 mr-2" />
-                Document Session
-              </Button>
-              <div className="flex items-center gap-2 text-red-600 text-sm">
-                <AlertCircle className="h-4 w-4" />
-                Session Did Not Occur
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -175,62 +150,35 @@ export const Dashboard: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto space-y-4">
-            {/* Sample upcoming appointments */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Clock className="h-4 w-4" />
-                    10:00 AM - 11:00 AM (Chicago (-05:00))
+            {futureAppointments.length > 0 ? (
+              <div className="space-y-4">
+                {futureAppointments.map((appointment) => (
+                  <div key={appointment.id} className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Clock className="h-4 w-4" />
+                        {format(new Date(appointment.start_at), 'h:mm a')} - {format(new Date(appointment.end_at), 'h:mm a')}
+                      </div>
+                      <div className="text-sm text-muted-foreground mb-1">
+                        <Calendar className="h-4 w-4 inline mr-1" />
+                        {format(new Date(appointment.start_at), 'MMM dd, yyyy')}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                         <span className="font-medium">
+                           {appointment.client_name || 'Unknown Client'}
+                         </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{appointment.type}</p>
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    <Calendar className="h-4 w-4 inline mr-1" />
-                    Jul 23, 2025
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Bobby zzzBoucher</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">therapy_session</p>
-                </div>
+                ))}
               </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Clock className="h-4 w-4" />
-                    10:00 AM - 11:00 AM (Chicago (-05:00))
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    <Calendar className="h-4 w-4 inline mr-1" />
-                    Jul 30, 2025
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Bobby zzzBoucher</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">therapy_session</p>
-                </div>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <p>No upcoming appointments.</p>
               </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Clock className="h-4 w-4" />
-                    10:00 AM - 11:00 AM (Chicago (-05:00))
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    <Calendar className="h-4 w-4 inline mr-1" />
-                    Aug 6, 2025
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Bobby zzzBoucher</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">therapy_session</p>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
