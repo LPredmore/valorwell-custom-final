@@ -224,7 +224,7 @@ export const createRecurringAppointments = async (
       });
       return {
         data: null,
-        error: { message: 'Recurring appointment data is incomplete' }
+        error: { message: 'Recurring appointment data is incomplete. Please select a "repeat until" date.' }
       };
     }
 
