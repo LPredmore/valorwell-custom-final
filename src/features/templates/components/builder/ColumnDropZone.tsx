@@ -13,11 +13,11 @@ interface ColumnDropZoneProps {
   onDeleteField: (fieldId: string) => void;
 }
 
-export function ColumnDropZone({
-  column,
-  rowId,
-  selectedField,
-  onSelectField,
+export function ColumnDropZone({ 
+  column, 
+  rowId, 
+  selectedField, 
+  onSelectField, 
   onDeleteField
 }: ColumnDropZoneProps) {
   const { isOver, setNodeRef } = useDroppable({

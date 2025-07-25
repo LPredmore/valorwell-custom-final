@@ -2,7 +2,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormField, FormRow } from './utils/schemaConverter';
-import { RowRenderer } from './RowRenderer';
+import { RowRenderer } from './SortableRowRenderer';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -23,7 +23,7 @@ export function FormCanvas({
   onDeleteField, 
   onAddRow, 
   onUpdateRow, 
-  onDeleteRow 
+  onDeleteRow
 }: FormCanvasProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: 'form-canvas'
