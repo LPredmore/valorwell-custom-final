@@ -74,11 +74,19 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
       // Check if it's a data-bound field
       if (active.data.current?.dataBoundField) {
         const dataBoundField = active.data.current.dataBoundField;
+        const defaultProps = {
+          title: dataBoundField.label,
+          name: dataBoundField.columnName,
+          isRequired: false,
+          isReadOnly: dataBoundField.isReadOnly || false,
+          inputType: dataBoundField.dataType === 'date' ? 'date' : 
+                    dataBoundField.dataType === 'number' ? 'number' : 'text'
+        };
         newField = createDataBoundField(
+          dataBoundField.fieldType,
+          defaultProps,
           dataBoundField.tableName,
           dataBoundField.columnName,
-          dataBoundField.fieldType,
-          dataBoundField.label,
           dataBoundField.dataType,
           dataBoundField.isReadOnly || false
         );
