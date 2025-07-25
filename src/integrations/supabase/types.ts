@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_audit: {
+        Row: {
+          action: string
+          appointment_id: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          appointment_id: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          appointment_id?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      appointment_duration_types: {
+        Row: {
+          color_code: string | null
+          created_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          color_code?: string | null
+          created_at?: string | null
+          duration_minutes: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          color_code?: string | null
+          created_at?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       appointment_types: {
         Row: {
           created_at: string
@@ -139,6 +202,27 @@ export type Database = {
             columns: ["clinician_id"]
             isOneToOne: false
             referencedRelation: "clinicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_appointments_client_id"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_appointments_clinician_id"
+            columns: ["clinician_id"]
+            isOneToOne: false
+            referencedRelation: "clinicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_appointments_template_id"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
             referencedColumns: ["id"]
           },
         ]
@@ -1293,7 +1377,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_appointment_conflicts: {
+        Args: {
+          p_clinician_id: string
+          p_start_at: string
+          p_end_at: string
+          p_exclude_appointment_id?: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
