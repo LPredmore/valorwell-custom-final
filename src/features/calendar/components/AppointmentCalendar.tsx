@@ -36,7 +36,8 @@ export const AppointmentCalendar: React.FC = () => {
         .from('appointments')
         .select(`
           *,
-          client_name
+          client_name,
+          recurring_group_id
         `)
         .gte('start_at', startOfMonth)
         .lte('start_at', endOfMonth);

@@ -16,6 +16,7 @@ export interface AppointmentEvent {
     type: string;
     notes?: string;
     client_timezone?: string;
+    recurring_group_id?: string;
     clients: {
       client_first_name: string;
       client_last_name: string;

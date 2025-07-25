@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,6 +58,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     repeatUntil: null as Date | null
   });
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createDailyRoomMutation = useCreateDailyRoom();
@@ -324,6 +326,91 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       });
     }
   });
+
+  const deleteAppointmentMutation = useMutation({
+    mutationFn: async (appointmentId: string) => {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({
+        title: 'Success',
+        description: 'Appointment deleted successfully',
+      });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete appointment',
+      });
+    }
+  });
+
+  const deleteFutureAppointmentsMutation = useMutation({
+    mutationFn: async ({ appointmentId, recurringGroupId }: { appointmentId: string; recurringGroupId: string }) => {
+      // Get the current appointment date
+      const { data: currentAppointment, error: fetchError } = await supabase
+        .from('appointments')
+        .select('start_at')
+        .eq('id', appointmentId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Delete all appointments in the same recurring group that start on or after this appointment's date
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('recurring_group_id', recurringGroupId)
+        .gte('start_at', currentAppointment.start_at);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({
+        title: 'Success',
+        description: 'Future appointments deleted successfully',
+      });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete future appointments',
+      });
+    }
+  });
+
+  const handleDeleteClick = () => {
+    if (selectedEvent?.resource?.recurring_group_id) {
+      setShowDeleteDialog(true);
+    } else {
+      // Single appointment, delete directly
+      deleteAppointmentMutation.mutate(selectedEvent!.id);
+    }
+  };
+
+  const handleDeleteSingle = () => {
+    deleteAppointmentMutation.mutate(selectedEvent!.id);
+    setShowDeleteDialog(false);
+  };
+
+  const handleDeleteFuture = () => {
+    deleteFutureAppointmentsMutation.mutate({
+      appointmentId: selectedEvent!.id,
+      recurringGroupId: selectedEvent!.resource!.recurring_group_id
+    });
+    setShowDeleteDialog(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -601,16 +688,58 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={createAppointmentMutation.isPending || updateAppointmentMutation.isPending || createRecurringMutation.isPending}
-            >
-              {selectedEvent ? 'Update' : formData.isRecurring ? 'Create Recurring' : 'Create'} Appointment
-            </Button>
+          <div className="flex justify-between">
+            {selectedEvent && (
+              <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={handleDeleteClick}
+                    disabled={deleteAppointmentMutation.isPending || deleteFutureAppointmentsMutation.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Appointment</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This appointment is part of a recurring series. What would you like to delete?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteSingle}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      Delete this occurrence only
+                    </AlertDialogAction>
+                    <AlertDialogAction
+                      onClick={handleDeleteFuture}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete this and all future occurrences
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            
+            <div className="flex space-x-2 ml-auto">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={createAppointmentMutation.isPending || updateAppointmentMutation.isPending || createRecurringMutation.isPending}
+              >
+                {selectedEvent ? 'Update' : formData.isRecurring ? 'Create Recurring' : 'Create'} Appointment
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
