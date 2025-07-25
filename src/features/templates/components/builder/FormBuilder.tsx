@@ -13,7 +13,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { FieldPalette } from './FieldPalette';
 import { FormCanvas } from './FormCanvas';
 import { FieldEditor } from './FieldEditor';
-import { FormField, FormSchema, FormRow, createNewField, convertToSurveyJS, convertFromSurveyJS, createDefaultRow, migrateFieldsToRows, getAllFieldsFromRows } from './utils/schemaConverter';
+import { FormField, FormSchema, FormRow, createNewField, createDataBoundField, convertToSurveyJS, convertFromSurveyJS, createDefaultRow, migrateFieldsToRows, getAllFieldsFromRows } from './utils/schemaConverter';
 import { getFieldTypeById } from './utils/fieldTypes';
 
 interface FormBuilderProps {
@@ -66,9 +66,25 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     if (!over) return;
 
     // Handle dropping a new field from palette
-    if (active.data.current?.fieldType) {
-      const fieldType = active.data.current.fieldType;
-      const newField = createNewField(fieldType.surveyType, fieldType.defaultProps);
+    if (active.data.current?.fieldType || active.data.current?.dataBoundField) {
+      let newField;
+      
+      // Check if it's a data-bound field
+      if (active.data.current?.dataBoundField) {
+        const dataBoundField = active.data.current.dataBoundField;
+        newField = createDataBoundField(
+          dataBoundField.tableName,
+          dataBoundField.columnName,
+          dataBoundField.fieldType,
+          dataBoundField.label,
+          dataBoundField.dataType,
+          dataBoundField.isReadOnly || false
+        );
+      } else {
+        // Regular field type
+        const fieldType = active.data.current.fieldType;
+        newField = createNewField(fieldType.surveyType, fieldType.defaultProps);
+      }
       
       // Find the target drop zone
       const dropTarget = over.id.toString();
