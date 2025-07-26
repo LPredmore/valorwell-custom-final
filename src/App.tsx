@@ -10,14 +10,14 @@ import { RoleGuard } from '@/components/RoleGuard';
 
 // Page imports
 import Index from '@/pages/Index';
-import Login from '@/pages/Login';
-import Signup from '@/pages/Signup';
-import Dashboard from '@/pages/Dashboard';
+import { Login } from '@/pages/Login';
+import { Signup } from '@/pages/Signup';
+import { Dashboard } from '@/pages/Dashboard';
 import Clients from '@/pages/Clients';
 import ClientDetails from '@/pages/ClientDetails';
 import Calendar from '@/pages/Calendar';
-import Profile from '@/pages/Profile';
-import ClinicianProfile from '@/pages/ClinicianProfile';
+import { Profile } from '@/pages/Profile';
+import { ClinicianProfile } from '@/pages/ClinicianProfile';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import { SessionDocumentation } from '@/pages/SessionDocumentation';
