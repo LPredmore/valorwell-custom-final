@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -26,16 +25,33 @@ const templateSchema = z.object({
 type TemplateFormData = z.infer<typeof templateSchema>;
 
 export const EditTemplatePage: React.FC = () => {
+  console.log('🚀 [EDIT_TEMPLATE_PAGE] Component mounted/re-rendered');
+  
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { data: templates, isLoading } = useTemplates();
   const updateTemplate = useUpdateTemplate();
   
-  // Simplified state management - match CreateTemplatePage pattern
-  const [builderSchema, setBuilderSchema] = useState<FormSchema>(createFormBuilderSchema());
-  const [formSchema, setFormSchema] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('builder');
+  // State management with logging
+  const [builderSchema, setBuilderSchema] = useState<FormSchema>(() => {
+    const initial = createFormBuilderSchema();
+    console.log('📊 [STATE_INIT] Initial builderSchema created:', {
+      title: initial.title,
+      rowsCount: initial.rows?.length || 0
+    });
+    return initial;
+  });
+  
+  const [formSchema, setFormSchema] = useState<any>(() => {
+    console.log('📊 [STATE_INIT] Initial formSchema set to null');
+    return null;
+  });
+  
+  const [activeTab, setActiveTab] = useState(() => {
+    console.log('📊 [STATE_INIT] Initial activeTab set to: builder');
+    return 'builder';
+  });
 
   const template = templates?.find(t => t.id === id);
 
@@ -47,56 +63,88 @@ export const EditTemplatePage: React.FC = () => {
     },
   });
 
-  // Load template data  
+  // Track form submissions with detailed logging
+  const originalHandleSubmit = form.handleSubmit;
+  const wrappedHandleSubmit = useCallback((onValid: any, onInvalid?: any) => {
+    console.log('📝 [FORM_SUBMIT] handleSubmit wrapper called');
+    return originalHandleSubmit((data) => {
+      console.log('📝 [FORM_SUBMIT] Form validation passed, calling onValid with:', data);
+      return onValid(data);
+    }, (errors) => {
+      console.log('❌ [FORM_SUBMIT] Form validation failed with errors:', errors);
+      if (onInvalid) return onInvalid(errors);
+    });
+  }, [originalHandleSubmit]);
+
+  // Load template data with logging
   useEffect(() => {
-    console.log('🔄 [EDIT_TEMPLATE] Loading template data:', {
+    console.log('🔄 [TEMPLATE_EFFECT] Effect triggered:', {
       templateExists: !!template,
       templateId: template?.id,
       templateName: template?.name,
-      schemaType: typeof template?.schema_json,
-      schemaKeys: template?.schema_json ? Object.keys(template.schema_json) : [],
+      hasSchema: !!template?.schema_json
     });
     
     if (template) {
-      console.log('📝 [EDIT_TEMPLATE] Setting form data and schema');
+      console.log('📝 [TEMPLATE_LOAD] Loading template data into form and state');
+      
       form.reset({
         name: template.name,
         description: template.description || '',
       });
+      console.log('📝 [TEMPLATE_LOAD] Form reset with template data');
       
-      // Set both schemas like CreateTemplatePage does
       setFormSchema(template.schema_json);
+      console.log('📝 [TEMPLATE_LOAD] formSchema state updated');
+      
       const newBuilderSchema = createFormBuilderSchema(template.schema_json);
-      console.log('🏗️ [EDIT_TEMPLATE] Created builder schema:', {
-        builderRowsCount: newBuilderSchema.rows?.length || 0,
-        builderTitle: newBuilderSchema.title,
+      console.log('📝 [TEMPLATE_LOAD] Created new builder schema:', {
+        title: newBuilderSchema.title,
+        rowsCount: newBuilderSchema.rows?.length || 0
       });
       
       setBuilderSchema(newBuilderSchema);
+      console.log('📝 [TEMPLATE_LOAD] builderSchema state updated');
     }
   }, [template, form]);
 
-  // Simple schema update handlers - no auto-save complexity
+  // Schema update handlers with comprehensive logging
   const handleBuilderSchemaChange = useCallback((newSchema: FormSchema) => {
-    console.log('🔄 [SCHEMA_CHANGE] Builder schema updated:', {
-      rowsCount: newSchema.rows?.length || 0,
+    console.log('🔄 [BUILDER_SCHEMA_CHANGE] === FUNCTION CALLED ===');
+    console.log('🔄 [BUILDER_SCHEMA_CHANGE] New schema received:', {
       title: newSchema.title,
+      rowsCount: newSchema.rows?.length || 0,
+      timestamp: new Date().toISOString()
     });
+    console.log('🔄 [BUILDER_SCHEMA_CHANGE] Call stack:', new Error().stack);
+    
     setBuilderSchema(newSchema);
-  }, []);
+    console.log('🔄 [BUILDER_SCHEMA_CHANGE] State updated');
+    
+    // Check if this triggers any other effects
+    setTimeout(() => {
+      console.log('🔄 [BUILDER_SCHEMA_CHANGE] Post-update check - current activeTab:', activeTab);
+    }, 0);
+  }, [activeTab]);
 
   const handleJsonChange = useCallback((newJsonSchema: any) => {
+    console.log('📝 [JSON_CHANGE] === FUNCTION CALLED ===');
+    console.log('📝 [JSON_CHANGE] New JSON schema received:', {
+      hasElements: !!newJsonSchema?.elements,
+      elementsCount: newJsonSchema?.elements?.length || 0
+    });
+    
     try {
       setFormSchema(newJsonSchema);
-      const newBuilderSchema = createFormBuilderSchema(newJsonSchema);
-      setBuilderSchema(newBuilderSchema);
+      console.log('📝 [JSON_CHANGE] formSchema state updated');
       
-      console.log('📝 [JSON_CHANGE] Updated from JSON editor:', {
-        newRowsCount: newBuilderSchema.rows?.length || 0,
-        elementsCount: newJsonSchema?.elements?.length || 0
-      });
+      const newBuilderSchema = createFormBuilderSchema(newJsonSchema);
+      console.log('📝 [JSON_CHANGE] Created builder schema from JSON');
+      
+      setBuilderSchema(newBuilderSchema);
+      console.log('📝 [JSON_CHANGE] builderSchema state updated');
     } catch (error) {
-      console.error('❌ [JSON_CHANGE] Failed to parse JSON schema:', error);
+      console.error('❌ [JSON_CHANGE] Error processing JSON:', error);
       toast({
         title: 'Invalid JSON',
         description: 'Failed to parse the JSON schema. Please check your syntax.',
@@ -105,36 +153,56 @@ export const EditTemplatePage: React.FC = () => {
     }
   }, [toast]);
 
-  // Get current schema based on active tab
+  // Tab change with logging
+  const handleTabChange = useCallback((newTab: string) => {
+    console.log('📑 [TAB_CHANGE] === TAB CHANGING ===');
+    console.log('📑 [TAB_CHANGE] From:', activeTab, 'To:', newTab);
+    setActiveTab(newTab);
+    console.log('📑 [TAB_CHANGE] Tab state updated');
+  }, [activeTab]);
+
+  // Get current schema with logging
   const getCurrentJsonSchema = useCallback(() => {
+    console.log('🔍 [GET_CURRENT_SCHEMA] === FUNCTION CALLED ===');
+    console.log('🔍 [GET_CURRENT_SCHEMA] Active tab:', activeTab);
+    
     if (activeTab === 'builder') {
-      return getFormBuilderOutput(builderSchema);
+      const output = getFormBuilderOutput(builderSchema);
+      console.log('🔍 [GET_CURRENT_SCHEMA] Returning builder output:', {
+        elementsCount: output?.elements?.length || 0
+      });
+      return output;
     }
+    
+    console.log('🔍 [GET_CURRENT_SCHEMA] Returning formSchema:', {
+      elementsCount: formSchema?.elements?.length || 0
+    });
     return formSchema;
   }, [activeTab, builderSchema, formSchema]);
 
-  // Simplified submit handler - match CreateTemplatePage pattern
+  // Submit handler with detailed logging
   const onSubmit = async (data: TemplateFormData) => {
-    console.log('💾 [EDIT_TEMPLATE] Submit triggered:', {
-      templateId: id,
-      activeTab,
-      formData: data,
-      builderSchemaRows: builderSchema.rows?.length || 0,
-    });
+    console.log('💾 [SUBMIT] === SUBMIT FUNCTION CALLED ===');
+    console.log('💾 [SUBMIT] Form data received:', data);
+    console.log('💾 [SUBMIT] Template ID:', id);
+    console.log('💾 [SUBMIT] Active tab:', activeTab);
+    console.log('💾 [SUBMIT] Current builderSchema rows:', builderSchema.rows?.length || 0);
+    console.log('💾 [SUBMIT] Call stack:', new Error().stack);
     
-    if (!id || !template) return;
+    if (!id || !template) {
+      console.log('❌ [SUBMIT] Missing ID or template, returning early');
+      return;
+    }
 
     try {
-      // Get current schema based on active tab
       const currentSchema = getCurrentJsonSchema();
-      
-      console.log('🏗️ [EDIT_TEMPLATE] Current schema:', {
-        outputElementsCount: currentSchema?.elements?.length || 0,
-        outputKeys: currentSchema ? Object.keys(currentSchema) : []
+      console.log('💾 [SUBMIT] Current schema obtained:', {
+        hasElements: !!currentSchema?.elements,
+        elementsCount: currentSchema?.elements?.length || 0
       });
 
       if (!currentSchema || !currentSchema.elements || currentSchema.elements.length === 0) {
-        console.log('❌ [EDIT_TEMPLATE] No valid schema to save');
+        console.log('❌ [SUBMIT] No valid schema, showing error toast');
         toast({
           title: 'Error',
           description: 'Please add some form fields before saving.',
@@ -143,12 +211,8 @@ export const EditTemplatePage: React.FC = () => {
         return;
       }
 
-      console.log('📤 [EDIT_TEMPLATE] Sending update request:', {
-        templateId: id,
-        schemaElementsCount: currentSchema.elements.length,
-        schemaTitle: currentSchema.title
-      });
-
+      console.log('📤 [SUBMIT] About to call updateTemplate mutation');
+      
       await updateTemplate.mutateAsync({
         id,
         updates: {
@@ -158,38 +222,68 @@ export const EditTemplatePage: React.FC = () => {
         },
       });
 
-      console.log('✅ [EDIT_TEMPLATE] Update successful');
+      console.log('✅ [SUBMIT] Update successful, showing success toast');
       
       toast({
         title: 'Template updated',
         description: `"${data.name}" has been updated successfully.`,
       });
 
-      // Only navigate after successful save
+      console.log('🧭 [SUBMIT] About to navigate to /templates');
       navigate('/templates');
+      console.log('🧭 [SUBMIT] Navigate call completed');
+
     } catch (error) {
-      console.error('❌ [EDIT_TEMPLATE] Update failed:', error);
+      console.error('❌ [SUBMIT] Update failed:', error);
       toast({
         title: 'Error',
         description: 'Failed to update template. Please try again.',
         variant: 'destructive',
       });
-      // Don't navigate on error
     }
   };
 
+  // Add Row handler with detailed logging
+  const handleAddRow = useCallback(() => {
+    console.log('➕ [ADD_ROW] === ADD ROW BUTTON CLICKED ===');
+    console.log('➕ [ADD_ROW] Current state before adding row:', {
+      builderSchemaRows: builderSchema.rows?.length || 0,
+      activeTab,
+      timestamp: new Date().toISOString()
+    });
+    console.log('➕ [ADD_ROW] Call stack:', new Error().stack);
+    
+    // This should trigger handleBuilderSchemaChange
+    console.log('➕ [ADD_ROW] About to trigger schema change...');
+  }, [builderSchema.rows?.length, activeTab]);
+
+  // Component render tracking
+  useEffect(() => {
+    console.log('🎨 [RENDER_EFFECT] Component rendered/re-rendered');
+    return () => {
+      console.log('🎨 [RENDER_EFFECT] Component will unmount or re-render');
+    };
+  });
+
   if (isLoading) {
+    console.log('⏳ [RENDER] Showing loading state');
     return <div>Loading...</div>;
   }
 
   if (!template) {
+    console.log('❌ [RENDER] No template found, showing error');
     return <div>Template not found</div>;
   }
+
+  console.log('🎨 [RENDER] Rendering main component UI');
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/templates')}>
+        <Button variant="ghost" onClick={() => {
+          console.log('🧭 [NAVIGATION] Back button clicked');
+          navigate('/templates');
+        }}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Templates
         </Button>
@@ -207,7 +301,7 @@ export const EditTemplatePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={wrappedHandleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="name"
@@ -247,11 +341,11 @@ export const EditTemplatePage: React.FC = () => {
                   </p>
                 </div>
                 
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
                   <TabsList>
-                    <TabsTrigger value="builder">Form Builder</TabsTrigger>
-                    <TabsTrigger value="editor">JSON Editor</TabsTrigger>
-                    <TabsTrigger value="preview">
+                    <TabsTrigger value="builder" onClick={() => console.log('📑 [TAB_CLICK] Builder tab clicked')}>Form Builder</TabsTrigger>
+                    <TabsTrigger value="editor" onClick={() => console.log('📑 [TAB_CLICK] Editor tab clicked')}>JSON Editor</TabsTrigger>
+                    <TabsTrigger value="preview" onClick={() => console.log('📑 [TAB_CLICK] Preview tab clicked')}>
                       <Eye className="h-4 w-4 mr-2" />
                       Preview
                     </TabsTrigger>
@@ -290,13 +384,17 @@ export const EditTemplatePage: React.FC = () => {
                  <Button 
                    type="submit" 
                    disabled={updateTemplate.isPending}
+                   onClick={() => console.log('💾 [BUTTON_CLICK] Update Template button clicked')}
                  >
                    {updateTemplate.isPending ? 'Updating...' : 'Update Template'}
                  </Button>
                  <Button
                    type="button"
                    variant="outline"
-                   onClick={() => navigate('/templates')}
+                   onClick={() => {
+                     console.log('🧭 [BUTTON_CLICK] Cancel button clicked');
+                     navigate('/templates');
+                   }}
                  >
                    Cancel
                  </Button>
