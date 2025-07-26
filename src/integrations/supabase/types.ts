@@ -1140,6 +1140,42 @@ export type Database = {
         }
         Relationships: []
       }
+      form_submissions: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          clinician_id: string
+          created_at: string
+          form_data: Json
+          id: string
+          submitted_at: string
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          clinician_id: string
+          created_at?: string
+          form_data: Json
+          id?: string
+          submitted_at?: string
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          clinician_id?: string
+          created_at?: string
+          form_data?: Json
+          id?: string
+          submitted_at?: string
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       icd10: {
         Row: {
           diagnosis_name: string

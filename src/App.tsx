@@ -1,118 +1,160 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/context/AuthContext';
+import { Toaster } from '@/components/ui/toaster';
+import Layout from '@/components/layout/Layout';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import RoleGuard from '@/components/RoleGuard';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { Layout } from "./components/layout/Layout";
-import Index from "./pages/Index";
-import { Login } from "./pages/Login";
-import { Signup } from "./pages/Signup";
-import { Dashboard } from "./pages/Dashboard";
-import { Profile } from "./pages/Profile";
-import { ClinicianProfile } from "./pages/ClinicianProfile";
-import Calendar from "./pages/Calendar";
-import Clients from "./pages/Clients";
-import ClientDetails from "./pages/ClientDetails";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
+// Page imports
+import Index from '@/pages/Index';
+import Login from '@/pages/Login';
+import Signup from '@/pages/Signup';
+import Dashboard from '@/pages/Dashboard';
+import Clients from '@/pages/Clients';
+import ClientDetails from '@/pages/ClientDetails';
+import Calendar from '@/pages/Calendar';
+import Profile from '@/pages/Profile';
+import ClinicianProfile from '@/pages/ClinicianProfile';
+import Settings from '@/pages/Settings';
+import NotFound from '@/pages/NotFound';
+import SessionDocumentation from '@/pages/SessionDocumentation';
 
-import { TemplatesPage } from "./features/templates/pages/TemplatesPage";
-import { CreateTemplatePage } from "./features/templates/pages/CreateTemplatePage";
-import { EditTemplatePage } from "./features/templates/pages/EditTemplatePage";
+// Template page imports
+import { TemplatesPage } from '@/features/templates/pages/TemplatesPage';
+import { CreateTemplatePage } from '@/features/templates/pages/CreateTemplatePage';
+import { EditTemplatePage } from '@/features/templates/pages/EditTemplatePage';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+      <AuthProvider>
         <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Profile />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/clinicianprof" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ClinicianProfile />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/calendar" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Calendar />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/myclients" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Clients />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/clients/:id" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ClientDetails />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Settings />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/templates" element={
-                <ProtectedRoute>
+          <Toaster />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Index />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/clients" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Clients />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/clients/:id" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ClientDetails />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Calendar />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/templates" element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['clinician', 'admin']}>
                   <Layout>
                     <TemplatesPage />
                   </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/templates/create" element={
-                <ProtectedRoute>
+                </RoleGuard>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/templates/create" element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['clinician', 'admin']}>
                   <Layout>
                     <CreateTemplatePage />
                   </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/templates/edit/:id" element={
-                <ProtectedRoute>
+                </RoleGuard>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/templates/:id/edit" element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['clinician', 'admin']}>
                   <Layout>
                     <EditTemplatePage />
                   </Layout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
+                </RoleGuard>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/templates/session-documentation" element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['clinician', 'admin']}>
+                  <Layout>
+                    <SessionDocumentation />
+                  </Layout>
+                </RoleGuard>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Profile />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/clinician-profile" element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['clinician', 'admin']}>
+                  <Layout>
+                    <ClinicianProfile />
+                  </Layout>
+                </RoleGuard>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Settings />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
-      </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
