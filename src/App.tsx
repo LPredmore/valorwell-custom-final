@@ -1,11 +1,12 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
-import Layout from '@/components/layout/Layout';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import RoleGuard from '@/components/RoleGuard';
+import { Layout } from '@/components/layout/Layout';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { RoleGuard } from '@/components/RoleGuard';
 
 // Page imports
 import Index from '@/pages/Index';
@@ -19,7 +20,7 @@ import Profile from '@/pages/Profile';
 import ClinicianProfile from '@/pages/ClinicianProfile';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
-import SessionDocumentation from '@/pages/SessionDocumentation';
+import { SessionDocumentation } from '@/pages/SessionDocumentation';
 
 // Template page imports
 import { TemplatesPage } from '@/features/templates/pages/TemplatesPage';
