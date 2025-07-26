@@ -263,16 +263,89 @@ export function convertFromSurveyJS(surveySchema: any): FormSchema {
     elementsTypes: surveySchema.elements?.map((e: any) => e.type) || []
   });
   
-  const fields = (surveySchema.elements || []).map(convertFieldFromSurveyJS);
+  // PHASE 2: Fix nested panel handling for database-stored schemas
+  const rows: FormRow[] = [];
   
-  // Convert legacy fields to row-based structure
-  const rows = fields.length > 0 ? [createRowWithFields(fields)] : [];
+  for (const element of surveySchema.elements || []) {
+    if (element.type === 'panel' && element.name?.startsWith('row_')) {
+      // This is a row panel with columns
+      console.log('📋 [CONVERT_FROM_SURVEYJS] Processing row panel:', element.name);
+      
+      const columns: FormColumn[] = [];
+      
+      for (const childElement of element.elements || []) {
+        if (childElement.type === 'panel' && childElement.name?.startsWith('panel_')) {
+          // This is a column panel
+          console.log('📦 [CONVERT_FROM_SURVEYJS] Processing column panel:', childElement.name);
+          
+          const fields = (childElement.elements || []).map(convertFieldFromSurveyJS);
+          const columnId = childElement.name.replace('panel_', '');
+          
+          columns.push({
+            id: columnId,
+            width: parseFloat(childElement.width?.replace('%', '') || '100'),
+            fields
+          });
+        } else {
+          // Direct field in row (single column case)
+          const field = convertFieldFromSurveyJS(childElement);
+          
+          if (columns.length === 0) {
+            columns.push({
+              id: uuidv4(),
+              width: 100,
+              fields: [field]
+            });
+          } else {
+            columns[0].fields.push(field);
+          }
+        }
+      }
+      
+      const rowId = element.name.replace('row_', '');
+      rows.push({
+        id: rowId,
+        columns,
+        settings: {
+          columnCount: columns.length,
+          columnWidths: columns.map(c => c.width),
+          gap: 16,
+          alignment: 'start'
+        }
+      });
+    } else {
+      // Regular field (legacy format or single field)
+      console.log('📝 [CONVERT_FROM_SURVEYJS] Processing regular field:', element.type);
+      const field = convertFieldFromSurveyJS(element);
+      
+      // Add to a single-column row
+      rows.push({
+        id: uuidv4(),
+        columns: [{
+          id: uuidv4(),
+          width: 100,
+          fields: [field]
+        }],
+        settings: {
+          columnCount: 1,
+          columnWidths: [100],
+          gap: 16,
+          alignment: 'start'
+        }
+      });
+    }
+  }
+  
+  // Legacy fallback for old format
+  const legacyFields = (surveySchema.elements || []).filter((e: any) => 
+    e.type !== 'panel' || !e.name?.startsWith('row_')
+  ).map(convertFieldFromSurveyJS);
   
   const result = {
     title: surveySchema.title || 'Untitled Form',
     description: surveySchema.description,
-    rows,
-    fields // Keep for backward compatibility
+    rows: rows.length > 0 ? rows : (legacyFields.length > 0 ? [createRowWithFields(legacyFields)] : []),
+    fields: legacyFields // Keep for backward compatibility
   };
   
   console.log('✅ [CONVERT_FROM_SURVEYJS] Conversion complete:', {
@@ -280,7 +353,12 @@ export function convertFromSurveyJS(surveySchema: any): FormSchema {
     resultRowsCount: result.rows.length,
     resultFieldsCount: result.fields.length,
     resultTotalFields: result.rows.reduce((sum, row) => 
-      sum + row.columns.reduce((colSum, col) => colSum + col.fields.length, 0), 0)
+      sum + row.columns.reduce((colSum, col) => colSum + col.fields.length, 0), 0),
+    rows: result.rows.map(r => ({
+      id: r.id,
+      columnsCount: r.columns.length,
+      totalFields: r.columns.reduce((sum, col) => sum + col.fields.length, 0)
+    }))
   });
 
   return result;

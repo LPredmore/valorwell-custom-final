@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormField, FormColumn } from './utils/schemaConverter';
@@ -13,7 +13,8 @@ interface ColumnDropZoneProps {
   onDeleteField: (fieldId: string) => void;
 }
 
-export function ColumnDropZone({ 
+// PHASE 3: Memoized component to prevent unnecessary re-renders
+export const ColumnDropZone = memo(function ColumnDropZone({ 
   column, 
   rowId, 
   selectedField, 
@@ -49,6 +50,15 @@ export function ColumnDropZone({
 
   const isEmpty = column.fields.length === 0;
 
+  // PHASE 3: Memoized callbacks to prevent prop changes
+  const handleSelectField = useCallback((field: FormField) => {
+    onSelectField(field);
+  }, [onSelectField]);
+
+  const handleDeleteField = useCallback((fieldId: string) => {
+    onDeleteField(fieldId);
+  }, [onDeleteField]);
+
   return (
     <div
       ref={setNodeRef}
@@ -76,11 +86,11 @@ export function ColumnDropZone({
             <div className="space-y-3">
               {column.fields.map((field) => (
                 <FieldRenderer
-                  key={`field-${field.id}-${rowId}-${column.id}`}
+                  key={field.id}
                   field={field}
                   isSelected={selectedField?.id === field.id}
-                  onSelect={onSelectField}
-                  onDelete={onDeleteField}
+                  onSelect={handleSelectField}
+                  onDelete={handleDeleteField}
                 />
               ))}
             </div>
@@ -89,4 +99,4 @@ export function ColumnDropZone({
       )}
     </div>
   );
-}
+});

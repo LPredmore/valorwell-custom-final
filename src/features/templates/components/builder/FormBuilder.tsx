@@ -299,6 +299,32 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
     setSelectedField(null);
   }, []);
 
+  // PHASE 3: Memoized callback functions to prevent unnecessary re-renders
+  const handleAddRow = useCallback(() => {
+    onChange({
+      ...currentSchema,
+      rows: [...currentSchema.rows, createDefaultRow()]
+    });
+  }, [currentSchema, onChange]);
+
+  const handleUpdateRow = useCallback((rowId: string, updatedRow: FormRow) => {
+    const newRows = currentSchema.rows.map(row =>
+      row.id === rowId ? updatedRow : row
+    );
+    onChange({
+      ...currentSchema,
+      rows: newRows
+    });
+  }, [currentSchema, onChange]);
+
+  const handleDeleteRow = useCallback((rowId: string) => {
+    const newRows = currentSchema.rows.filter(row => row.id !== rowId);
+    onChange({
+      ...currentSchema,
+      rows: newRows
+    });
+  }, [currentSchema, onChange]);
+
   return (
     <DndContext
       sensors={sensors}
@@ -314,28 +340,9 @@ export function FormBuilder({ schema, onChange }: FormBuilderProps) {
           selectedField={selectedField}
           onSelectField={handleSelectField}
           onDeleteField={handleDeleteField}
-          onAddRow={() => {
-            onChange({
-              ...currentSchema,
-              rows: [...currentSchema.rows, createDefaultRow()]
-            });
-          }}
-          onUpdateRow={(rowId: string, updatedRow: FormRow) => {
-            const newRows = currentSchema.rows.map(row =>
-              row.id === rowId ? updatedRow : row
-            );
-            onChange({
-              ...currentSchema,
-              rows: newRows
-            });
-          }}
-          onDeleteRow={(rowId: string) => {
-            const newRows = currentSchema.rows.filter(row => row.id !== rowId);
-            onChange({
-              ...currentSchema,
-              rows: newRows
-            });
-          }}
+          onAddRow={handleAddRow}
+          onUpdateRow={handleUpdateRow}
+          onDeleteRow={handleDeleteRow}
         />
         <FieldEditor
           field={selectedField}

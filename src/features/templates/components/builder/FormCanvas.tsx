@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormField, FormRow } from './utils/schemaConverter';
@@ -16,7 +16,8 @@ interface FormCanvasProps {
   onDeleteRow: (rowId: string) => void;
 }
 
-export function FormCanvas({ 
+// PHASE 3: Memoized component to prevent unnecessary re-renders
+const FormCanvas = memo(function FormCanvas({ 
   rows, 
   selectedField, 
   onSelectField, 
@@ -30,6 +31,27 @@ export function FormCanvas({
   });
 
   const isEmpty = rows.length === 0;
+
+  // PHASE 3: Memoized callbacks to prevent prop changes
+  const handleSelectField = useCallback((field: FormField) => {
+    onSelectField(field);
+  }, [onSelectField]);
+
+  const handleDeleteField = useCallback((fieldId: string) => {
+    onDeleteField(fieldId);
+  }, [onDeleteField]);
+
+  const handleUpdateRow = useCallback((rowId: string, updatedRow: FormRow) => {
+    onUpdateRow(rowId, updatedRow);
+  }, [onUpdateRow]);
+
+  const handleDeleteRow = useCallback((rowId: string) => {
+    onDeleteRow(rowId);
+  }, [onDeleteRow]);
+
+  const handleAddRow = useCallback(() => {
+    onAddRow();
+  }, [onAddRow]);
 
   return (
     <div
@@ -50,7 +72,7 @@ export function FormCanvas({
             Drag field types from the left panel to add them to your form. 
             You can create multiple columns and reorder fields within rows.
           </p>
-          <Button onClick={onAddRow} variant="outline" className="mx-auto">
+          <Button onClick={handleAddRow} variant="outline" className="mx-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add First Row
           </Button>
@@ -61,21 +83,21 @@ export function FormCanvas({
             items={rows.map(r => r.id)} 
             strategy={verticalListSortingStrategy}
           >
-            {rows.map((row, index) => (
+            {rows.map((row) => (
               <RowRenderer
-                key={`row-${row.id}-${index}-${row.columns.length}`}
+                key={row.id}
                 row={row}
                 selectedField={selectedField}
-                onSelectField={onSelectField}
-                onDeleteField={onDeleteField}
-                onUpdateRow={onUpdateRow}
-                onDeleteRow={onDeleteRow}
+                onSelectField={handleSelectField}
+                onDeleteField={handleDeleteField}
+                onUpdateRow={handleUpdateRow}
+                onDeleteRow={handleDeleteRow}
               />
             ))}
           </SortableContext>
           
           <div className="flex justify-center pt-4">
-            <Button onClick={onAddRow} variant="outline">
+            <Button onClick={handleAddRow} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Add Row
             </Button>
@@ -84,4 +106,6 @@ export function FormCanvas({
       )}
     </div>
   );
-}
+});
+
+export { FormCanvas };

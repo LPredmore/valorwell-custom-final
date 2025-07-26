@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,8 @@ import { FormRow, FormField, createRowWithColumns } from './utils/schemaConverte
 
 interface RowControlsProps {
   row: FormRow;
-  onUpdateRow: (rowId: string, updatedRow: FormRow) => void;
-  onDeleteRow: (rowId: string) => void;
+  onUpdateRow: (updatedRow: FormRow) => void;
+  onDeleteRow: () => void;
 }
 
 function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
@@ -68,7 +68,7 @@ function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
     };
     
     console.log('🏗️ [COLUMN_CHANGE] Updated row columns:', updatedRow.columns.map(c => ({ id: c.id, fields: c.fields.length })));
-    onUpdateRow(row.id, updatedRow);
+    onUpdateRow(updatedRow);
   };
 
   return (
@@ -98,7 +98,7 @@ function RowControls({ row, onUpdateRow, onDeleteRow }: RowControlsProps) {
         variant="ghost"
         size="sm"
         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-        onClick={() => onDeleteRow(row.id)}
+        onClick={() => onDeleteRow()}
       >
         <Trash2 className="h-4 w-4" />
       </Button>
@@ -120,7 +120,8 @@ interface SortableRowRendererProps {
   onDeleteRow: (rowId: string) => void;
 }
 
-export function RowRenderer({
+// PHASE 3: Memoized component to prevent unnecessary re-renders
+export const RowRenderer = memo(function RowRenderer({
   row,
   selectedField,
   onSelectField,
@@ -142,6 +143,23 @@ export function RowRenderer({
     transition,
   };
 
+  // PHASE 3: Memoized callbacks to prevent prop changes
+  const handleSelectField = useCallback((field: FormField) => {
+    onSelectField(field);
+  }, [onSelectField]);
+
+  const handleDeleteField = useCallback((fieldId: string) => {
+    onDeleteField(fieldId);
+  }, [onDeleteField]);
+
+  const handleUpdateRow = useCallback((updatedRow: FormRow) => {
+    onUpdateRow(row.id, updatedRow);
+  }, [onUpdateRow, row.id]);
+
+  const handleDeleteRow = useCallback(() => {
+    onDeleteRow(row.id);
+  }, [onDeleteRow, row.id]);
+
   return (
     <div
       ref={setNodeRef}
@@ -161,8 +179,8 @@ export function RowRenderer({
           <div {...listeners}>
             <RowControls 
               row={row} 
-              onUpdateRow={onUpdateRow} 
-              onDeleteRow={onDeleteRow} 
+              onUpdateRow={handleUpdateRow} 
+              onDeleteRow={handleDeleteRow} 
             />
           </div>
         </div>
@@ -174,18 +192,18 @@ export function RowRenderer({
             gridTemplateColumns: `repeat(${row.columns.length}, 1fr)`
           }}
         >
-          {row.columns.map((column, index) => (
+          {row.columns.map((column) => (
             <ColumnDropZone
-              key={`column-${row.id}-${column.id}-${index}`}
+              key={column.id}
               column={column}
               rowId={row.id}
               selectedField={selectedField}
-              onSelectField={onSelectField}
-              onDeleteField={onDeleteField}
+              onSelectField={handleSelectField}
+              onDeleteField={handleDeleteField}
             />
           ))}
         </div>
       </Card>
     </div>
   );
-}
+});
