@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -240,6 +239,14 @@ export const EditTemplatePage: React.FC = () => {
     }
   };
 
+  // Add logging for unexpected form submissions
+  const handleUnexpectedSubmit = (e: React.FormEvent) => {
+    console.error('🚨 [UNEXPECTED_SUBMIT] Form submission intercepted!', e);
+    console.error('🚨 [UNEXPECTED_SUBMIT] This should not happen - investigating...');
+    e.preventDefault();
+    return false;
+  };
+
   // Component render tracking
   useEffect(() => {
     console.log('🎨 [RENDER_EFFECT] Component rendered/re-rendered');
@@ -263,10 +270,14 @@ export const EditTemplatePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => {
-          console.log('🧭 [NAVIGATION] Back button clicked');
-          navigate('/templates');
-        }}>
+        <Button 
+          type="button"
+          variant="ghost" 
+          onClick={() => {
+            console.log('🧭 [NAVIGATION] Back button clicked');
+            navigate('/templates');
+          }}
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Templates
         </Button>
@@ -284,8 +295,7 @@ export const EditTemplatePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            {/* REMOVED onSubmit - form will NOT auto-submit anymore */}
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleUnexpectedSubmit}>
               <FormField
                 control={form.control}
                 name="name"
