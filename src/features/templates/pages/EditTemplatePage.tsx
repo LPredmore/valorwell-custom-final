@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -63,19 +64,6 @@ export const EditTemplatePage: React.FC = () => {
     },
   });
 
-  // Track form submissions with detailed logging
-  const originalHandleSubmit = form.handleSubmit;
-  const wrappedHandleSubmit = useCallback((onValid: any, onInvalid?: any) => {
-    console.log('📝 [FORM_SUBMIT] handleSubmit wrapper called');
-    return originalHandleSubmit((data) => {
-      console.log('📝 [FORM_SUBMIT] Form validation passed, calling onValid with:', data);
-      return onValid(data);
-    }, (errors) => {
-      console.log('❌ [FORM_SUBMIT] Form validation failed with errors:', errors);
-      if (onInvalid) return onInvalid(errors);
-    });
-  }, [originalHandleSubmit]);
-
   // Load template data with logging
   useEffect(() => {
     console.log('🔄 [TEMPLATE_EFFECT] Effect triggered:', {
@@ -119,7 +107,7 @@ export const EditTemplatePage: React.FC = () => {
     console.log('🔄 [BUILDER_SCHEMA_CHANGE] Call stack:', new Error().stack);
     
     setBuilderSchema(newSchema);
-    console.log('🔄 [BUILDER_SCHEMA_CHANGE] State updated');
+    console.log('🔄 [BUILDER_SCHEMA_CHANGE] State updated - NO FORM SUBMISSION SHOULD HAPPEN');
     
     // Check if this triggers any other effects
     setTimeout(() => {
@@ -180,29 +168,38 @@ export const EditTemplatePage: React.FC = () => {
     return formSchema;
   }, [activeTab, builderSchema, formSchema]);
 
-  // Submit handler with detailed logging
-  const onSubmit = async (data: TemplateFormData) => {
-    console.log('💾 [SUBMIT] === SUBMIT FUNCTION CALLED ===');
-    console.log('💾 [SUBMIT] Form data received:', data);
-    console.log('💾 [SUBMIT] Template ID:', id);
-    console.log('💾 [SUBMIT] Active tab:', activeTab);
-    console.log('💾 [SUBMIT] Current builderSchema rows:', builderSchema.rows?.length || 0);
-    console.log('💾 [SUBMIT] Call stack:', new Error().stack);
+  // Manual submit handler - ONLY called by button click
+  const handleManualSubmit = async () => {
+    console.log('💾 [MANUAL_SUBMIT] === MANUAL SUBMIT BUTTON CLICKED ===');
+    console.log('💾 [MANUAL_SUBMIT] Template ID:', id);
+    console.log('💾 [MANUAL_SUBMIT] Active tab:', activeTab);
+    console.log('💾 [MANUAL_SUBMIT] Current builderSchema rows:', builderSchema.rows?.length || 0);
     
     if (!id || !template) {
-      console.log('❌ [SUBMIT] Missing ID or template, returning early');
+      console.log('❌ [MANUAL_SUBMIT] Missing ID or template, returning early');
+      return;
+    }
+
+    // Get form data manually
+    const formData = form.getValues();
+    console.log('💾 [MANUAL_SUBMIT] Form data:', formData);
+
+    // Validate form manually
+    const isValid = await form.trigger();
+    if (!isValid) {
+      console.log('❌ [MANUAL_SUBMIT] Form validation failed');
       return;
     }
 
     try {
       const currentSchema = getCurrentJsonSchema();
-      console.log('💾 [SUBMIT] Current schema obtained:', {
+      console.log('💾 [MANUAL_SUBMIT] Current schema obtained:', {
         hasElements: !!currentSchema?.elements,
         elementsCount: currentSchema?.elements?.length || 0
       });
 
       if (!currentSchema || !currentSchema.elements || currentSchema.elements.length === 0) {
-        console.log('❌ [SUBMIT] No valid schema, showing error toast');
+        console.log('❌ [MANUAL_SUBMIT] No valid schema, showing error toast');
         toast({
           title: 'Error',
           description: 'Please add some form fields before saving.',
@@ -211,30 +208,30 @@ export const EditTemplatePage: React.FC = () => {
         return;
       }
 
-      console.log('📤 [SUBMIT] About to call updateTemplate mutation');
+      console.log('📤 [MANUAL_SUBMIT] About to call updateTemplate mutation');
       
       await updateTemplate.mutateAsync({
         id,
         updates: {
-          name: data.name,
-          description: data.description,
+          name: formData.name,
+          description: formData.description,
           schema_json: currentSchema,
         },
       });
 
-      console.log('✅ [SUBMIT] Update successful, showing success toast');
+      console.log('✅ [MANUAL_SUBMIT] Update successful, showing success toast');
       
       toast({
         title: 'Template updated',
-        description: `"${data.name}" has been updated successfully.`,
+        description: `"${formData.name}" has been updated successfully.`,
       });
 
-      console.log('🧭 [SUBMIT] About to navigate to /templates');
+      console.log('🧭 [MANUAL_SUBMIT] About to navigate to /templates');
       navigate('/templates');
-      console.log('🧭 [SUBMIT] Navigate call completed');
+      console.log('🧭 [MANUAL_SUBMIT] Navigate call completed');
 
     } catch (error) {
-      console.error('❌ [SUBMIT] Update failed:', error);
+      console.error('❌ [MANUAL_SUBMIT] Update failed:', error);
       toast({
         title: 'Error',
         description: 'Failed to update template. Please try again.',
@@ -242,20 +239,6 @@ export const EditTemplatePage: React.FC = () => {
       });
     }
   };
-
-  // Add Row handler with detailed logging
-  const handleAddRow = useCallback(() => {
-    console.log('➕ [ADD_ROW] === ADD ROW BUTTON CLICKED ===');
-    console.log('➕ [ADD_ROW] Current state before adding row:', {
-      builderSchemaRows: builderSchema.rows?.length || 0,
-      activeTab,
-      timestamp: new Date().toISOString()
-    });
-    console.log('➕ [ADD_ROW] Call stack:', new Error().stack);
-    
-    // This should trigger handleBuilderSchemaChange
-    console.log('➕ [ADD_ROW] About to trigger schema change...');
-  }, [builderSchema.rows?.length, activeTab]);
 
   // Component render tracking
   useEffect(() => {
@@ -301,7 +284,8 @@ export const EditTemplatePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={wrappedHandleSubmit(onSubmit)} className="space-y-6">
+            {/* REMOVED onSubmit - form will NOT auto-submit anymore */}
+            <form className="space-y-6">
               <FormField
                 control={form.control}
                 name="name"
@@ -382,9 +366,12 @@ export const EditTemplatePage: React.FC = () => {
 
                <div className="flex gap-3">
                  <Button 
-                   type="submit" 
+                   type="button"
                    disabled={updateTemplate.isPending}
-                   onClick={() => console.log('💾 [BUTTON_CLICK] Update Template button clicked')}
+                   onClick={() => {
+                     console.log('💾 [BUTTON_CLICK] Update Template button clicked - calling handleManualSubmit');
+                     handleManualSubmit();
+                   }}
                  >
                    {updateTemplate.isPending ? 'Updating...' : 'Update Template'}
                  </Button>
