@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { JsonEditor } from '../components/JsonEditor';
 import { FormPreview } from '../components/FormPreview';
 import { FormBuilder, createFormBuilderSchema, getFormBuilderOutput } from '../components/builder/FormBuilder';
-import { FormSchema, convertToSurveyJS } from '../components/builder/utils/schemaConverter';
+import { FormSchema } from '../components/builder/utils/schemaConverter';
 
 const templateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -31,51 +32,10 @@ export const EditTemplatePage: React.FC = () => {
   const { data: templates, isLoading } = useTemplates();
   const updateTemplate = useUpdateTemplate();
   
-  // PHASE 1: Single Source of Truth - Only builderSchema
+  // Simplified state management - match CreateTemplatePage pattern
   const [builderSchema, setBuilderSchema] = useState<FormSchema>(createFormBuilderSchema());
+  const [formSchema, setFormSchema] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('builder');
-  const [isDirty, setIsDirty] = useState(false);
-  const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
-
-  // PHASE 4: Debounced save logic
-  const debouncedSave = useCallback((schemaToSave: FormSchema) => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        setIsAutoSaving(true);
-        const surveySchema = convertToSurveyJS(schemaToSave);
-        
-        console.log('💾 [AUTO_SAVE] Saving schema:', {
-          rowsCount: schemaToSave.rows?.length || 0,
-          elementsCount: surveySchema?.elements?.length || 0
-        });
-        
-        // Auto-save implementation could go here if needed
-      } catch (error) {
-        console.error('❌ [AUTO_SAVE] Failed:', error);
-      } finally {
-        setIsAutoSaving(false);
-      }
-    }, 1000);
-  }, []);
-
-  // Track schema changes for dirty state
-  const handleBuilderSchemaChange = useCallback((newSchema: FormSchema) => {
-    console.log('🔄 [SCHEMA_CHANGE] Builder schema updated:', {
-      rowsCount: newSchema.rows?.length || 0,
-      title: newSchema.title,
-      totalFields: newSchema.rows?.reduce((sum, row) => 
-        sum + row.columns.reduce((colSum, col) => colSum + col.fields.length, 0), 0) || 0
-    });
-    
-    setBuilderSchema(newSchema);
-    setIsDirty(true);
-    debouncedSave(newSchema);
-  }, [debouncedSave]);
 
   const template = templates?.find(t => t.id === id);
 
@@ -104,50 +64,71 @@ export const EditTemplatePage: React.FC = () => {
         description: template.description || '',
       });
       
+      // Set both schemas like CreateTemplatePage does
+      setFormSchema(template.schema_json);
       const newBuilderSchema = createFormBuilderSchema(template.schema_json);
       console.log('🏗️ [EDIT_TEMPLATE] Created builder schema:', {
         builderRowsCount: newBuilderSchema.rows?.length || 0,
         builderTitle: newBuilderSchema.title,
-        builderRows: newBuilderSchema.rows?.map(r => ({
-          id: r.id,
-          columnsCount: r.columns?.length || 0,
-          totalFields: r.columns?.reduce((sum, col) => sum + (col.fields?.length || 0), 0) || 0
-        })) || []
       });
       
       setBuilderSchema(newBuilderSchema);
-      setIsDirty(false); // Reset dirty state when loading template
     }
   }, [template, form]);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
+  // Simple schema update handlers - no auto-save complexity
+  const handleBuilderSchemaChange = useCallback((newSchema: FormSchema) => {
+    console.log('🔄 [SCHEMA_CHANGE] Builder schema updated:', {
+      rowsCount: newSchema.rows?.length || 0,
+      title: newSchema.title,
+    });
+    setBuilderSchema(newSchema);
   }, []);
 
-  // PHASE 4: Always save from builderSchema
+  const handleJsonChange = useCallback((newJsonSchema: any) => {
+    try {
+      setFormSchema(newJsonSchema);
+      const newBuilderSchema = createFormBuilderSchema(newJsonSchema);
+      setBuilderSchema(newBuilderSchema);
+      
+      console.log('📝 [JSON_CHANGE] Updated from JSON editor:', {
+        newRowsCount: newBuilderSchema.rows?.length || 0,
+        elementsCount: newJsonSchema?.elements?.length || 0
+      });
+    } catch (error) {
+      console.error('❌ [JSON_CHANGE] Failed to parse JSON schema:', error);
+      toast({
+        title: 'Invalid JSON',
+        description: 'Failed to parse the JSON schema. Please check your syntax.',
+        variant: 'destructive',
+      });
+    }
+  }, [toast]);
+
+  // Get current schema based on active tab
+  const getCurrentJsonSchema = useCallback(() => {
+    if (activeTab === 'builder') {
+      return getFormBuilderOutput(builderSchema);
+    }
+    return formSchema;
+  }, [activeTab, builderSchema, formSchema]);
+
+  // Simplified submit handler - match CreateTemplatePage pattern
   const onSubmit = async (data: TemplateFormData) => {
     console.log('💾 [EDIT_TEMPLATE] Submit triggered:', {
       templateId: id,
       activeTab,
       formData: data,
       builderSchemaRows: builderSchema.rows?.length || 0,
-      isDirty
     });
     
     if (!id || !template) return;
 
     try {
-      // PHASE 4: Always convert from builderSchema, regardless of active tab
-      const currentSchema = getFormBuilderOutput(builderSchema);
+      // Get current schema based on active tab
+      const currentSchema = getCurrentJsonSchema();
       
-      console.log('🏗️ [EDIT_TEMPLATE] Converting from builderSchema:', {
-        builderRowsCount: builderSchema.rows?.length || 0,
-        builderTitle: builderSchema.title,
+      console.log('🏗️ [EDIT_TEMPLATE] Current schema:', {
         outputElementsCount: currentSchema?.elements?.length || 0,
         outputKeys: currentSchema ? Object.keys(currentSchema) : []
       });
@@ -168,11 +149,6 @@ export const EditTemplatePage: React.FC = () => {
         schemaTitle: currentSchema.title
       });
 
-      // Clear any pending auto-save
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-
       await updateTemplate.mutateAsync({
         id,
         updates: {
@@ -183,13 +159,13 @@ export const EditTemplatePage: React.FC = () => {
       });
 
       console.log('✅ [EDIT_TEMPLATE] Update successful');
-      setIsDirty(false);
       
       toast({
         title: 'Template updated',
         description: `"${data.name}" has been updated successfully.`,
       });
 
+      // Only navigate after successful save
       navigate('/templates');
     } catch (error) {
       console.error('❌ [EDIT_TEMPLATE] Update failed:', error);
@@ -198,43 +174,9 @@ export const EditTemplatePage: React.FC = () => {
         description: 'Failed to update template. Please try again.',
         variant: 'destructive',
       });
+      // Don't navigate on error
     }
   };
-
-  // PHASE 5: Navigation guard for dirty state
-  const handleNavigateBack = useCallback(() => {
-    if (isDirty) {
-      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
-      if (!confirmed) return;
-    }
-    navigate('/templates');
-  }, [isDirty, navigate]);
-
-  // Convert builderSchema to JSON for editor/preview on-demand
-  const getCurrentJsonSchema = useCallback(() => {
-    return getFormBuilderOutput(builderSchema);
-  }, [builderSchema]);
-
-  // Handle JSON editor changes and sync back to builderSchema  
-  const handleJsonChange = useCallback((newJsonSchema: any) => {
-    try {
-      const newBuilderSchema = createFormBuilderSchema(newJsonSchema);
-      setBuilderSchema(newBuilderSchema);
-      setIsDirty(true);
-      
-      console.log('📝 [JSON_CHANGE] Updated from JSON editor:', {
-        newRowsCount: newBuilderSchema.rows?.length || 0,
-        elementsCount: newJsonSchema?.elements?.length || 0
-      });
-    } catch (error) {
-      console.error('❌ [JSON_CHANGE] Failed to parse JSON schema:', error);
-      toast({
-        title: 'Invalid JSON',
-        description: 'Failed to parse the JSON schema. Please check your syntax.',
-        variant: 'destructive',
-      });
-    }
-  }, [toast]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -247,7 +189,7 @@ export const EditTemplatePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={handleNavigateBack}>
+        <Button variant="ghost" onClick={() => navigate('/templates')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Templates
         </Button>
@@ -301,7 +243,7 @@ export const EditTemplatePage: React.FC = () => {
                 <div>
                   <h3 className="font-medium mb-2">Form Builder</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Edit your form using the JSON editor below.
+                    Edit your form using the builder or JSON editor below.
                   </p>
                 </div>
                 
@@ -347,19 +289,14 @@ export const EditTemplatePage: React.FC = () => {
                <div className="flex gap-3">
                  <Button 
                    type="submit" 
-                   disabled={updateTemplate.isPending || !isDirty}
-                   className="relative"
+                   disabled={updateTemplate.isPending}
                  >
-                   {updateTemplate.isPending ? 'Updating...' : 
-                    isDirty ? 'Update Template' : 'Template Saved'}
-                   {isAutoSaving && (
-                     <span className="ml-2 text-xs opacity-70">(Auto-saving...)</span>
-                   )}
+                   {updateTemplate.isPending ? 'Updating...' : 'Update Template'}
                  </Button>
                  <Button
                    type="button"
                    variant="outline"
-                   onClick={handleNavigateBack}
+                   onClick={() => navigate('/templates')}
                  >
                    Cancel
                  </Button>
