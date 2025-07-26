@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -93,7 +94,7 @@ export const TemplatesList: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/templates/edit/${template.id}`)}
+                        onClick={() => navigate(`/templates/${template.id}/edit`)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
