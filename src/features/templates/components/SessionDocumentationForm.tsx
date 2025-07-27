@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
@@ -62,24 +61,30 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
 
       const model = new Model(surveySchema);
       
-      // Auto-populate data-bound fields
+      // Auto-populate data-bound fields with deep recursive traversal
       if (formData && surveySchema.elements) {
         console.log('🔄 [SESSION_FORM] Auto-populating fields with data:', formData);
         const populatedData: Record<string, any> = {};
         
-        const populateElements = (elements: any[]) => {
-          elements.forEach((element: any) => {
-            console.log('🔍 [SESSION_FORM] Processing element:', {
+        const populateElements = (elements: any[], depth = 0) => {
+          const indent = '  '.repeat(depth);
+          console.log(`${indent}🔍 [SESSION_FORM] Processing ${elements.length} elements at depth ${depth}`);
+          
+          elements.forEach((element: any, index: number) => {
+            console.log(`${indent}📝 [SESSION_FORM] Element ${index}:`, {
               name: element.name,
               type: element.type,
-              hasDataBound: !!element.dataBound
+              hasDataBound: !!element.dataBound,
+              hasElements: !!element.elements,
+              width: element.width
             });
 
+            // Handle data-bound fields
             if (element.dataBound && formData) {
               const { tableName, columnName } = element.dataBound;
               const fieldKey = `${tableName}_${columnName}`;
               
-              console.log('📊 [SESSION_FORM] Data-bound field:', {
+              console.log(`${indent}📊 [SESSION_FORM] Data-bound field:`, {
                 elementName: element.name,
                 tableName,
                 columnName,
@@ -98,9 +103,10 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
               }
             }
             
-            // Handle nested elements (panels, etc.)
-            if (element.elements) {
-              populateElements(element.elements);
+            // Recursively handle nested elements (panels, etc.)
+            if (element.elements && Array.isArray(element.elements)) {
+              console.log(`${indent}🔄 [SESSION_FORM] Recursing into ${element.elements.length} nested elements`);
+              populateElements(element.elements, depth + 1);
             }
           });
         };

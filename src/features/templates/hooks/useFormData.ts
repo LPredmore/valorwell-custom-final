@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { FormContext, FormData } from '../types/formContext';
@@ -19,9 +20,9 @@ export const useFormData = (context: FormContext) => {
         if (clientError) {
           console.error('Error fetching client data:', clientError);
         } else if (clientData) {
-          // Add client data with 'client_' prefix for field mapping
+          // Add client data with 'clients_' prefix (plural) for field mapping
           Object.entries(clientData).forEach(([key, value]) => {
-            formData[`client_${key}`] = value;
+            formData[`clients_${key}`] = value;
           });
         }
       }
@@ -37,9 +38,9 @@ export const useFormData = (context: FormContext) => {
         if (clinicianError) {
           console.error('Error fetching clinician data:', clinicianError);
         } else if (clinicianData) {
-          // Add clinician data with 'clinician_' prefix for field mapping
+          // Add clinician data with 'clinicians_' prefix (plural) for field mapping
           Object.entries(clinicianData).forEach(([key, value]) => {
-            formData[`clinician_${key}`] = value;
+            formData[`clinicians_${key}`] = value;
           });
         }
       }
@@ -55,9 +56,9 @@ export const useFormData = (context: FormContext) => {
         if (appointmentError) {
           console.error('Error fetching appointment data:', appointmentError);
         } else if (appointmentData) {
-          // Add appointment data with 'appointment_' prefix for field mapping
+          // Add appointment data with 'appointments_' prefix (plural) for field mapping
           Object.entries(appointmentData).forEach(([key, value]) => {
-            formData[`appointment_${key}`] = value;
+            formData[`appointments_${key}`] = value;
           });
         }
       }
