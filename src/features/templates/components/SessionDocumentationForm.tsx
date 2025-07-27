@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
+import 'survey-core/defaultV2.min.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2 } from 'lucide-react';
@@ -60,6 +61,10 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
       }
 
       const model = new Model(surveySchema);
+      
+      // Configure survey for better layout
+      model.widthMode = "responsive";
+      model.showQuestionNumbers = "off";
       
       // Auto-populate data-bound fields with deep recursive traversal
       if (formData && surveySchema.elements) {
