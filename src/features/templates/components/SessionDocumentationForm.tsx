@@ -38,21 +38,63 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
 
   const survey = useMemo(() => {
     try {
-      const surveySchema = convertToSurveyJS(template.schema_json);
+      console.log('🔄 [SESSION_FORM] Creating survey with template:', {
+        templateId: template.id,
+        templateName: template.name,
+        schemaType: typeof template.schema_json,
+        hasElements: !!template.schema_json?.elements,
+        hasRows: !!template.schema_json?.rows
+      });
+
+      let surveySchema;
+      
+      // Check if schema is already in SurveyJS format (has elements property)
+      if (template.schema_json?.elements) {
+        console.log('📋 [SESSION_FORM] Schema already in SurveyJS format, using directly');
+        surveySchema = template.schema_json;
+      } else if (template.schema_json?.rows || template.schema_json?.fields) {
+        console.log('📋 [SESSION_FORM] Schema in custom format, converting to SurveyJS');
+        surveySchema = convertToSurveyJS(template.schema_json);
+      } else {
+        console.error('❌ [SESSION_FORM] Unknown schema format:', template.schema_json);
+        throw new Error('Unknown schema format');
+      }
+
       const model = new Model(surveySchema);
       
       // Auto-populate data-bound fields
       if (formData && surveySchema.elements) {
+        console.log('🔄 [SESSION_FORM] Auto-populating fields with data:', formData);
         const populatedData: Record<string, any> = {};
         
         const populateElements = (elements: any[]) => {
           elements.forEach((element: any) => {
+            console.log('🔍 [SESSION_FORM] Processing element:', {
+              name: element.name,
+              type: element.type,
+              hasDataBound: !!element.dataBound
+            });
+
             if (element.dataBound && formData) {
               const { tableName, columnName } = element.dataBound;
               const fieldKey = `${tableName}_${columnName}`;
               
+              console.log('📊 [SESSION_FORM] Data-bound field:', {
+                elementName: element.name,
+                tableName,
+                columnName,
+                fieldKey,
+                value: formData[fieldKey],
+                isReadOnly: element.dataBound.isReadOnly
+              });
+              
               if (formData[fieldKey] !== undefined) {
                 populatedData[element.name] = formData[fieldKey];
+                
+                // Make data-bound fields read-only
+                if (element.dataBound.isReadOnly) {
+                  element.readOnly = true;
+                }
               }
             }
             
@@ -64,12 +106,14 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
         };
         
         populateElements(surveySchema.elements);
+        
+        console.log('✅ [SESSION_FORM] Auto-populated data:', populatedData);
         model.data = populatedData;
       }
       
       return model;
     } catch (error) {
-      console.error('Error creating survey model:', error);
+      console.error('❌ [SESSION_FORM] Error creating survey model:', error);
       return null;
     }
   }, [template.schema_json, formData]);
@@ -87,6 +131,8 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
     setIsSubmitting(true);
     
     try {
+      console.log('🚀 [SESSION_FORM] Submitting form with data:', survey.data);
+
       // Submit the form
       await submitForm({
         templateId: template.id,
@@ -109,7 +155,7 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
 
       onComplete();
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('❌ [SESSION_FORM] Error submitting form:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
