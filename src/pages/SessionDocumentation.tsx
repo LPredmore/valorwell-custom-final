@@ -25,10 +25,11 @@ export const SessionDocumentation: React.FC = () => {
   // Find current clinician
   const currentClinician = clinicians.find(c => c.profile_id === profile?.id);
 
-  // Find session note template
+  // Use the specific Session Note template by ID
   const sessionTemplate = templates.find(t => 
-    t.name.toLowerCase().includes('session') && 
-    t.name.toLowerCase().includes('note')
+    t.id === '558cf9b6-0d66-403e-b24b-af63647cd160'
+  ) || templates.find(t => 
+    t.name === 'Session Note'
   );
 
   // Create form context
