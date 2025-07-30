@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
-import 'survey-core/defaultV2.css';
+import 'survey-core/defaultV2.min.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2 } from 'lucide-react';
@@ -51,12 +51,14 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
       // Check if schema is already in SurveyJS format (has elements property)
       if (template.schema_json?.elements) {
         console.log('📋 [SESSION_FORM] Schema already in SurveyJS format, using directly');
+        console.log('📋 [SESSION_FORM] Elements found:', template.schema_json.elements.length);
         surveySchema = template.schema_json;
       } else if (template.schema_json?.rows || template.schema_json?.fields) {
         console.log('📋 [SESSION_FORM] Schema in custom format, converting to SurveyJS');
         surveySchema = convertToSurveyJS(template.schema_json);
       } else {
         console.error('❌ [SESSION_FORM] Unknown schema format:', template.schema_json);
+        console.log('📋 [SESSION_FORM] Full schema:', JSON.stringify(template.schema_json, null, 2));
         throw new Error('Unknown schema format');
       }
 
