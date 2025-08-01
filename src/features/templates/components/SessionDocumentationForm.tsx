@@ -11,6 +11,9 @@ import { useFormData } from '../hooks/useFormData';
 import { useFormSubmission } from '../hooks/useFormSubmission';
 import { useUpdateAppointment } from '@/features/calendar/hooks/useAppointments';
 import { useToast } from '@/hooks/use-toast';
+import { logger, performanceLogger } from '@/utils/loggingService';
+import { templateDebugger } from '@/utils/templateDebugger';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface Template {
   id: string;
@@ -37,28 +40,40 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
   const updateAppointment = useUpdateAppointment();
 
   const survey = useMemo(() => {
-    try {
-      console.log('🔄 [SESSION_FORM] Creating survey with template:', {
-        templateId: template.id,
-        templateName: template.name,
-        schemaType: typeof template.schema_json,
-        hasElements: !!template.schema_json?.elements,
-        hasRows: !!template.schema_json?.rows
-      });
+    const timer = performanceLogger.startTimer('Survey model creation');
+    
+    logger.info('Creating survey with template', {
+      component: 'SessionDocumentationForm',
+      templateId: template.id,
+      templateName: template.name,
+      schemaType: typeof template.schema_json,
+      hasElements: !!template.schema_json?.elements,
+      hasRows: !!template.schema_json?.rows
+    });
 
+    try {
       let surveySchema;
       
       // Check if schema is already in SurveyJS format (has elements property)
       if (template.schema_json?.elements) {
-        console.log('📋 [SESSION_FORM] Schema already in SurveyJS format, using directly');
-        console.log('📋 [SESSION_FORM] Elements found:', template.schema_json.elements.length);
+        logger.debug('Schema already in SurveyJS format, using directly', {
+          component: 'SessionDocumentationForm',
+          templateId: template.id,
+          elementsCount: template.schema_json.elements.length
+        });
         surveySchema = template.schema_json;
       } else if (template.schema_json?.rows || template.schema_json?.fields) {
-        console.log('📋 [SESSION_FORM] Schema in custom format, converting to SurveyJS');
+        logger.debug('Schema in custom format, converting to SurveyJS', {
+          component: 'SessionDocumentationForm',
+          templateId: template.id
+        });
         surveySchema = convertToSurveyJS(template.schema_json);
       } else {
-        console.error('❌ [SESSION_FORM] Unknown schema format:', template.schema_json);
-        console.log('📋 [SESSION_FORM] Full schema:', JSON.stringify(template.schema_json, null, 2));
+        logger.error('Unknown schema format', {
+          component: 'SessionDocumentationForm',
+          templateId: template.id,
+          schemaKeys: Object.keys(template.schema_json || {})
+        });
         throw new Error('Unknown schema format');
       }
 
@@ -70,20 +85,24 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
       
       // Auto-populate data-bound fields with deep recursive traversal
       if (formData && surveySchema.elements) {
-        console.log('🔄 [SESSION_FORM] Auto-populating fields with data:', formData);
+        logger.info('Auto-populating fields with data', {
+          component: 'SessionDocumentationForm',
+          templateId: template.id,
+          formDataKeys: Object.keys(formData)
+        });
+        
         const populatedData: Record<string, any> = {};
+        let populatedCount = 0;
         
         const populateElements = (elements: any[], depth = 0) => {
-          const indent = '  '.repeat(depth);
-          console.log(`${indent}🔍 [SESSION_FORM] Processing ${elements.length} elements at depth ${depth}`);
-          
           elements.forEach((element: any, index: number) => {
-            console.log(`${indent}📝 [SESSION_FORM] Element ${index}:`, {
-              name: element.name,
-              type: element.type,
+            logger.debug('Processing element', {
+              component: 'SessionDocumentationForm',
+              elementName: element.name,
+              elementType: element.type,
+              depth,
               hasDataBound: !!element.dataBound,
-              hasElements: !!element.elements,
-              width: element.width
+              hasNestedElements: !!element.elements
             });
 
             // Handle data-bound fields
@@ -91,17 +110,18 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
               const { tableName, columnName } = element.dataBound;
               const fieldKey = `${tableName}_${columnName}`;
               
-              console.log(`${indent}📊 [SESSION_FORM] Data-bound field:`, {
-                elementName: element.name,
-                tableName,
-                columnName,
-                fieldKey,
-                value: formData[fieldKey],
-                isReadOnly: element.dataBound.isReadOnly
-              });
-              
               if (formData[fieldKey] !== undefined) {
                 populatedData[element.name] = formData[fieldKey];
+                populatedCount++;
+                
+                logger.debug('Populated data-bound field', {
+                  component: 'SessionDocumentationForm',
+                  elementName: element.name,
+                  tableName,
+                  columnName,
+                  fieldKey,
+                  valueType: typeof formData[fieldKey]
+                });
                 
                 // Make data-bound fields read-only
                 if (element.dataBound.isReadOnly) {
@@ -112,7 +132,6 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
             
             // Recursively handle nested elements (panels, etc.)
             if (element.elements && Array.isArray(element.elements)) {
-              console.log(`${indent}🔄 [SESSION_FORM] Recursing into ${element.elements.length} nested elements`);
               populateElements(element.elements, depth + 1);
             }
           });
@@ -120,31 +139,72 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
         
         populateElements(surveySchema.elements);
         
-        console.log('✅ [SESSION_FORM] Auto-populated data:', populatedData);
+        logger.info('Auto-population completed', {
+          component: 'SessionDocumentationForm',
+          templateId: template.id,
+          populatedCount,
+          totalDataKeys: Object.keys(populatedData).length
+        });
+        
         model.data = populatedData;
       }
       
+      timer.end({ success: true, templateId: template.id });
       return model;
     } catch (error) {
-      console.error('❌ [SESSION_FORM] Error creating survey model:', error);
+      timer.end({ success: false, templateId: template.id });
+      logger.error('Error creating survey model', {
+        component: 'SessionDocumentationForm',
+        templateId: template.id
+      }, error as Error);
       return null;
     }
   }, [template.schema_json, formData]);
 
   const handleSubmit = async () => {
+    const timer = performanceLogger.startTimer('Form submission');
+    
+    logger.info('Starting form submission', {
+      component: 'SessionDocumentationForm',
+      action: 'submit',
+      templateId: template.id,
+      hasContext: !!context,
+      hasSurvey: !!survey
+    });
+
     if (!survey || !context.client_id || !context.clinician_id || !context.appointment_id) {
+      const missingFields = [];
+      if (!survey) missingFields.push('survey');
+      if (!context.client_id) missingFields.push('client_id');
+      if (!context.clinician_id) missingFields.push('clinician_id');
+      if (!context.appointment_id) missingFields.push('appointment_id');
+
+      logger.error('Missing required information for form submission', {
+        component: 'SessionDocumentationForm',
+        missingFields
+      });
+
       toast({
         variant: 'destructive',
         title: 'Error',
         description: 'Missing required information for form submission.',
       });
+      timer.end({ success: false, reason: 'missing_data' });
       return;
     }
 
     setIsSubmitting(true);
     
     try {
-      console.log('🚀 [SESSION_FORM] Submitting form with data:', survey.data);
+      const formDataSize = JSON.stringify(survey.data).length;
+      
+      logger.info('Submitting form with data', {
+        component: 'SessionDocumentationForm',
+        templateId: template.id,
+        appointmentId: context.appointment_id,
+        formDataSize,
+        fieldCount: Object.keys(survey.data).length
+      });
 
       // Submit the form
       await submitForm({
@@ -161,6 +221,8 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
         status: 'documented'
       });
 
+      timer.end({ success: true });
+
       toast({
         title: 'Success',
         description: 'Session documentation completed successfully.',
@@ -168,7 +230,13 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
 
       onComplete();
     } catch (error) {
-      console.error('❌ [SESSION_FORM] Error submitting form:', error);
+      timer.end({ success: false });
+      logger.error('Error submitting form', {
+        component: 'SessionDocumentationForm',
+        templateId: template.id,
+        appointmentId: context.appointment_id
+      }, error as Error);
+
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -205,32 +273,34 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{template.name}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border rounded-lg overflow-hidden">
-            <Survey model={survey} />
-          </div>
-        </CardContent>
-      </Card>
+    <ErrorBoundary context="SessionDocumentationForm">
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>{template.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border rounded-lg overflow-hidden">
+              <Survey model={survey} />
+            </div>
+          </CardContent>
+        </Card>
 
-      <div className="flex justify-end gap-4">
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="min-w-[120px]"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          {isSubmitting ? 'Saving...' : 'Save Documentation'}
-        </Button>
+        <div className="flex justify-end gap-4">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="min-w-[120px]"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            {isSubmitting ? 'Saving...' : 'Save Documentation'}
+          </Button>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
