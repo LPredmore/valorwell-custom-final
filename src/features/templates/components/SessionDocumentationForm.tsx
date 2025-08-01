@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
 // Import SurveyJS default theme for proper styling
-import 'survey-core/survey.min.css';
+import 'survey-core/defaultV2.css';
+import 'survey-react-ui/survey-react-ui.css';
 // Import custom multi-column layout styles
 import './SessionDocumentationForm.css';
 
