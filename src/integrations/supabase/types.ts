@@ -1422,6 +1422,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_template_structure: {
+        Args: { p_template_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
