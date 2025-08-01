@@ -38,8 +38,15 @@ export const useUpdateCurrentClinician = () => {
 
   return useMutation<Clinician, Error, ClinicianUpdate>({
     mutationFn: async (clinicianData: ClinicianUpdate): Promise<Clinician> => {
+      console.log('🔄 [UPDATE_CLINICIAN] Starting update with data:', clinicianData);
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      if (!user) {
+        console.error('❌ [UPDATE_CLINICIAN] No user found');
+        throw new Error('No user found');
+      }
+
+      console.log('✅ [UPDATE_CLINICIAN] User found:', user.id);
 
       const { data, error } = await supabase
         .from('clinicians')
@@ -48,10 +55,16 @@ export const useUpdateCurrentClinician = () => {
         .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('❌ [UPDATE_CLINICIAN] Database error:', error);
+        throw error;
+      }
+      
+      console.log('✅ [UPDATE_CLINICIAN] Successfully updated clinician:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🔄 [UPDATE_CLINICIAN] Invalidating queries and showing success toast');
       queryClient.invalidateQueries({ queryKey: ['current-clinician'] });
       toast({
         title: 'Success',
@@ -59,11 +72,11 @@ export const useUpdateCurrentClinician = () => {
       });
     },
     onError: (error) => {
-      console.error('Update clinician error:', error);
+      console.error('💥 [UPDATE_CLINICIAN] Mutation failed:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to update profile',
+        description: `Failed to update profile: ${error.message}`,
       });
     }
   });

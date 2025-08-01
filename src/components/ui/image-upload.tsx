@@ -31,7 +31,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const { toast } = useToast();
 
   const uploadImage = async (file: File) => {
+    console.log('🔄 [IMAGE_UPLOAD] Starting upload for file:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      bucket
+    });
+
     if (file.size > maxSize * 1024 * 1024) {
+      console.error('❌ [IMAGE_UPLOAD] File too large:', file.size, 'max:', maxSize * 1024 * 1024);
       toast({
         title: "File too large",
         description: `File size must be less than ${maxSize}MB`,
@@ -46,15 +54,24 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = fileName;
 
+      console.log('📤 [IMAGE_UPLOAD] Uploading to bucket:', bucket, 'path:', filePath);
+
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('❌ [IMAGE_UPLOAD] Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('✅ [IMAGE_UPLOAD] Upload successful, getting public URL');
 
       const { data } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);
+
+      console.log('✅ [IMAGE_UPLOAD] Public URL generated:', data.publicUrl);
 
       onImageChange(data.publicUrl);
       
@@ -63,10 +80,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         description: "Image uploaded successfully.",
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('💥 [IMAGE_UPLOAD] Error uploading image:', error);
       toast({
         title: "Error",
-        description: "Failed to upload image.",
+        description: `Failed to upload image: ${error.message}`,
         variant: "destructive",
       });
     } finally {
