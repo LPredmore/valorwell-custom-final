@@ -1,0 +1,89 @@
+/* SurveyJS Multi-Column Layout Enhancement */
+
+/* Container styling for the survey */
+.survey-container {
+  background: var(--background);
+}
+
+/* Row panel styling */
+.sv_row_panel {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+  margin-bottom: 1.5rem !important;
+  width: 100% !important;
+}
+
+/* Multi-column panel styling */
+.sv_multi_column_panel {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  padding: 0.75rem !important;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+}
+
+/* Override SurveyJS default panel spacing */
+.sv_row_panel .sv_p_container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Enhanced question spacing within panels */
+.sv_multi_column_panel .sv_q {
+  margin-bottom: 1rem !important;
+}
+
+.sv_multi_column_panel .sv_q:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sv_row_panel {
+    flex-direction: column !important;
+  }
+  
+  .sv_multi_column_panel {
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* Form field styling improvements */
+.sv_q_title {
+  font-weight: 600 !important;
+  color: var(--foreground) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.sv_q input,
+.sv_q textarea,
+.sv_q select {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.5rem 0.75rem !important;
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+  font-size: 0.875rem !important;
+}
+
+.sv_q input:focus,
+.sv_q textarea:focus,
+.sv_q select:focus {
+  outline: none !important;
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 3px var(--ring) !important;
+}
+
+/* Read-only field styling */
+.sv_q input[readonly],
+.sv_q textarea[readonly] {
+  background: var(--muted) !important;
+  color: var(--muted-foreground) !important;
+  cursor: not-allowed !important;
+}

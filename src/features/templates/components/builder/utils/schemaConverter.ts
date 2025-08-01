@@ -163,26 +163,63 @@ export function convertToSurveyJS(schema: FormSchema): any {
 }
 
 function convertRowToSurveyJS(row: FormRow): any[] {
+  console.log('🔧 [CONVERT_ROW] Processing row:', {
+    rowId: row.id,
+    columnsCount: row.columns.length,
+    columnWidths: row.columns.map(c => c.width),
+    totalFields: row.columns.reduce((sum, col) => sum + col.fields.length, 0)
+  });
+
   // If single column, return fields directly
   if (row.columns.length === 1) {
+    console.log('📝 [CONVERT_ROW] Single column row, returning fields directly');
     return row.columns[0].fields.map(convertFieldToSurveyJS);
   }
 
   // For multi-column, create a panel with columns
-  const panelElements = row.columns.map(column => ({
-    type: 'panel',
-    name: `panel_${column.id}`,
-    elements: column.fields.map(convertFieldToSurveyJS),
-    startWithNewLine: false,
-    width: `${column.width}%`
-  }));
+  const panelElements = row.columns.map((column, index) => {
+    console.log('🏗️ [CONVERT_ROW] Creating column panel:', {
+      columnId: column.id,
+      columnWidth: column.width,
+      fieldsCount: column.fields.length,
+      isFirstColumn: index === 0
+    });
+    
+    return {
+      type: 'panel',
+      name: `panel_${column.id}`,
+      elements: column.fields.map(convertFieldToSurveyJS),
+      startWithNewLine: index === 0, // Only first column starts new line
+      width: `${column.width}%`,
+      // Add CSS class for multi-column styling
+      cssClasses: {
+        panel: {
+          container: "sv_multi_column_panel"
+        }
+      }
+    };
+  });
 
-  return [{
+  const rowPanel = {
     type: 'panel',
     name: `row_${row.id}`,
     elements: panelElements,
-    startWithNewLine: true
-  }];
+    startWithNewLine: true,
+    // Configure panel for proper multi-column layout
+    cssClasses: {
+      panel: {
+        container: "sv_row_panel"
+      }
+    }
+  };
+
+  console.log('✅ [CONVERT_ROW] Row panel created:', {
+    rowPanelName: rowPanel.name,
+    childPanelsCount: panelElements.length,
+    totalElements: panelElements.reduce((sum, p) => sum + p.elements.length, 0)
+  });
+
+  return [rowPanel];
 }
 
 function convertFieldToSurveyJS(field: FormField): any {

@@ -1,6 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
+// Import SurveyJS default theme for proper styling
+import 'survey-core/defaultV2.min.css';
+// Import custom multi-column layout styles
+import './SessionDocumentationForm.css';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,9 +83,27 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
 
       const model = new Model(surveySchema);
       
-      // Configure survey for better layout
+      // Configure survey for multi-column responsive layout
       model.widthMode = "responsive";
       model.showQuestionNumbers = "off";
+      model.showProgressBar = "off";
+      model.questionTitleLocation = "top";
+      
+      // Enhanced layout configuration for multi-column support
+      model.css = {
+        ...model.css,
+        panel: {
+          ...model.css.panel,
+          container: "sv_panel_container sv_multi_column_panel"
+        }
+      };
+      
+      logger.debug('Survey model configured with multi-column support', {
+        component: 'SessionDocumentationForm',
+        templateId: template.id,
+        widthMode: model.widthMode,
+        questionTitleLocation: model.questionTitleLocation
+      });
       
       // Auto-populate data-bound fields with deep recursive traversal
       if (formData && surveySchema.elements) {
@@ -280,7 +302,7 @@ export const SessionDocumentationForm: React.FC<SessionDocumentationFormProps> =
             <CardTitle>{template.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border rounded-lg overflow-hidden survey-container">
               <Survey model={survey} />
             </div>
           </CardContent>
