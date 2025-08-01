@@ -14,12 +14,12 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Profile', href: '/clinicianprof', icon: Settings },
+  { name: 'Profile', href: '/clinician-profile', icon: Settings },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
-  { name: 'Clients', href: '/myclients', icon: Users },
+  { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Templates', href: '/templates', icon: FileText },
-  { name: 'Billing', href: '/billing', icon: CreditCard },
-  { name: 'Reports', href: '/reports', icon: BarChart3 },
+  // { name: 'Billing', href: '/billing', icon: CreditCard },
+  // { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
