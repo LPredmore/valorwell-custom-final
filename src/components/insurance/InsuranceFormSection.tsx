@@ -25,8 +25,7 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
 }) => {
   const getFieldLabel = (fieldName: string): string => {
     const labelMap: { [key: string]: string } = {
-      policy_number: 'Policy Number',
-      member_id: 'Member ID',
+      member_id: 'Member ID / Policy Number',
       group_number: 'Group Number',
       subscriber_name: 'Primary Insured Name',
       subscriber_relationship: 'Relationship to Insured',
@@ -61,7 +60,9 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
     return labelMap[fieldName] || fieldName;
   };
 
-  const renderField = (fieldName: string, isRequired: boolean = false) => {
+  const renderField = (fieldName: string, isRequired: boolean = false, shouldShow: boolean = true) => {
+    if (!shouldShow) return null;
+    
     const label = getFieldLabel(fieldName);
     const value = insuranceData[fieldName as keyof ClientInsurance] || '';
 
@@ -197,7 +198,9 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
     );
   };
 
-  const renderCheckboxField = (fieldName: string, label: string) => {
+  const renderCheckboxField = (fieldName: string, label: string, shouldShow: boolean = true) => {
+    if (!shouldShow) return null;
+    
     const value = insuranceData[fieldName as keyof ClientInsurance] as boolean;
     
     return (
@@ -241,64 +244,50 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
 
         {selectedInsurance && (
           <>
-            {/* Always show policy number */}
-            {renderField('policy_number', true)}
+            {/* Member ID / Policy Number - only show when required */}
+            {renderField('member_id', selectedInsurance.insurance_companies?.requires_insured_id_number, selectedInsurance.insurance_companies?.requires_insured_id_number)}
 
-            {/* Render fields based on insurance company requirements */}
-            {selectedInsurance.insurance_companies?.requires_group_number && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderField('group_number', true)}
-              </div>
-            )}
+            {/* Group Number */}
+            {renderField('group_number', selectedInsurance.insurance_companies?.requires_group_number, selectedInsurance.insurance_companies?.requires_group_number)}
 
-            {selectedInsurance.insurance_companies?.requires_insured_id_number && (
-              renderField('member_id', true)
-            )}
-
+            {/* Insured Name and Relationship */}
             {selectedInsurance.insurance_companies?.requires_insured_name && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderField('subscriber_name', true)}
-                {selectedInsurance.insurance_companies?.requires_patient_relationship_to_insured && 
-                  renderField('subscriber_relationship', true)
-                }
+                {renderField('subscriber_name', true, true)}
+                {renderField('subscriber_relationship', selectedInsurance.insurance_companies?.requires_patient_relationship_to_insured, selectedInsurance.insurance_companies?.requires_patient_relationship_to_insured)}
               </div>
             )}
 
-            {selectedInsurance.insurance_companies?.requires_insured_date_of_birth && (
-              renderField('subscriber_date_of_birth', true)
-            )}
+            {/* Insured Date of Birth */}
+            {renderField('subscriber_date_of_birth', selectedInsurance.insurance_companies?.requires_insured_date_of_birth, selectedInsurance.insurance_companies?.requires_insured_date_of_birth)}
 
-            {selectedInsurance.insurance_companies?.requires_insured_sex && (
-              renderField('insured_sex', true)
-            )}
+            {/* Insured Sex */}
+            {renderField('insured_sex', selectedInsurance.insurance_companies?.requires_insured_sex, selectedInsurance.insurance_companies?.requires_insured_sex)}
 
+            {/* Insured Address */}
             {selectedInsurance.insurance_companies?.requires_insured_address && (
               <div className="space-y-4">
-                {renderField('subscriber_address_line1', true)}
-                {renderField('subscriber_address_line2')}
+                {renderField('subscriber_address_line1', true, true)}
+                {renderField('subscriber_address_line2', false, true)}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {renderField('subscriber_city', true)}
-                  {renderField('subscriber_state', true)}
-                  {renderField('subscriber_zip', true)}
+                  {renderField('subscriber_city', true, true)}
+                  {renderField('subscriber_state', true, true)}
+                  {renderField('subscriber_zip', true, true)}
                 </div>
               </div>
             )}
 
-            {selectedInsurance.insurance_companies?.requires_phone_number && (
-              renderField('phone_number', true)
-            )}
+            {/* Insurance Contact Info */}
+            {renderField('phone_number', selectedInsurance.insurance_companies?.requires_phone_number, selectedInsurance.insurance_companies?.requires_phone_number)}
 
-            {selectedInsurance.insurance_companies?.requires_copay_amount && (
-              renderField('copay_amount', true)
-            )}
+            {/* Copay Amount */}
+            {renderField('copay_amount', selectedInsurance.insurance_companies?.requires_copay_amount, selectedInsurance.insurance_companies?.requires_copay_amount)}
 
-            {selectedInsurance.insurance_companies?.requires_insurance_plan_program_name && (
-              renderField('insurance_plan_program_name', true)
-            )}
+            {/* Plan Information */}
+            {renderField('insurance_plan_program_name', selectedInsurance.insurance_companies?.requires_insurance_plan_program_name, selectedInsurance.insurance_companies?.requires_insurance_plan_program_name)}
 
-            {selectedInsurance.insurance_companies?.requires_insured_employer_school_name && (
-              renderField('insured_employer_school_name', true)
-            )}
+            {/* Employer/School Name */}
+            {renderField('insured_employer_school_name', selectedInsurance.insurance_companies?.requires_insured_employer_school_name, selectedInsurance.insurance_companies?.requires_insured_employer_school_name)}
 
             {/* Claims address fields */}
             {(selectedInsurance.insurance_companies?.requires_claims_address_line1 || 
@@ -307,12 +296,12 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
               selectedInsurance.insurance_companies?.requires_claims_zip) && (
               <div className="space-y-4">
                 <h4 className="font-medium text-foreground">Claims Mailing Address</h4>
-                {selectedInsurance.insurance_companies?.requires_claims_address_line1 && renderField('claims_address_line1', true)}
-                {selectedInsurance.insurance_companies?.requires_claims_address_line2 && renderField('claims_address_line2')}
+                {renderField('claims_address_line1', selectedInsurance.insurance_companies?.requires_claims_address_line1, selectedInsurance.insurance_companies?.requires_claims_address_line1)}
+                {renderField('claims_address_line2', selectedInsurance.insurance_companies?.requires_claims_address_line2, selectedInsurance.insurance_companies?.requires_claims_address_line2)}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {selectedInsurance.insurance_companies?.requires_claims_city && renderField('claims_city', true)}
-                  {selectedInsurance.insurance_companies?.requires_claims_state && renderField('claims_state', true)}
-                  {selectedInsurance.insurance_companies?.requires_claims_zip && renderField('claims_zip', true)}
+                  {renderField('claims_city', selectedInsurance.insurance_companies?.requires_claims_city, selectedInsurance.insurance_companies?.requires_claims_city)}
+                  {renderField('claims_state', selectedInsurance.insurance_companies?.requires_claims_state, selectedInsurance.insurance_companies?.requires_claims_state)}
+                  {renderField('claims_zip', selectedInsurance.insurance_companies?.requires_claims_zip, selectedInsurance.insurance_companies?.requires_claims_zip)}
                 </div>
               </div>
             )}
@@ -326,49 +315,36 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
               selectedInsurance.insurance_companies?.requires_other_insured_policy_group_number) && (
               <div className="space-y-4">
                 <h4 className="font-medium text-foreground">Other Insured Information</h4>
-                {selectedInsurance.insurance_companies?.requires_other_insured_name && renderField('other_insured_name', true)}
-                {selectedInsurance.insurance_companies?.requires_other_insured_date_of_birth && renderField('other_insured_date_of_birth', true)}
-                {selectedInsurance.insurance_companies?.requires_other_insured_sex && renderField('other_insured_sex', true)}
-                {selectedInsurance.insurance_companies?.requires_other_insured_employer_school_name && renderField('other_insured_employer_school_name', true)}
-                {selectedInsurance.insurance_companies?.requires_other_insured_plan_program_name && renderField('other_insured_plan_program_name', true)}
-                {selectedInsurance.insurance_companies?.requires_other_insured_policy_group_number && renderField('other_insured_policy_group_number', true)}
+                {renderField('other_insured_name', selectedInsurance.insurance_companies?.requires_other_insured_name, selectedInsurance.insurance_companies?.requires_other_insured_name)}
+                {renderField('other_insured_date_of_birth', selectedInsurance.insurance_companies?.requires_other_insured_date_of_birth, selectedInsurance.insurance_companies?.requires_other_insured_date_of_birth)}
+                {renderField('other_insured_sex', selectedInsurance.insurance_companies?.requires_other_insured_sex, selectedInsurance.insurance_companies?.requires_other_insured_sex)}
+                {renderField('other_insured_employer_school_name', selectedInsurance.insurance_companies?.requires_other_insured_employer_school_name, selectedInsurance.insurance_companies?.requires_other_insured_employer_school_name)}
+                {renderField('other_insured_plan_program_name', selectedInsurance.insurance_companies?.requires_other_insured_plan_program_name, selectedInsurance.insurance_companies?.requires_other_insured_plan_program_name)}
+                {renderField('other_insured_policy_group_number', selectedInsurance.insurance_companies?.requires_other_insured_policy_group_number, selectedInsurance.insurance_companies?.requires_other_insured_policy_group_number)}
               </div>
             )}
 
             {/* Checkboxes for conditions and authorizations */}
             <div className="space-y-3">
-              {selectedInsurance.insurance_companies?.requires_signature_on_file && (
-                renderCheckboxField('signature_on_file', 'Signature on file for insurance billing')
-              )}
+              {renderCheckboxField('signature_on_file', 'Signature on file for insurance billing', selectedInsurance.insurance_companies?.requires_signature_on_file)}
               
-              {selectedInsurance.insurance_companies?.requires_insured_authorization_payment && (
-                renderCheckboxField('authorization_payment', 'Authorization for payment of benefits')
-              )}
+              {renderCheckboxField('authorization_payment', 'Authorization for payment of benefits', selectedInsurance.insurance_companies?.requires_insured_authorization_payment)}
 
-              {selectedInsurance.insurance_companies?.requires_patient_condition_employment && (
-                renderCheckboxField('condition_employment', 'Condition related to employment')
-              )}
+              {renderCheckboxField('condition_employment', 'Condition related to employment', selectedInsurance.insurance_companies?.requires_patient_condition_employment)}
 
-              {selectedInsurance.insurance_companies?.requires_patient_condition_auto_accident && (
-                renderCheckboxField('condition_auto_accident', 'Condition related to auto accident')
-              )}
+              {renderCheckboxField('condition_auto_accident', 'Condition related to auto accident', selectedInsurance.insurance_companies?.requires_patient_condition_auto_accident)}
 
-              {selectedInsurance.insurance_companies?.requires_patient_condition_other_accident && (
-                renderCheckboxField('condition_other_accident', 'Condition related to other accident')
-              )}
+              {renderCheckboxField('condition_other_accident', 'Condition related to other accident', selectedInsurance.insurance_companies?.requires_patient_condition_other_accident)}
             </div>
 
-            {selectedInsurance.insurance_companies?.requires_health_benefit_plan_indicator && (
-              renderField('health_benefit_plan_indicator', true)
-            )}
+            {/* Health Benefit Plan Indicator */}
+            {renderField('health_benefit_plan_indicator', selectedInsurance.insurance_companies?.requires_health_benefit_plan_indicator, selectedInsurance.insurance_companies?.requires_health_benefit_plan_indicator)}
 
-            {selectedInsurance.insurance_companies?.requires_website && (
-              renderField('website')
-            )}
+            {/* Website */}
+            {renderField('website', selectedInsurance.insurance_companies?.requires_website, selectedInsurance.insurance_companies?.requires_website)}
 
-            {selectedInsurance.insurance_companies?.requires_notes && (
-              renderField('notes', true)
-            )}
+            {/* Notes */}
+            {renderField('notes', selectedInsurance.insurance_companies?.requires_notes, selectedInsurance.insurance_companies?.requires_notes)}
           </>
         )}
       </div>
