@@ -495,11 +495,10 @@ export const AddClientInfo: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="personal">Personal</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
-            <TabsTrigger value="clinical">Clinical</TabsTrigger>
-            <TabsTrigger value="treatment">Treatment</TabsTrigger>
+            <TabsTrigger value="clinical">Final</TabsTrigger>
           </TabsList>
 
           <TabsContent value="personal">
@@ -918,151 +917,147 @@ export const AddClientInfo: React.FC = () => {
           <TabsContent value="clinical">
             <Card>
               <CardHeader>
-                <CardTitle>Clinical Information</CardTitle>
-                <CardDescription>Background and referral information</CardDescription>
+                <CardTitle>Final Information</CardTitle>
+                <CardDescription>Complete your profile with clinical and treatment information</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="client_referral_source">Referral Source</Label>
-                  <Input
-                    id="client_referral_source"
-                    name="client_referral_source"
-                    value={formData.client_referral_source}
-                    onChange={handleInputChange}
-                    placeholder="How did you hear about us?"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="client_self_goal">Personal Goals</Label>
-                  <Textarea
-                    id="client_self_goal"
-                    name="client_self_goal"
-                    value={formData.client_self_goal}
-                    onChange={handleInputChange}
-                    placeholder="What are your goals for therapy?"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex justify-end pt-4">
-                  <Button
-                    type="button"
-                    onClick={() => setActiveTab('treatment')}
-                    size="lg"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="treatment">
-            <Card>
-              <CardHeader>
-                <CardTitle>Treatment Planning</CardTitle>
-                <CardDescription>Treatment goals and objectives</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="client_planlength">Plan Length</Label>
-                    <Select value={formData.client_planlength} onValueChange={(value) => handleSelectChange('client_planlength', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select plan length" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Short-term (1-3 months)">Short-term (1-3 months)</SelectItem>
-                        <SelectItem value="Medium-term (3-6 months)">Medium-term (3-6 months)</SelectItem>
-                        <SelectItem value="Long-term (6+ months)">Long-term (6+ months)</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <CardContent className="space-y-6">
+                {/* Clinical Information Section */}
+                <div className="space-y-4">
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold text-foreground">Clinical Information</h3>
+                    <p className="text-sm text-muted-foreground">Background and referral information</p>
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="client_treatmentfrequency">Treatment Frequency</Label>
-                    <Select value={formData.client_treatmentfrequency} onValueChange={(value) => handleSelectChange('client_treatmentfrequency', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select frequency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Weekly">Weekly</SelectItem>
-                        <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
-                        <SelectItem value="Monthly">Monthly</SelectItem>
-                        <SelectItem value="As needed">As needed</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="client_referral_source">Referral Source</Label>
+                    <Input
+                      id="client_referral_source"
+                      name="client_referral_source"
+                      value={formData.client_referral_source}
+                      onChange={handleInputChange}
+                      placeholder="How did you hear about us?"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="client_self_goal">Personal Goals</Label>
+                    <Textarea
+                      id="client_self_goal"
+                      name="client_self_goal"
+                      value={formData.client_self_goal}
+                      onChange={handleInputChange}
+                      placeholder="What are your goals for therapy?"
+                      rows={3}
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_problem">Primary Problem/Concern</Label>
-                  <Textarea
-                    id="client_problem"
-                    name="client_problem"
-                    value={formData.client_problem}
-                    onChange={handleInputChange}
-                    placeholder="Describe the main issue you'd like to address"
-                    rows={3}
-                  />
-                </div>
+                {/* Treatment Planning Section */}
+                <div className="space-y-4">
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold text-foreground">Treatment Planning</h3>
+                    <p className="text-sm text-muted-foreground">Treatment goals and objectives</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="client_planlength">Plan Length</Label>
+                      <Select value={formData.client_planlength} onValueChange={(value) => handleSelectChange('client_planlength', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select plan length" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Short-term (1-3 months)">Short-term (1-3 months)</SelectItem>
+                          <SelectItem value="Medium-term (3-6 months)">Medium-term (3-6 months)</SelectItem>
+                          <SelectItem value="Long-term (6+ months)">Long-term (6+ months)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="client_treatmentfrequency">Treatment Frequency</Label>
+                      <Select value={formData.client_treatmentfrequency} onValueChange={(value) => handleSelectChange('client_treatmentfrequency', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select frequency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Weekly">Weekly</SelectItem>
+                          <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
+                          <SelectItem value="Monthly">Monthly</SelectItem>
+                          <SelectItem value="As needed">As needed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_treatmentgoal">Treatment Goal</Label>
-                  <Textarea
-                    id="client_treatmentgoal"
-                    name="client_treatmentgoal"
-                    value={formData.client_treatmentgoal}
-                    onChange={handleInputChange}
-                    placeholder="What would you like to achieve through treatment?"
-                    rows={3}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_problem">Primary Problem/Concern</Label>
+                    <Textarea
+                      id="client_problem"
+                      name="client_problem"
+                      value={formData.client_problem}
+                      onChange={handleInputChange}
+                      placeholder="Describe the main issue you'd like to address"
+                      rows={3}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_primaryobjective">Primary Objective</Label>
-                  <Textarea
-                    id="client_primaryobjective"
-                    name="client_primaryobjective"
-                    value={formData.client_primaryobjective}
-                    onChange={handleInputChange}
-                    placeholder="Specific, measurable objective"
-                    rows={2}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_treatmentgoal">Treatment Goal</Label>
+                    <Textarea
+                      id="client_treatmentgoal"
+                      name="client_treatmentgoal"
+                      value={formData.client_treatmentgoal}
+                      onChange={handleInputChange}
+                      placeholder="What would you like to achieve through treatment?"
+                      rows={3}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_intervention1">Primary Intervention</Label>
-                  <Input
-                    id="client_intervention1"
-                    name="client_intervention1"
-                    value={formData.client_intervention1}
-                    onChange={handleInputChange}
-                    placeholder="e.g., CBT, DBT, mindfulness"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_primaryobjective">Primary Objective</Label>
+                    <Textarea
+                      id="client_primaryobjective"
+                      name="client_primaryobjective"
+                      value={formData.client_primaryobjective}
+                      onChange={handleInputChange}
+                      placeholder="Specific, measurable objective"
+                      rows={2}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_secondaryobjective">Secondary Objective</Label>
-                  <Textarea
-                    id="client_secondaryobjective"
-                    name="client_secondaryobjective"
-                    value={formData.client_secondaryobjective}
-                    onChange={handleInputChange}
-                    placeholder="Additional objective (optional)"
-                    rows={2}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_intervention1">Primary Intervention</Label>
+                    <Input
+                      id="client_intervention1"
+                      name="client_intervention1"
+                      value={formData.client_intervention1}
+                      onChange={handleInputChange}
+                      placeholder="e.g., CBT, DBT, mindfulness"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_intervention2">Secondary Intervention</Label>
-                  <Input
-                    id="client_intervention2"
-                    name="client_intervention2"
-                    value={formData.client_intervention2}
-                    onChange={handleInputChange}
-                    placeholder="Additional intervention (optional)"
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="client_secondaryobjective">Secondary Objective</Label>
+                    <Textarea
+                      id="client_secondaryobjective"
+                      name="client_secondaryobjective"
+                      value={formData.client_secondaryobjective}
+                      onChange={handleInputChange}
+                      placeholder="Additional objective (optional)"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="client_intervention2">Secondary Intervention</Label>
+                    <Input
+                      id="client_intervention2"
+                      name="client_intervention2"
+                      value={formData.client_intervention2}
+                      onChange={handleInputChange}
+                      placeholder="Additional intervention (optional)"
+                    />
+                  </div>
                 </div>
 
                 {/* Complete Profile Button */}
@@ -1086,6 +1081,7 @@ export const AddClientInfo: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
         </Tabs>
       </div>
     </div>
