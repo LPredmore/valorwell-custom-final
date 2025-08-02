@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { InsuranceCompanyCombobox } from './InsuranceCompanyCombobox';
+import { AcceptedInsuranceCombobox } from './AcceptedInsuranceCombobox';
 import type { AcceptedInsurance } from '@/hooks/useInsurance';
 import type { ClientInsurance } from '@/hooks/useClientInsurance';
 
@@ -232,8 +232,8 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>Insurance Company *</Label>
-          <InsuranceCompanyCombobox
-            value={insuranceData.insurance_company_id || ''}
+          <AcceptedInsuranceCombobox
+            value={selectedInsurance?.id || ''}
             onValueChange={onInsuranceSelect}
             placeholder="Select your insurance company"
           />

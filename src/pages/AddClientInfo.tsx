@@ -26,6 +26,8 @@ export const AddClientInfo: React.FC = () => {
   const [showSecondaryInsurance, setShowSecondaryInsurance] = useState(false);
   const [primaryInsuranceData, setPrimaryInsuranceData] = useState<Partial<ClientInsurance>>({});
   const [secondaryInsuranceData, setSecondaryInsuranceData] = useState<Partial<ClientInsurance>>({});
+  const [selectedPrimaryInsuranceId, setSelectedPrimaryInsuranceId] = useState<string>('');
+  const [selectedSecondaryInsuranceId, setSelectedSecondaryInsuranceId] = useState<string>('');
   
   // Fetch existing client data to auto-populate fields
   const { data: clientData, isLoading } = useQuery({
@@ -127,20 +129,34 @@ export const AddClientInfo: React.FC = () => {
 
   // Auto-populate insurance data when existing insurance is loaded
   useEffect(() => {
-    if (existingInsurance && existingInsurance.length > 0) {
+    if (existingInsurance && existingInsurance.length > 0 && acceptedInsurance) {
       const primaryIns = existingInsurance.find(ins => ins.insurance_type === 'primary');
       const secondaryIns = existingInsurance.find(ins => ins.insurance_type === 'secondary');
       
       if (primaryIns) {
         setPrimaryInsuranceData(primaryIns);
+        // Find the corresponding accepted insurance record
+        const acceptedPrimary = acceptedInsurance.find(
+          acc => acc.insurance_company_id === primaryIns.insurance_company_id
+        );
+        if (acceptedPrimary) {
+          setSelectedPrimaryInsuranceId(acceptedPrimary.id);
+        }
       }
       
       if (secondaryIns) {
         setSecondaryInsuranceData(secondaryIns);
         setShowSecondaryInsurance(true);
+        // Find the corresponding accepted insurance record
+        const acceptedSecondary = acceptedInsurance.find(
+          acc => acc.insurance_company_id === secondaryIns.insurance_company_id
+        );
+        if (acceptedSecondary) {
+          setSelectedSecondaryInsuranceId(acceptedSecondary.id);
+        }
       }
     }
-  }, [existingInsurance]);
+  }, [existingInsurance, acceptedInsurance]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -159,6 +175,7 @@ export const AddClientInfo: React.FC = () => {
   const handlePrimaryInsuranceSelect = (insuranceId: string) => {
     const selectedInsurance = acceptedInsurance?.find(ins => ins.id === insuranceId);
     if (selectedInsurance) {
+      setSelectedPrimaryInsuranceId(insuranceId);
       setPrimaryInsuranceData({
         insurance_company_id: selectedInsurance.insurance_company_id,
         insurance_type: 'primary',
@@ -171,6 +188,7 @@ export const AddClientInfo: React.FC = () => {
   const handleSecondaryInsuranceSelect = (insuranceId: string) => {
     const selectedInsurance = acceptedInsurance?.find(ins => ins.id === insuranceId);
     if (selectedInsurance) {
+      setSelectedSecondaryInsuranceId(insuranceId);
       setSecondaryInsuranceData({
         insurance_company_id: selectedInsurance.insurance_company_id,
         insurance_type: 'secondary',
@@ -367,10 +385,10 @@ export const AddClientInfo: React.FC = () => {
 
   // Get selected insurance objects for the form sections
   const selectedPrimaryInsurance = acceptedInsurance?.find(
-    ins => ins.insurance_company_id === primaryInsuranceData.insurance_company_id
+    ins => ins.id === selectedPrimaryInsuranceId
   );
   const selectedSecondaryInsurance = acceptedInsurance?.find(
-    ins => ins.insurance_company_id === secondaryInsuranceData.insurance_company_id
+    ins => ins.id === selectedSecondaryInsuranceId
   );
 
   return (
