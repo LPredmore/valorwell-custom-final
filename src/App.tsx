@@ -23,6 +23,7 @@ import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import { SessionDocumentation } from '@/pages/SessionDocumentation';
 import { AddClientInfo } from '@/pages/AddClientInfo';
+import ClientDashboard from '@/pages/ClientDashboard';
 
 // Template page imports
 import { TemplatesPage } from '@/features/templates/pages/TemplatesPage';
@@ -157,6 +158,14 @@ function App() {
                 <Layout>
                   <Settings />
                 </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/client-dashboard" element={
+              <ProtectedRoute>
+                <RoleGuard allowedRoles={['client']}>
+                  <ClientDashboard />
+                </RoleGuard>
               </ProtectedRoute>
             } />
             

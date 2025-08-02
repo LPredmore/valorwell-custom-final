@@ -62,6 +62,7 @@ export const AddClientInfo: React.FC = () => {
     client_first_name: '',
     client_last_name: '',
     client_email: user?.email || '',
+    client_ssn: '',
     // Personal Information
     client_preferred_name: '',
     client_middle_name: '',
@@ -268,6 +269,7 @@ export const AddClientInfo: React.FC = () => {
           client_time_zone: formData.client_time_zone,
           client_gender: formData.client_gender,
           client_gender_identity: formData.client_gender_identity,
+          client_ssn: formData.client_ssn,
         })
         .eq('profile_id', user.id);
 
@@ -457,7 +459,7 @@ export const AddClientInfo: React.FC = () => {
         description: "Your information has been saved successfully.",
       });
 
-      navigate('/dashboard');
+      navigate('/client-dashboard');
     } catch (error) {
       console.error('Error completing profile:', error);
       toast({

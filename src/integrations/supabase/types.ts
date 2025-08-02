@@ -451,6 +451,7 @@ export type Database = {
           client_self_goal: string | null
           client_sessionnarrative: string | null
           client_speech: string | null
+          client_ssn: string | null
           client_status: string | null
           client_subscriber_dob_primary: string | null
           client_subscriber_dob_secondary: string | null
@@ -578,6 +579,7 @@ export type Database = {
           client_self_goal?: string | null
           client_sessionnarrative?: string | null
           client_speech?: string | null
+          client_ssn?: string | null
           client_status?: string | null
           client_subscriber_dob_primary?: string | null
           client_subscriber_dob_secondary?: string | null
@@ -705,6 +707,7 @@ export type Database = {
           client_self_goal?: string | null
           client_sessionnarrative?: string | null
           client_speech?: string | null
+          client_ssn?: string | null
           client_status?: string | null
           client_subscriber_dob_primary?: string | null
           client_subscriber_dob_secondary?: string | null
