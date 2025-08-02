@@ -1413,6 +1413,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_client_age: {
+        Args: { birth_date: string }
+        Returns: number
+      }
       check_appointment_conflicts: {
         Args: {
           p_clinician_id: string
