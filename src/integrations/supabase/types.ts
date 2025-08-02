@@ -1196,14 +1196,85 @@ export type Database = {
       }
       insurance_accepted: {
         Row: {
+          claims_address_line1: string | null
+          claims_address_line2: string | null
+          claims_city: string | null
+          claims_state: string | null
+          claims_zip: string | null
+          copay_amount: number | null
           created_at: string
           electronic_claims_supported: boolean
+          group_number: string | null
           id: string
           insurance_company_id: string
           is_active: boolean
+          notes: string | null
           payer_id: string | null
+          phone_number: string | null
           plan_name: string
           prior_authorization_required: boolean
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          claims_address_line1?: string | null
+          claims_address_line2?: string | null
+          claims_city?: string | null
+          claims_state?: string | null
+          claims_zip?: string | null
+          copay_amount?: number | null
+          created_at?: string
+          electronic_claims_supported?: boolean
+          group_number?: string | null
+          id?: string
+          insurance_company_id: string
+          is_active?: boolean
+          notes?: string | null
+          payer_id?: string | null
+          phone_number?: string | null
+          plan_name: string
+          prior_authorization_required?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          claims_address_line1?: string | null
+          claims_address_line2?: string | null
+          claims_city?: string | null
+          claims_state?: string | null
+          claims_zip?: string | null
+          copay_amount?: number | null
+          created_at?: string
+          electronic_claims_supported?: boolean
+          group_number?: string | null
+          id?: string
+          insurance_company_id?: string
+          is_active?: boolean
+          notes?: string | null
+          payer_id?: string | null
+          phone_number?: string | null
+          plan_name?: string
+          prior_authorization_required?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_accepted_insurance_company_id_fkey"
+            columns: ["insurance_company_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_companies: {
+        Row: {
+          created_at: string
+          id: string
+          is_custom: boolean
+          name: string
+          payer_id: string | null
           requires_claims_address_line1: boolean | null
           requires_claims_address_line2: boolean | null
           requires_claims_city: boolean | null
@@ -1239,113 +1310,41 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          electronic_claims_supported?: boolean
-          id?: string
-          insurance_company_id: string
-          is_active?: boolean
-          payer_id?: string | null
-          plan_name: string
-          prior_authorization_required?: boolean
-          requires_claims_address_line1?: boolean | null
-          requires_claims_address_line2?: boolean | null
-          requires_claims_city?: boolean | null
-          requires_claims_state?: boolean | null
-          requires_claims_zip?: boolean | null
-          requires_copay_amount?: boolean | null
-          requires_group_number?: boolean | null
-          requires_health_benefit_plan_indicator?: boolean | null
-          requires_insurance_plan_program_name?: boolean | null
-          requires_insurance_plan_type?: boolean | null
-          requires_insured_address?: boolean | null
-          requires_insured_authorization_payment?: boolean | null
-          requires_insured_date_of_birth?: boolean | null
-          requires_insured_employer_school_name?: boolean | null
-          requires_insured_id_number?: boolean | null
-          requires_insured_name?: boolean | null
-          requires_insured_sex?: boolean | null
-          requires_notes?: boolean | null
-          requires_other_insured_date_of_birth?: boolean | null
-          requires_other_insured_employer_school_name?: boolean | null
-          requires_other_insured_name?: boolean | null
-          requires_other_insured_plan_program_name?: boolean | null
-          requires_other_insured_policy_group_number?: boolean | null
-          requires_other_insured_sex?: boolean | null
-          requires_patient_condition_auto_accident?: boolean | null
-          requires_patient_condition_employment?: boolean | null
-          requires_patient_condition_other_accident?: boolean | null
-          requires_patient_relationship_to_insured?: boolean | null
-          requires_phone_number?: boolean | null
-          requires_signature_on_file?: boolean | null
-          requires_website?: boolean | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          electronic_claims_supported?: boolean
-          id?: string
-          insurance_company_id?: string
-          is_active?: boolean
-          payer_id?: string | null
-          plan_name?: string
-          prior_authorization_required?: boolean
-          requires_claims_address_line1?: boolean | null
-          requires_claims_address_line2?: boolean | null
-          requires_claims_city?: boolean | null
-          requires_claims_state?: boolean | null
-          requires_claims_zip?: boolean | null
-          requires_copay_amount?: boolean | null
-          requires_group_number?: boolean | null
-          requires_health_benefit_plan_indicator?: boolean | null
-          requires_insurance_plan_program_name?: boolean | null
-          requires_insurance_plan_type?: boolean | null
-          requires_insured_address?: boolean | null
-          requires_insured_authorization_payment?: boolean | null
-          requires_insured_date_of_birth?: boolean | null
-          requires_insured_employer_school_name?: boolean | null
-          requires_insured_id_number?: boolean | null
-          requires_insured_name?: boolean | null
-          requires_insured_sex?: boolean | null
-          requires_notes?: boolean | null
-          requires_other_insured_date_of_birth?: boolean | null
-          requires_other_insured_employer_school_name?: boolean | null
-          requires_other_insured_name?: boolean | null
-          requires_other_insured_plan_program_name?: boolean | null
-          requires_other_insured_policy_group_number?: boolean | null
-          requires_other_insured_sex?: boolean | null
-          requires_patient_condition_auto_accident?: boolean | null
-          requires_patient_condition_employment?: boolean | null
-          requires_patient_condition_other_accident?: boolean | null
-          requires_patient_relationship_to_insured?: boolean | null
-          requires_phone_number?: boolean | null
-          requires_signature_on_file?: boolean | null
-          requires_website?: boolean | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "insurance_accepted_insurance_company_id_fkey"
-            columns: ["insurance_company_id"]
-            isOneToOne: false
-            referencedRelation: "insurance_companies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      insurance_companies: {
-        Row: {
-          created_at: string
-          id: string
-          is_custom: boolean
-          name: string
-          payer_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
           id?: string
           is_custom?: boolean
           name: string
           payer_id?: string | null
+          requires_claims_address_line1?: boolean | null
+          requires_claims_address_line2?: boolean | null
+          requires_claims_city?: boolean | null
+          requires_claims_state?: boolean | null
+          requires_claims_zip?: boolean | null
+          requires_copay_amount?: boolean | null
+          requires_group_number?: boolean | null
+          requires_health_benefit_plan_indicator?: boolean | null
+          requires_insurance_plan_program_name?: boolean | null
+          requires_insurance_plan_type?: boolean | null
+          requires_insured_address?: boolean | null
+          requires_insured_authorization_payment?: boolean | null
+          requires_insured_date_of_birth?: boolean | null
+          requires_insured_employer_school_name?: boolean | null
+          requires_insured_id_number?: boolean | null
+          requires_insured_name?: boolean | null
+          requires_insured_sex?: boolean | null
+          requires_notes?: boolean | null
+          requires_other_insured_date_of_birth?: boolean | null
+          requires_other_insured_employer_school_name?: boolean | null
+          requires_other_insured_name?: boolean | null
+          requires_other_insured_plan_program_name?: boolean | null
+          requires_other_insured_policy_group_number?: boolean | null
+          requires_other_insured_sex?: boolean | null
+          requires_patient_condition_auto_accident?: boolean | null
+          requires_patient_condition_employment?: boolean | null
+          requires_patient_condition_other_accident?: boolean | null
+          requires_patient_relationship_to_insured?: boolean | null
+          requires_phone_number?: boolean | null
+          requires_signature_on_file?: boolean | null
+          requires_website?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -1354,6 +1353,37 @@ export type Database = {
           is_custom?: boolean
           name?: string
           payer_id?: string | null
+          requires_claims_address_line1?: boolean | null
+          requires_claims_address_line2?: boolean | null
+          requires_claims_city?: boolean | null
+          requires_claims_state?: boolean | null
+          requires_claims_zip?: boolean | null
+          requires_copay_amount?: boolean | null
+          requires_group_number?: boolean | null
+          requires_health_benefit_plan_indicator?: boolean | null
+          requires_insurance_plan_program_name?: boolean | null
+          requires_insurance_plan_type?: boolean | null
+          requires_insured_address?: boolean | null
+          requires_insured_authorization_payment?: boolean | null
+          requires_insured_date_of_birth?: boolean | null
+          requires_insured_employer_school_name?: boolean | null
+          requires_insured_id_number?: boolean | null
+          requires_insured_name?: boolean | null
+          requires_insured_sex?: boolean | null
+          requires_notes?: boolean | null
+          requires_other_insured_date_of_birth?: boolean | null
+          requires_other_insured_employer_school_name?: boolean | null
+          requires_other_insured_name?: boolean | null
+          requires_other_insured_plan_program_name?: boolean | null
+          requires_other_insured_policy_group_number?: boolean | null
+          requires_other_insured_sex?: boolean | null
+          requires_patient_condition_auto_accident?: boolean | null
+          requires_patient_condition_employment?: boolean | null
+          requires_patient_condition_other_accident?: boolean | null
+          requires_patient_relationship_to_insured?: boolean | null
+          requires_phone_number?: boolean | null
+          requires_signature_on_file?: boolean | null
+          requires_website?: boolean | null
           updated_at?: string
         }
         Relationships: []

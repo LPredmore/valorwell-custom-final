@@ -9,19 +9,6 @@ export interface InsuranceCompany {
   is_custom: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface AcceptedInsurance {
-  id: string;
-  insurance_company_id: string;
-  plan_name: string;
-  payer_id: string | null;
-  electronic_claims_supported: boolean;
-  prior_authorization_required: boolean;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  insurance_companies?: InsuranceCompany;
   // Boolean fields indicating what information needs to be collected
   requires_insurance_plan_type: boolean;
   requires_insured_id_number: boolean;
@@ -54,6 +41,29 @@ export interface AcceptedInsurance {
   requires_claims_zip: boolean;
   requires_copay_amount: boolean;
   requires_notes: boolean;
+}
+
+export interface AcceptedInsurance {
+  id: string;
+  insurance_company_id: string;
+  plan_name: string;
+  payer_id: string | null;
+  group_number: string | null;
+  phone_number: string | null;
+  website: string | null;
+  claims_address_line1: string | null;
+  claims_address_line2: string | null;
+  claims_city: string | null;
+  claims_state: string | null;
+  claims_zip: string | null;
+  electronic_claims_supported: boolean;
+  prior_authorization_required: boolean;
+  copay_amount: number | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  insurance_companies?: InsuranceCompany;
 }
 
 export const useInsuranceCompanies = () => {
