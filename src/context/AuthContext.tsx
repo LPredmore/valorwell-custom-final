@@ -152,12 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: "Please check your email to confirm your account.",
         });
         
-        // Redirect clients to additional info page after signup
-        if (role === 'client') {
-          setTimeout(() => {
-            window.location.href = '/add-client-info';
-          }, 1000);
-        }
+        // Note: Client redirect to /add-client-info is now handled by ProtectedRoute
       }
 
       return { error: result.error };
