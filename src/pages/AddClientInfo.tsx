@@ -307,12 +307,13 @@ export const AddClientInfo: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="client_middle_name">Middle Name</Label>
+                      <Label htmlFor="client_middle_name">Middle Name *</Label>
                       <Input
                         id="client_middle_name"
                         name="client_middle_name"
                         value={formData.client_middle_name}
                         onChange={handleInputChange}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -331,13 +332,14 @@ export const AddClientInfo: React.FC = () => {
                 {/* Row 2: Preferred Name, Date of Birth */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="client_preferred_name">Preferred Name</Label>
+                    <Label htmlFor="client_preferred_name">Preferred Name *</Label>
                     <Input
                       id="client_preferred_name"
                       name="client_preferred_name"
                       value={formData.client_preferred_name}
                       onChange={handleInputChange}
                       placeholder="How you'd like to be addressed"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -476,8 +478,8 @@ export const AddClientInfo: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="client_time_zone">Time Zone</Label>
-                    <Select value={formData.client_time_zone} onValueChange={(value) => handleSelectChange('client_time_zone', value)}>
+                    <Label htmlFor="client_time_zone">Time Zone *</Label>
+                    <Select value={formData.client_time_zone} onValueChange={(value) => handleSelectChange('client_time_zone', value)} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select time zone" />
                       </SelectTrigger>
@@ -496,8 +498,8 @@ export const AddClientInfo: React.FC = () => {
                 {/* Row 6: Gender, Gender Identity */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="client_gender">Gender</Label>
-                    <Select value={formData.client_gender} onValueChange={(value) => handleSelectChange('client_gender', value)}>
+                    <Label htmlFor="client_gender">Gender *</Label>
+                    <Select value={formData.client_gender} onValueChange={(value) => handleSelectChange('client_gender', value)} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
