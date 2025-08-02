@@ -227,6 +227,162 @@ export type Database = {
           },
         ]
       }
+      client_insurance: {
+        Row: {
+          authorization_payment: boolean | null
+          claims_address_line1: string | null
+          claims_address_line2: string | null
+          claims_city: string | null
+          claims_state: string | null
+          claims_zip: string | null
+          client_id: string
+          condition_auto_accident: boolean | null
+          condition_employment: boolean | null
+          condition_other_accident: boolean | null
+          copay_amount: number | null
+          created_at: string
+          group_number: string | null
+          health_benefit_plan_indicator: string | null
+          id: string
+          insurance_company_id: string | null
+          insurance_plan_program_name: string | null
+          insurance_type: Database["public"]["Enums"]["insurance_type"]
+          insured_employer_school_name: string | null
+          insured_sex: string | null
+          is_active: boolean
+          member_id: string | null
+          notes: string | null
+          other_insured_date_of_birth: string | null
+          other_insured_employer_school_name: string | null
+          other_insured_name: string | null
+          other_insured_plan_program_name: string | null
+          other_insured_policy_group_number: string | null
+          other_insured_sex: string | null
+          phone_number: string | null
+          plan_name: string | null
+          plan_type: string | null
+          policy_number: string | null
+          signature_on_file: boolean | null
+          subscriber_address_line1: string | null
+          subscriber_address_line2: string | null
+          subscriber_city: string | null
+          subscriber_date_of_birth: string | null
+          subscriber_name: string | null
+          subscriber_relationship: string | null
+          subscriber_state: string | null
+          subscriber_zip: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          authorization_payment?: boolean | null
+          claims_address_line1?: string | null
+          claims_address_line2?: string | null
+          claims_city?: string | null
+          claims_state?: string | null
+          claims_zip?: string | null
+          client_id: string
+          condition_auto_accident?: boolean | null
+          condition_employment?: boolean | null
+          condition_other_accident?: boolean | null
+          copay_amount?: number | null
+          created_at?: string
+          group_number?: string | null
+          health_benefit_plan_indicator?: string | null
+          id?: string
+          insurance_company_id?: string | null
+          insurance_plan_program_name?: string | null
+          insurance_type?: Database["public"]["Enums"]["insurance_type"]
+          insured_employer_school_name?: string | null
+          insured_sex?: string | null
+          is_active?: boolean
+          member_id?: string | null
+          notes?: string | null
+          other_insured_date_of_birth?: string | null
+          other_insured_employer_school_name?: string | null
+          other_insured_name?: string | null
+          other_insured_plan_program_name?: string | null
+          other_insured_policy_group_number?: string | null
+          other_insured_sex?: string | null
+          phone_number?: string | null
+          plan_name?: string | null
+          plan_type?: string | null
+          policy_number?: string | null
+          signature_on_file?: boolean | null
+          subscriber_address_line1?: string | null
+          subscriber_address_line2?: string | null
+          subscriber_city?: string | null
+          subscriber_date_of_birth?: string | null
+          subscriber_name?: string | null
+          subscriber_relationship?: string | null
+          subscriber_state?: string | null
+          subscriber_zip?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          authorization_payment?: boolean | null
+          claims_address_line1?: string | null
+          claims_address_line2?: string | null
+          claims_city?: string | null
+          claims_state?: string | null
+          claims_zip?: string | null
+          client_id?: string
+          condition_auto_accident?: boolean | null
+          condition_employment?: boolean | null
+          condition_other_accident?: boolean | null
+          copay_amount?: number | null
+          created_at?: string
+          group_number?: string | null
+          health_benefit_plan_indicator?: string | null
+          id?: string
+          insurance_company_id?: string | null
+          insurance_plan_program_name?: string | null
+          insurance_type?: Database["public"]["Enums"]["insurance_type"]
+          insured_employer_school_name?: string | null
+          insured_sex?: string | null
+          is_active?: boolean
+          member_id?: string | null
+          notes?: string | null
+          other_insured_date_of_birth?: string | null
+          other_insured_employer_school_name?: string | null
+          other_insured_name?: string | null
+          other_insured_plan_program_name?: string | null
+          other_insured_policy_group_number?: string | null
+          other_insured_sex?: string | null
+          phone_number?: string | null
+          plan_name?: string | null
+          plan_type?: string | null
+          policy_number?: string | null
+          signature_on_file?: boolean | null
+          subscriber_address_line1?: string | null
+          subscriber_address_line2?: string | null
+          subscriber_city?: string | null
+          subscriber_date_of_birth?: string | null
+          subscriber_name?: string | null
+          subscriber_relationship?: string | null
+          subscriber_state?: string | null
+          subscriber_zip?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_insurance_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_insurance_insurance_company_id_fkey"
+            columns: ["insurance_company_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           client_address: string | null
@@ -1721,6 +1877,7 @@ export type Database = {
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
       "Biological Sex": "Male" | "Female"
+      insurance_type: "primary" | "secondary" | "tertiary"
       specialty_type: "Mental Health" | "Speech Therapy"
       states:
         | "Alabama"
@@ -1917,6 +2074,7 @@ export const Constants = {
     Enums: {
       appointment_status: ["scheduled", "documented", "no show", "cancelled"],
       "Biological Sex": ["Male", "Female"],
+      insurance_type: ["primary", "secondary", "tertiary"],
       specialty_type: ["Mental Health", "Speech Therapy"],
       states: [
         "Alabama",

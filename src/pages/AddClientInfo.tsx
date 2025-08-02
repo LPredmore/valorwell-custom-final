@@ -13,6 +13,8 @@ import { Loader2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { useAcceptedInsurance } from '@/hooks/useInsurance';
+import { useClientInsurance, useCreateClientInsurance, useUpdateClientInsurance, ClientInsurance } from '@/hooks/useClientInsurance';
+import { InsuranceFormSection } from '@/components/insurance/InsuranceFormSection';
 import type { Database } from '@/integrations/supabase/types';
 
 export const AddClientInfo: React.FC = () => {
@@ -21,57 +23,10 @@ export const AddClientInfo: React.FC = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
-  const [hasInsurance, setHasInsurance] = useState(false);
-  const [selectedInsurance, setSelectedInsurance] = useState<string>('');
-  const [insuranceData, setInsuranceData] = useState<{[key: string]: string}>({});
+  const [showSecondaryInsurance, setShowSecondaryInsurance] = useState(false);
+  const [primaryInsuranceData, setPrimaryInsuranceData] = useState<Partial<ClientInsurance>>({});
+  const [secondaryInsuranceData, setSecondaryInsuranceData] = useState<Partial<ClientInsurance>>({});
   
-  // Fetch accepted insurance companies
-  const { data: acceptedInsurance, isLoading: isLoadingInsurance } = useAcceptedInsurance();
-  const [formData, setFormData] = useState({
-    // Names and basic info - using client_* columns
-    client_first_name: '',
-    client_last_name: '',
-    client_email: user?.email || '',
-    // Personal Information
-    client_preferred_name: '',
-    client_middle_name: '',
-    client_address: '',
-    client_city: '',
-    state: '',
-    client_zip_code: '',
-    client_phone: '',
-    date_of_birth: '',
-    client_gender: '',
-    client_gender_identity: '',
-    client_time_zone: 'America/New_York',
-    client_minor: 'No',
-    
-    // Insurance - Primary
-    client_insurance_type_primary: '',
-    client_insurance_company_primary: '',
-    client_policy_number_primary: '',
-    client_group_number_primary: '',
-    client_subscriber_name_primary: '',
-    client_subscriber_relationship_primary: 'Self',
-    client_subscriber_dob_primary: '',
-    
-    // Clinical Information
-    client_referral_source: '',
-    client_self_goal: '',
-    client_status: 'Active',
-    client_diagnosis: [],
-    
-    // Treatment Planning
-    client_planlength: '',
-    client_treatmentfrequency: '',
-    client_problem: '',
-    client_treatmentgoal: '',
-    client_primaryobjective: '',
-    client_intervention1: '',
-    client_secondaryobjective: '',
-    client_intervention2: '',
-  });
-
   // Fetch existing client data to auto-populate fields
   const { data: clientData, isLoading } = useQuery({
     queryKey: ['client-data', user?.id],
@@ -91,6 +46,48 @@ export const AddClientInfo: React.FC = () => {
       return data;
     },
     enabled: !!user,
+  });
+  
+  // Fetch accepted insurance companies and client insurance data
+  const { data: acceptedInsurance, isLoading: isLoadingInsurance } = useAcceptedInsurance();
+  const { data: existingInsurance } = useClientInsurance(clientData?.id);
+  const createInsurance = useCreateClientInsurance();
+  const updateInsurance = useUpdateClientInsurance();
+  
+  const [formData, setFormData] = useState({
+    // Names and basic info - using client_* columns
+    client_first_name: '',
+    client_last_name: '',
+    client_email: user?.email || '',
+    // Personal Information
+    client_preferred_name: '',
+    client_middle_name: '',
+    client_address: '',
+    client_city: '',
+    state: '',
+    client_zip_code: '',
+    client_phone: '',
+    date_of_birth: '',
+    client_gender: '',
+    client_gender_identity: '',
+    client_time_zone: 'America/New_York',
+    client_minor: 'No',
+    
+    // Clinical Information
+    client_referral_source: '',
+    client_self_goal: '',
+    client_status: 'Active',
+    client_diagnosis: [],
+    
+    // Treatment Planning
+    client_planlength: '',
+    client_treatmentfrequency: '',
+    client_problem: '',
+    client_treatmentgoal: '',
+    client_primaryobjective: '',
+    client_intervention1: '',
+    client_secondaryobjective: '',
+    client_intervention2: '',
   });
 
   // Auto-populate form when client data is loaded
@@ -113,13 +110,6 @@ export const AddClientInfo: React.FC = () => {
         client_gender_identity: clientData.client_gender_identity || '',
         client_time_zone: clientData.client_time_zone || 'America/New_York',
         client_minor: clientData.client_minor || 'No',
-        client_insurance_type_primary: clientData.client_insurance_type_primary || '',
-        client_insurance_company_primary: clientData.client_insurance_company_primary || '',
-        client_policy_number_primary: clientData.client_policy_number_primary || '',
-        client_group_number_primary: clientData.client_group_number_primary || '',
-        client_subscriber_name_primary: clientData.client_subscriber_name_primary || '',
-        client_subscriber_relationship_primary: clientData.client_subscriber_relationship_primary || 'Self',
-        client_subscriber_dob_primary: clientData.client_subscriber_dob_primary || '',
         client_referral_source: clientData.client_referral_source || '',
         client_self_goal: clientData.client_self_goal || '',
         client_status: clientData.client_status || 'Active',
@@ -135,6 +125,23 @@ export const AddClientInfo: React.FC = () => {
     }
   }, [clientData, user?.email]);
 
+  // Auto-populate insurance data when existing insurance is loaded
+  useEffect(() => {
+    if (existingInsurance && existingInsurance.length > 0) {
+      const primaryIns = existingInsurance.find(ins => ins.insurance_type === 'primary');
+      const secondaryIns = existingInsurance.find(ins => ins.insurance_type === 'secondary');
+      
+      if (primaryIns) {
+        setPrimaryInsuranceData(primaryIns);
+      }
+      
+      if (secondaryIns) {
+        setSecondaryInsuranceData(secondaryIns);
+        setShowSecondaryInsurance(true);
+      }
+    }
+  }, [existingInsurance]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -146,6 +153,44 @@ export const AddClientInfo: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handlePrimaryInsuranceSelect = (insuranceId: string) => {
+    const selectedInsurance = acceptedInsurance?.find(ins => ins.id === insuranceId);
+    if (selectedInsurance) {
+      setPrimaryInsuranceData({
+        insurance_company_id: selectedInsurance.insurance_company_id,
+        insurance_type: 'primary',
+        client_id: clientData?.id,
+        plan_name: selectedInsurance.plan_name,
+      });
+    }
+  };
+
+  const handleSecondaryInsuranceSelect = (insuranceId: string) => {
+    const selectedInsurance = acceptedInsurance?.find(ins => ins.id === insuranceId);
+    if (selectedInsurance) {
+      setSecondaryInsuranceData({
+        insurance_company_id: selectedInsurance.insurance_company_id,
+        insurance_type: 'secondary',
+        client_id: clientData?.id,
+        plan_name: selectedInsurance.plan_name,
+      });
+    }
+  };
+
+  const handlePrimaryInsuranceFieldChange = (field: string, value: any) => {
+    setPrimaryInsuranceData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSecondaryInsuranceFieldChange = (field: string, value: any) => {
+    setSecondaryInsuranceData(prev => ({
+      ...prev,
+      [field]: value
     }));
   };
 
@@ -197,6 +242,61 @@ export const AddClientInfo: React.FC = () => {
     }
   };
 
+  const handleSaveInsurance = async () => {
+    if (!clientData?.id) return;
+
+    setIsSubmitting(true);
+    try {
+      // Save primary insurance
+      if (primaryInsuranceData.insurance_company_id) {
+        const primaryExists = existingInsurance?.find(ins => ins.insurance_type === 'primary');
+        
+        if (primaryExists) {
+          await updateInsurance.mutateAsync({
+            id: primaryExists.id,
+            ...primaryInsuranceData,
+          });
+        } else {
+          await createInsurance.mutateAsync({
+            ...primaryInsuranceData,
+            client_id: clientData.id,
+            insurance_type: 'primary',
+          });
+        }
+      }
+
+      // Save secondary insurance if exists
+      if (secondaryInsuranceData.insurance_company_id) {
+        const secondaryExists = existingInsurance?.find(ins => ins.insurance_type === 'secondary');
+        
+        if (secondaryExists) {
+          await updateInsurance.mutateAsync({
+            id: secondaryExists.id,
+            ...secondaryInsuranceData,
+          });
+        } else {
+          await createInsurance.mutateAsync({
+            ...secondaryInsuranceData,
+            client_id: clientData.id,
+            insurance_type: 'secondary',
+          });
+        }
+      }
+
+      // Move to Clinical tab
+      setActiveTab('clinical');
+    } catch (error) {
+      console.error('Error saving insurance:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save insurance information. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleCompleteProfile = async () => {
     if (!user) return;
 
@@ -220,13 +320,6 @@ export const AddClientInfo: React.FC = () => {
           client_gender_identity: formData.client_gender_identity,
           client_time_zone: formData.client_time_zone,
           client_minor: formData.client_minor,
-          client_insurance_type_primary: formData.client_insurance_type_primary,
-          client_insurance_company_primary: formData.client_insurance_company_primary,
-          client_policy_number_primary: formData.client_policy_number_primary,
-          client_group_number_primary: formData.client_group_number_primary,
-          client_subscriber_name_primary: formData.client_subscriber_name_primary,
-          client_subscriber_relationship_primary: formData.client_subscriber_relationship_primary,
-          client_subscriber_dob_primary: formData.client_subscriber_dob_primary,
           client_referral_source: formData.client_referral_source,
           client_self_goal: formData.client_self_goal,
           client_status: formData.client_status,
@@ -271,6 +364,14 @@ export const AddClientInfo: React.FC = () => {
       </div>
     );
   }
+
+  // Get selected insurance objects for the form sections
+  const selectedPrimaryInsurance = acceptedInsurance?.find(
+    ins => ins.insurance_company_id === primaryInsuranceData.insurance_company_id
+  );
+  const selectedSecondaryInsurance = acceptedInsurance?.find(
+    ins => ins.insurance_company_id === secondaryInsuranceData.insurance_company_id
+  );
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -531,11 +632,6 @@ export const AddClientInfo: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Row 7: Placeholder for future fields */}
-                <div className="space-y-2">
-                  {/* Reserved for additional fields if needed */}
-                </div>
-
                 {/* Next Button */}
                 <div className="flex justify-end pt-4">
                   <Button
@@ -562,239 +658,64 @@ export const AddClientInfo: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Insurance Information</CardTitle>
-                <CardDescription>Let us know if you have insurance coverage</CardDescription>
+                <CardDescription>Please provide your insurance information</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {!hasInsurance ? (
-                  <div className="text-center space-y-4">
-                    <p className="text-muted-foreground">Do you have health insurance?</p>
+              <CardContent className="space-y-8">
+                {/* Primary Insurance Section */}
+                <InsuranceFormSection
+                  insuranceType="primary"
+                  selectedInsurance={selectedPrimaryInsurance}
+                  insuranceData={primaryInsuranceData}
+                  onInsuranceSelect={handlePrimaryInsuranceSelect}
+                  onFieldChange={handlePrimaryInsuranceFieldChange}
+                />
+
+                {/* Add Secondary Insurance Button */}
+                {!showSecondaryInsurance && (
+                  <div className="flex justify-center pt-4">
                     <Button
-                      onClick={() => setHasInsurance(true)}
+                      type="button"
                       variant="outline"
-                      size="lg"
+                      onClick={() => setShowSecondaryInsurance(true)}
                       className="flex items-center gap-2"
                     >
                       <Plus className="h-4 w-4" />
-                      I have insurance
+                      Add Secondary/Supplemental Insurance
                     </Button>
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Add Insurance</h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setHasInsurance(false);
-                          setSelectedInsurance('');
-                          setInsuranceData({});
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </div>
+                )}
 
-                    <div className="space-y-2">
-                      <Label>Select Your Insurance Company</Label>
-                      {isLoadingInsurance ? (
-                        <div className="text-sm text-muted-foreground">Loading insurance companies...</div>
-                      ) : (
-                        <Select value={selectedInsurance} onValueChange={setSelectedInsurance}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Search and select your insurance company..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {acceptedInsurance?.map((insurance) => (
-                              <SelectItem key={insurance.id} value={insurance.id}>
-                                {insurance.insurance_companies?.name} - {insurance.plan_name}
-                                {insurance.payer_id && ` (${insurance.payer_id})`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-
-                    {selectedInsurance && (
-                      <div className="space-y-4 border-t pt-4">
-                        {(() => {
-                          const selected = acceptedInsurance?.find(ins => ins.id === selectedInsurance);
-                          if (!selected) return null;
-
-                          const companyData = selected.insurance_companies;
-                          const fields = [];
-
-                          // Add company name (always shown)
-                          fields.push(
-                            <div key="company-name" className="space-y-2">
-                              <Label>Insurance Company</Label>
-                              <Input 
-                                value={companyData?.name || ''} 
-                                disabled 
-                                className="bg-muted"
-                              />
-                            </div>
-                          );
-
-                          // Add plan name (always shown)
-                          fields.push(
-                            <div key="plan-name" className="space-y-2">
-                              <Label>Plan Name</Label>
-                              <Input 
-                                value={selected.plan_name} 
-                                disabled 
-                                className="bg-muted"
-                              />
-                            </div>
-                          );
-
-                          // Add payer ID if available
-                          if (selected.payer_id) {
-                            fields.push(
-                              <div key="payer-id" className="space-y-2">
-                                <Label>Payer ID</Label>
-                                <Input 
-                                  value={selected.payer_id} 
-                                  disabled 
-                                  className="bg-muted"
-                                />
-                              </div>
-                            );
-                          }
-
-                          // Add group number field if required or available
-                          if (companyData?.requires_group_number || selected.group_number) {
-                            fields.push(
-                              <div key="group-number" className="space-y-2">
-                                <Label htmlFor="group_number">
-                                  Group Number {companyData?.requires_group_number ? '*' : ''}
-                                </Label>
-                                <Input
-                                  id="group_number"
-                                  value={insuranceData.group_number || ''}
-                                  onChange={(e) => setInsuranceData(prev => ({...prev, group_number: e.target.value}))}
-                                  placeholder={selected.group_number || 'Enter group number'}
-                                  required={companyData?.requires_group_number}
-                                />
-                              </div>
-                            );
-                          }
-
-                          // Add phone number field if required or available
-                          if (companyData?.requires_phone_number || selected.phone_number) {
-                            fields.push(
-                              <div key="phone-number" className="space-y-2">
-                                <Label htmlFor="phone_number">
-                                  Phone Number {companyData?.requires_phone_number ? '*' : ''}
-                                </Label>
-                                <Input
-                                  id="phone_number"
-                                  value={insuranceData.phone_number || ''}
-                                  onChange={(e) => setInsuranceData(prev => ({...prev, phone_number: e.target.value}))}
-                                  placeholder={selected.phone_number || 'Enter phone number'}
-                                  required={companyData?.requires_phone_number}
-                                />
-                              </div>
-                            );
-                          }
-
-                          // Add copay amount field if required or available
-                          if (companyData?.requires_copay_amount || selected.copay_amount) {
-                            fields.push(
-                              <div key="copay-amount" className="space-y-2">
-                                <Label htmlFor="copay_amount">
-                                  Copay Amount {companyData?.requires_copay_amount ? '*' : ''}
-                                </Label>
-                                <Input
-                                  id="copay_amount"
-                                  type="number"
-                                  step="0.01"
-                                  value={insuranceData.copay_amount || ''}
-                                  onChange={(e) => setInsuranceData(prev => ({...prev, copay_amount: e.target.value}))}
-                                  placeholder={selected.copay_amount?.toString() || 'Enter copay amount'}
-                                  required={companyData?.requires_copay_amount}
-                                />
-                              </div>
-                            );
-                          }
-
-                          // Add claims address if available
-                          if (selected.claims_address_line1) {
-                            fields.push(
-                              <div key="claims-address" className="space-y-2">
-                                <Label>Claims Address</Label>
-                                <div className="text-sm p-3 bg-muted rounded">
-                                  <p>{selected.claims_address_line1}</p>
-                                  {selected.claims_address_line2 && <p>{selected.claims_address_line2}</p>}
-                                  {selected.claims_city && selected.claims_state && selected.claims_zip && (
-                                    <p>{selected.claims_city}, {selected.claims_state} {selected.claims_zip}</p>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Add website if available
-                          if (selected.website) {
-                            fields.push(
-                              <div key="website" className="space-y-2">
-                                <Label>Website</Label>
-                                <Input 
-                                  value={selected.website} 
-                                  disabled 
-                                  className="bg-muted"
-                                />
-                              </div>
-                            );
-                          }
-
-                          // Show coverage details
-                          const coverageInfo = [];
-                          if (selected.electronic_claims_supported) {
-                            coverageInfo.push("Electronic claims supported");
-                          }
-                          if (selected.prior_authorization_required) {
-                            coverageInfo.push("Prior authorization required");
-                          }
-
-                          if (coverageInfo.length > 0) {
-                            fields.push(
-                              <div key="coverage-info" className="space-y-2">
-                                <Label>Coverage Information</Label>
-                                <div className="text-sm p-3 bg-muted rounded">
-                                  <ul className="list-disc list-inside space-y-1">
-                                    {coverageInfo.map((info, index) => (
-                                      <li key={index}>{info}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Add notes if available
-                          if (selected.notes) {
-                            fields.push(
-                              <div key="notes" className="space-y-2">
-                                <Label>Notes</Label>
-                                <div className="text-sm p-3 bg-muted rounded">
-                                  {selected.notes}
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {fields}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
+                {/* Secondary Insurance Section */}
+                {showSecondaryInsurance && (
+                  <div className="border-t pt-8">
+                    <InsuranceFormSection
+                      insuranceType="secondary"
+                      selectedInsurance={selectedSecondaryInsurance}
+                      insuranceData={secondaryInsuranceData}
+                      onInsuranceSelect={handleSecondaryInsuranceSelect}
+                      onFieldChange={handleSecondaryInsuranceFieldChange}
+                    />
                   </div>
                 )}
+
+                {/* Save and Continue Button */}
+                <div className="flex justify-end pt-4">
+                  <Button
+                    type="button"
+                    onClick={handleSaveInsurance}
+                    size="lg"
+                    disabled={isSubmitting || !primaryInsuranceData.insurance_company_id}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save & Continue'
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -827,6 +748,16 @@ export const AddClientInfo: React.FC = () => {
                     placeholder="What are your goals for therapy?"
                     rows={3}
                   />
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button
+                    type="button"
+                    onClick={() => setActiveTab('treatment')}
+                    size="lg"
+                  >
+                    Next
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -938,30 +869,28 @@ export const AddClientInfo: React.FC = () => {
                     placeholder="Additional intervention (optional)"
                   />
                 </div>
+
+                {/* Complete Profile Button */}
+                <div className="flex justify-end pt-4">
+                  <Button
+                    type="button"
+                    onClick={handleCompleteProfile}
+                    size="lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Completing Profile...
+                      </>
+                    ) : (
+                      'Complete Profile'
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
-
-          {/* Complete Profile Button - shown only on final tab */}
-          {activeTab === 'treatment' && (
-            <div className="mt-6 flex justify-end">
-              <Button
-                type="button"
-                onClick={handleCompleteProfile}
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Completing Profile...
-                  </>
-                ) : (
-                  'Complete Profile'
-                )}
-              </Button>
-            </div>
-          )}
         </Tabs>
       </div>
     </div>
