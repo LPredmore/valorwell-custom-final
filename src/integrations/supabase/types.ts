@@ -238,9 +238,12 @@ export type Database = {
           client_behavior: string | null
           client_branchOS: string | null
           client_champva: string | null
+          client_city: string | null
           client_currentsymptoms: string | null
           client_diagnosis: string[] | null
           client_disabilityrating: string | null
+          client_email: string | null
+          client_first_name: string | null
           client_functioning: string | null
           client_gender: string | null
           client_gender_identity: string | null
@@ -262,6 +265,7 @@ export type Database = {
           client_intervention5: string | null
           client_intervention6: string | null
           client_is_profile_complete: string | null
+          client_last_name: string | null
           client_medications: string | null
           client_memoryconcentration: string | null
           client_middle_name: string | null
@@ -271,6 +275,7 @@ export type Database = {
           client_orientation: string | null
           client_perception: string | null
           client_personsinattendance: string | null
+          client_phone: string | null
           client_planlength: string | null
           client_policy_number_primary: string | null
           client_policy_number_secondary: string | null
@@ -320,6 +325,7 @@ export type Database = {
           client_tricare_sponsor_id: string | null
           client_tricare_sponsor_name: string | null
           client_vacoverage: string | null
+          client_zip_code: string | null
           created_at: string
           date_of_birth: string | null
           eligibility_claimmd_id_primary: string | null
@@ -359,9 +365,12 @@ export type Database = {
           client_behavior?: string | null
           client_branchOS?: string | null
           client_champva?: string | null
+          client_city?: string | null
           client_currentsymptoms?: string | null
           client_diagnosis?: string[] | null
           client_disabilityrating?: string | null
+          client_email?: string | null
+          client_first_name?: string | null
           client_functioning?: string | null
           client_gender?: string | null
           client_gender_identity?: string | null
@@ -383,6 +392,7 @@ export type Database = {
           client_intervention5?: string | null
           client_intervention6?: string | null
           client_is_profile_complete?: string | null
+          client_last_name?: string | null
           client_medications?: string | null
           client_memoryconcentration?: string | null
           client_middle_name?: string | null
@@ -392,6 +402,7 @@ export type Database = {
           client_orientation?: string | null
           client_perception?: string | null
           client_personsinattendance?: string | null
+          client_phone?: string | null
           client_planlength?: string | null
           client_policy_number_primary?: string | null
           client_policy_number_secondary?: string | null
@@ -441,6 +452,7 @@ export type Database = {
           client_tricare_sponsor_id?: string | null
           client_tricare_sponsor_name?: string | null
           client_vacoverage?: string | null
+          client_zip_code?: string | null
           created_at?: string
           date_of_birth?: string | null
           eligibility_claimmd_id_primary?: string | null
@@ -480,9 +492,12 @@ export type Database = {
           client_behavior?: string | null
           client_branchOS?: string | null
           client_champva?: string | null
+          client_city?: string | null
           client_currentsymptoms?: string | null
           client_diagnosis?: string[] | null
           client_disabilityrating?: string | null
+          client_email?: string | null
+          client_first_name?: string | null
           client_functioning?: string | null
           client_gender?: string | null
           client_gender_identity?: string | null
@@ -504,6 +519,7 @@ export type Database = {
           client_intervention5?: string | null
           client_intervention6?: string | null
           client_is_profile_complete?: string | null
+          client_last_name?: string | null
           client_medications?: string | null
           client_memoryconcentration?: string | null
           client_middle_name?: string | null
@@ -513,6 +529,7 @@ export type Database = {
           client_orientation?: string | null
           client_perception?: string | null
           client_personsinattendance?: string | null
+          client_phone?: string | null
           client_planlength?: string | null
           client_policy_number_primary?: string | null
           client_policy_number_secondary?: string | null
@@ -562,6 +579,7 @@ export type Database = {
           client_tricare_sponsor_id?: string | null
           client_tricare_sponsor_name?: string | null
           client_vacoverage?: string | null
+          client_zip_code?: string | null
           created_at?: string
           date_of_birth?: string | null
           eligibility_claimmd_id_primary?: string | null

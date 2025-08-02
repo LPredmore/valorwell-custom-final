@@ -142,7 +142,7 @@ export const createSingleAppointment = async (
     const [clientResult, clinicianResult] = await Promise.all([
       supabase
         .from('clients')
-        .select('first_name, last_name, email')
+         .select('client_first_name, client_last_name, client_email')
         .eq('id', appointmentData.client_id)
         .single(),
       supabase
@@ -189,8 +189,8 @@ export const createSingleAppointment = async (
         status: appointmentData.status,
         notes: appointmentData.notes,
         video_room_url: videoRoomUrl,
-        client_name: `${clientResult.data?.first_name || ''} ${clientResult.data?.last_name || ''}`.trim(),
-        client_email: clientResult.data?.email,
+        client_name: `${clientResult.data?.client_first_name || ''} ${clientResult.data?.client_last_name || ''}`.trim(),
+        client_email: clientResult.data?.client_email,
         clinician_name: `${clinicianResult.data?.first_name || ''} ${clinicianResult.data?.last_name || ''}`.trim(),
         client_timezone: 'America/New_York', // Default timezone - should be configurable
         appointment_recurring: appointmentData.is_recurring || false
@@ -253,7 +253,7 @@ export const createRecurringAppointments = async (
     const [clientResult, clinicianResult] = await Promise.all([
       supabase
         .from('clients')
-        .select('first_name, last_name, email')
+        .select('client_first_name, client_last_name, client_email')
         .eq('id', appointmentData.client_id)
         .single(),
       supabase
@@ -279,8 +279,8 @@ export const createRecurringAppointments = async (
       type: appointmentData.type,
       status: appointmentData.status,
       notes: appointmentData.notes,
-      client_name: `${clientResult.data?.first_name || ''} ${clientResult.data?.last_name || ''}`.trim(),
-      client_email: clientResult.data?.email,
+       client_name: `${clientResult.data?.client_first_name || ''} ${clientResult.data?.client_last_name || ''}`.trim(),
+       client_email: clientResult.data?.client_email,
       clinician_name: `${clinicianResult.data?.first_name || ''} ${clinicianResult.data?.last_name || ''}`.trim(),
       video_room_url: appointmentData.video_room_url || null
     };

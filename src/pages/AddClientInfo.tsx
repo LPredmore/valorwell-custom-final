@@ -21,18 +21,18 @@ export const AddClientInfo: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [formData, setFormData] = useState({
-    // Names and basic info
-    first_name: '',
-    last_name: '',
-    email: user?.email || '',
+    // Names and basic info - using client_* columns
+    client_first_name: '',
+    client_last_name: '',
+    client_email: user?.email || '',
     // Personal Information
     client_preferred_name: '',
     client_middle_name: '',
     client_address: '',
-    city: '',
+    client_city: '',
     state: '',
-    zip_code: '',
-    phone: '',
+    client_zip_code: '',
+    client_phone: '',
     date_of_birth: '',
     client_gender: '',
     client_gender_identity: '',
@@ -91,16 +91,16 @@ export const AddClientInfo: React.FC = () => {
     if (clientData) {
       setFormData(prev => ({
         ...prev,
-        first_name: clientData.first_name || '',
-        last_name: clientData.last_name || '', 
-        email: clientData.email || user?.email || '',
+        client_first_name: clientData.client_first_name || '',
+        client_last_name: clientData.client_last_name || '', 
+        client_email: clientData.client_email || user?.email || '',
         client_preferred_name: clientData.client_preferred_name || '',
         client_middle_name: clientData.client_middle_name || '',
         client_address: clientData.client_address || '',
-        city: clientData.city || '',
+        client_city: clientData.client_city || '',
         state: clientData.state || '',
-        zip_code: clientData.zip_code || '',
-        phone: clientData.phone || '',
+        client_zip_code: clientData.client_zip_code || '',
+        client_phone: clientData.client_phone || '',
         date_of_birth: clientData.date_of_birth || '',
         client_gender: clientData.client_gender || '',
         client_gender_identity: clientData.client_gender_identity || '',
@@ -150,17 +150,17 @@ export const AddClientInfo: React.FC = () => {
       const { error } = await supabase
         .from('clients')
         .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email,
+          client_first_name: formData.client_first_name,
+          client_last_name: formData.client_last_name,
+          client_email: formData.client_email,
           client_middle_name: formData.client_middle_name,
           client_preferred_name: formData.client_preferred_name,
           date_of_birth: formData.date_of_birth,
           client_address: formData.client_address,
-          city: formData.city,
+          client_city: formData.client_city,
           state: formData.state as Database["public"]["Enums"]["states"] | null,
-          zip_code: formData.zip_code,
-          phone: formData.phone,
+          client_zip_code: formData.client_zip_code,
+          client_phone: formData.client_phone,
           client_time_zone: formData.client_time_zone,
           client_gender: formData.client_gender,
           client_gender_identity: formData.client_gender_identity,
@@ -198,16 +198,16 @@ export const AddClientInfo: React.FC = () => {
       const { error } = await supabase
         .from('clients')
         .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email,
+          client_first_name: formData.client_first_name,
+          client_last_name: formData.client_last_name,
+          client_email: formData.client_email,
           client_preferred_name: formData.client_preferred_name,
           client_middle_name: formData.client_middle_name,
           client_address: formData.client_address,
-          city: formData.city,
+          client_city: formData.client_city,
           state: formData.state as Database["public"]["Enums"]["states"] | null,
-          zip_code: formData.zip_code,
-          phone: formData.phone,
+          client_zip_code: formData.client_zip_code,
+          client_phone: formData.client_phone,
           date_of_birth: formData.date_of_birth,
           client_gender: formData.client_gender,
           client_gender_identity: formData.client_gender_identity,
@@ -296,16 +296,16 @@ export const AddClientInfo: React.FC = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first_name">First Name *</Label>
-                      <Input
-                        id="first_name"
-                        name="first_name"
-                        value={formData.first_name}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="client_first_name">First Name *</Label>
+                       <Input
+                         id="client_first_name"
+                         name="client_first_name"
+                         value={formData.client_first_name}
+                         onChange={handleInputChange}
+                         required
+                       />
+                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="client_middle_name">Middle Name *</Label>
                       <Input
@@ -316,16 +316,16 @@ export const AddClientInfo: React.FC = () => {
                         required
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last_name">Last Name *</Label>
-                      <Input
-                        id="last_name"
-                        name="last_name"
-                        value={formData.last_name}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="client_last_name">Last Name *</Label>
+                       <Input
+                         id="client_last_name"
+                         name="client_last_name"
+                         value={formData.client_last_name}
+                         onChange={handleInputChange}
+                         required
+                       />
+                     </div>
                   </div>
                 </div>
 
@@ -370,16 +370,16 @@ export const AddClientInfo: React.FC = () => {
 
                 {/* Row 4: City, State, ZIP Code */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="client_city">City *</Label>
+                     <Input
+                       id="client_city"
+                       name="client_city"
+                       value={formData.client_city}
+                       onChange={handleInputChange}
+                       required
+                     />
+                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State *</Label>
                     <Select value={formData.state} onValueChange={(value) => handleSelectChange('state', value)}>
@@ -440,43 +440,43 @@ export const AddClientInfo: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="zip_code">ZIP Code *</Label>
-                    <Input
-                      id="zip_code"
-                      name="zip_code"
-                      value={formData.zip_code}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="client_zip_code">ZIP Code *</Label>
+                     <Input
+                       id="client_zip_code"
+                       name="client_zip_code"
+                       value={formData.client_zip_code}
+                       onChange={handleInputChange}
+                       required
+                     />
+                   </div>
                 </div>
 
                 {/* Row 5: Email, Phone, Time Zone */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="(555) 123-4567"
-                      required
-                    />
-                  </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="client_email">Email *</Label>
+                     <Input
+                       id="client_email"
+                       name="client_email"
+                       type="email"
+                       value={formData.client_email}
+                       onChange={handleInputChange}
+                       required
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <Label htmlFor="client_phone">Phone *</Label>
+                     <Input
+                       id="client_phone"
+                       name="client_phone"
+                       type="tel"
+                       value={formData.client_phone}
+                       onChange={handleInputChange}
+                       placeholder="(555) 123-4567"
+                       required
+                     />
+                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="client_time_zone">Time Zone *</Label>
                     <Select value={formData.client_time_zone} onValueChange={(value) => handleSelectChange('client_time_zone', value)} required>

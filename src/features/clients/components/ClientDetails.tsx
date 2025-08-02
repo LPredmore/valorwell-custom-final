@@ -75,7 +75,7 @@ export const ClientDetails: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center">
               <User className="h-8 w-8 mr-3" />
-              {client.first_name || 'Unknown'} {client.last_name || 'User'}
+              {client.client_first_name || 'Unknown'} {client.client_last_name || 'User'}
             </h1>
             <Badge className={getStatusColor(client.client_status)}>
               {client.client_status || 'Unknown'}
@@ -98,11 +98,11 @@ export const ClientDetails: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">First Name</p>
-                <p className="font-medium">{client.first_name || 'Not provided'}</p>
+                <p className="font-medium">{client.client_first_name || 'Not provided'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Last Name</p>
-                <p className="font-medium">{client.last_name || 'Not provided'}</p>
+                <p className="font-medium">{client.client_last_name || 'Not provided'}</p>
               </div>
             </div>
             <div>
@@ -141,7 +141,7 @@ export const ClientDetails: React.FC = () => {
               <Phone className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">{client.phone || 'Not provided'}</p>
+                <p className="font-medium">{client.client_phone || 'Not provided'}</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -153,7 +153,7 @@ export const ClientDetails: React.FC = () => {
                     <>
                       <p>{client.client_address}</p>
                       <p>
-                        {client.city}, {client.state} {client.zip_code}
+                        {client.client_city}, {client.state} {client.client_zip_code}
                       </p>
                     </>
                   )}

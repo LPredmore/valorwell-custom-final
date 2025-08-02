@@ -66,9 +66,9 @@ export const Dashboard: React.FC = () => {
                     <div className="flex items-center gap-3 mb-3">
                       <User className="h-5 w-5 text-muted-foreground" />
                        <span className="font-medium">
-                        {appointment.clients?.first_name && appointment.clients?.last_name 
-                          ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
-                          : 'Unknown Client'}
+                         {appointment.clients?.client_first_name && appointment.clients?.client_last_name 
+                           ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
+                           : 'Unknown Client'}
                        </span>
                     </div>
                     <div className="text-sm text-muted-foreground mb-2">
@@ -114,9 +114,9 @@ export const Dashboard: React.FC = () => {
                   <div className="flex items-center gap-3 mb-3">
                     <User className="h-5 w-5 text-muted-foreground" />
                      <span className="font-medium">
-                        {appointment.clients?.first_name && appointment.clients?.last_name 
-                          ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
-                          : 'Unknown Client'}
+                         {appointment.clients?.client_first_name && appointment.clients?.client_last_name 
+                           ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
+                           : 'Unknown Client'}
                      </span>
                   </div>
                   <div className="text-sm text-muted-foreground mb-2">
@@ -175,9 +175,9 @@ export const Dashboard: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                          <span className="font-medium">
-                            {appointment.clients?.first_name && appointment.clients?.last_name 
-                              ? `${appointment.clients.first_name} ${appointment.clients.last_name}`
-                              : 'Unknown Client'}
+                             {appointment.clients?.client_first_name && appointment.clients?.client_last_name 
+                               ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
+                               : 'Unknown Client'}
                          </span>
                       </div>
                       <p className="text-sm text-muted-foreground">{appointment.type}</p>

@@ -89,8 +89,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         .from('clients')
         .select(`
           id,
-          first_name,
-          last_name
+          client_first_name,
+          client_last_name
         `)
         .order('created_at');
 
@@ -493,7 +493,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <SelectContent>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
-                    {client.first_name || 'Unknown'} {client.last_name || 'Client'}
+                    {client.client_first_name || 'Unknown'} {client.client_last_name || 'Client'}
                   </SelectItem>
                 ))}
               </SelectContent>

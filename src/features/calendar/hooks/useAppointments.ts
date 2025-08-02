@@ -28,11 +28,11 @@ export const useAppointments = (dateRange?: { start: Date; end: Date }) => {
         .from('appointments')
         .select(`
           *,
-          clients!appointments_client_id_fkey(
-            id,
-            first_name,
-            last_name
-          )
+           clients!appointments_client_id_fkey(
+             id,
+             client_first_name,
+             client_last_name
+           )
         `)
         .order('start_at');
 
