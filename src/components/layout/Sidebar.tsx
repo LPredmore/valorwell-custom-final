@@ -17,7 +17,6 @@ const navigation = [
   { name: 'Profile', href: '/clinician-profile', icon: Settings },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Clients', href: '/clients', icon: Users },
-  { name: 'Templates', href: '/templates', icon: FileText },
   // { name: 'Billing', href: '/billing', icon: CreditCard },
   // { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },

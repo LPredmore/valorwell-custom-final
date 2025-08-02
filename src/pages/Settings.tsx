@@ -739,9 +739,24 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle>Documentation Settings</CardTitle>
+              <p className="text-muted-foreground">Manage your practice's documentation and templates</p>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Documentation configuration features coming soon.</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Form Templates</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create and manage custom forms for session notes, assessments, and other documentation.
+                  </p>
+                  <Button 
+                    onClick={() => window.location.href = '/templates'} 
+                    variant="outline"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Manage Templates
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
