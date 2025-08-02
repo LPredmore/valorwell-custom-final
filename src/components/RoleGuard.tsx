@@ -22,7 +22,13 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     return <div>Loading...</div>;
   }
 
-  if (!userRole || !allowedRoles.includes(userRole)) {
+  // Admin role has access to all clinician features
+  const hasAccess = userRole && (
+    allowedRoles.includes(userRole) || 
+    (userRole === 'admin' && allowedRoles.includes('clinician'))
+  );
+
+  if (!hasAccess) {
     return <>{fallback}</>;
   }
 

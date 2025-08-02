@@ -30,5 +30,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/add-client-info" replace />;
   }
 
+  // Admin users should have access to all clinician features
+
   return <>{children}</>;
 };
