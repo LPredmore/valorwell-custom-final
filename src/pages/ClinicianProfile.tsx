@@ -6,6 +6,9 @@ import { Edit } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useCurrentClinician, useUpdateCurrentClinician } from '@/hooks/useCurrentClinician';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { EditableField } from '@/components/clinician/EditableField';
+import { EditableToggleField } from '@/components/clinician/EditableToggleField';
+import { EditableArrayField } from '@/components/clinician/EditableArrayField';
 
 export const ClinicianProfile: React.FC = () => {
   const { data: profile } = useProfile();
@@ -14,6 +17,10 @@ export const ClinicianProfile: React.FC = () => {
 
   const handleImageChange = (url: string | null) => {
     updateClinician.mutate({ clinician_image_url: url });
+  };
+
+  const handleFieldUpdate = (field: string, value: any) => {
+    updateClinician.mutate({ [field]: value });
   };
 
   const getInitials = () => {
@@ -64,6 +71,7 @@ export const ClinicianProfile: React.FC = () => {
                   bucket="clinician-avatars"
                   currentImageUrl={clinician?.clinician_image_url}
                   onImageChange={handleImageChange}
+                  userId={clinician?.id}
                 />
               </div>
             )}
@@ -94,6 +102,7 @@ export const ClinicianProfile: React.FC = () => {
               bucket="clinician-avatars"
               currentImageUrl={clinician.clinician_image_url}
               onImageChange={handleImageChange}
+              userId={clinician.id}
             />
           </div>
         )}
@@ -106,56 +115,78 @@ export const ClinicianProfile: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">First Name</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.first_name || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="First Name"
+              value={clinician?.first_name}
+              onSave={(value) => handleFieldUpdate('first_name', value)}
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Last Name</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.last_name || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="Last Name"
+              value={clinician?.last_name}
+              onSave={(value) => handleFieldUpdate('last_name', value)}
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Professional Name</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.clinician_professional_name || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="Professional Name"
+              value={clinician?.clinician_professional_name}
+              onSave={(value) => handleFieldUpdate('clinician_professional_name', value)}
+              isLoading={updateClinician.isPending}
+            />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Email</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{profile?.email || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="Phone"
+              value={clinician?.phone}
+              onSave={(value) => handleFieldUpdate('phone', value)}
+              type="tel"
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.phone || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="Date of Birth"
+              value={clinician?.date_of_birth}
+              onSave={(value) => handleFieldUpdate('date_of_birth', value)}
+              type="text"
+              placeholder="YYYY-MM-DD"
+              isLoading={updateClinician.isPending}
+            />
           </div>
           
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-muted-foreground">Bio</label>
-              <Edit className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-foreground">{clinician?.clinician_bio || 'No bio added yet'}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <EditableField
+              label="City"
+              value={clinician?.city}
+              onSave={(value) => handleFieldUpdate('city', value)}
+              isLoading={updateClinician.isPending}
+            />
+            
+            <EditableField
+              label="State"
+              value={clinician?.state}
+              onSave={(value) => handleFieldUpdate('state', value)}
+              isLoading={updateClinician.isPending}
+            />
+            
+            <EditableField
+              label="Zip Code"
+              value={clinician?.zip_code}
+              onSave={(value) => handleFieldUpdate('zip_code', value)}
+              isLoading={updateClinician.isPending}
+            />
           </div>
+          
+          <EditableField
+            label="Bio"
+            value={clinician?.clinician_bio}
+            onSave={(value) => handleFieldUpdate('clinician_bio', value)}
+            type="textarea"
+            placeholder="Tell us about yourself and your practice..."
+            isLoading={updateClinician.isPending}
+          />
         </CardContent>
       </Card>
 
@@ -166,60 +197,80 @@ export const ClinicianProfile: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">NPI Number</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.clinician_npi_number || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="NPI Number"
+              value={clinician?.clinician_npi_number}
+              onSave={(value) => handleFieldUpdate('clinician_npi_number', value)}
+              placeholder="10-digit NPI number"
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">License Type</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.clinician_license_type || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="License Type"
+              value={clinician?.clinician_license_type}
+              onSave={(value) => handleFieldUpdate('clinician_license_type', value)}
+              placeholder="e.g., LCSW, LPC, LMFT"
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Licensed States</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">
-                {clinician?.clinician_licensed_states?.join(', ') || 'Not set'}
-              </p>
-            </div>
+            <EditableField
+              label="Taxonomy Code"
+              value={clinician?.clinician_taxonomy_code}
+              onSave={(value) => handleFieldUpdate('clinician_taxonomy_code', value)}
+              placeholder="Healthcare provider taxonomy code"
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Taxonomy Code</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">{clinician?.clinician_taxonomy_code || 'Not set'}</p>
-            </div>
+            <EditableField
+              label="Clinician Type"
+              value={clinician?.clinician_type}
+              onSave={(value) => handleFieldUpdate('clinician_type', value)}
+              placeholder="e.g., Therapist, Counselor, Psychologist"
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Accepting New Clients</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">
-                {clinician?.clinician_accepting_new_clients ? 'Yes' : 'No'}
-              </p>
-            </div>
+            <EditableField
+              label="Minimum Client Age"
+              value={clinician?.clinician_min_client_age}
+              onSave={(value) => handleFieldUpdate('clinician_min_client_age', value)}
+              type="number"
+              placeholder="18"
+              isLoading={updateClinician.isPending}
+            />
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-muted-foreground">Minimum Client Age</label>
-                <Edit className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="text-foreground">
-                {clinician?.clinician_min_client_age ? `${clinician.clinician_min_client_age} years` : 'Not set'}
-              </p>
-            </div>
+            <EditableField
+              label="Time Zone"
+              value={clinician?.clinician_time_zone}
+              onSave={(value) => handleFieldUpdate('clinician_time_zone', value)}
+              placeholder="America/New_York"
+              isLoading={updateClinician.isPending}
+            />
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <EditableToggleField
+              label="Accepting New Clients"
+              value={clinician?.clinician_accepting_new_clients}
+              onSave={(value) => handleFieldUpdate('clinician_accepting_new_clients', value)}
+              isLoading={updateClinician.isPending}
+            />
+          </div>
+          
+          <EditableArrayField
+            label="Licensed States"
+            value={clinician?.clinician_licensed_states}
+            onSave={(value) => handleFieldUpdate('clinician_licensed_states', value)}
+            placeholder="Add state abbreviation (e.g., CA, NY)"
+            isLoading={updateClinician.isPending}
+          />
+          
+          <EditableArrayField
+            label="Treatment Approaches"
+            value={clinician?.clinician_treatment_approaches}
+            onSave={(value) => handleFieldUpdate('clinician_treatment_approaches', value)}
+            placeholder="Add treatment approach (e.g., CBT, DBT)"
+            isLoading={updateClinician.isPending}
+          />
         </CardContent>
       </Card>
     </div>

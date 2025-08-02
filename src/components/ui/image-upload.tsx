@@ -14,6 +14,7 @@ interface ImageUploadProps {
   disabled?: boolean;
   accept?: string;
   maxSize?: number; // in MB
+  userId?: string; // For folder organization
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -23,7 +24,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageChange,
   disabled = false,
   accept = "image/*",
-  maxSize = 5
+  maxSize = 5,
+  userId
 }) => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -52,7 +54,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = fileName;
+      const filePath = userId ? `${userId}/${fileName}` : fileName;
 
       console.log('📤 [IMAGE_UPLOAD] Uploading to bucket:', bucket, 'path:', filePath);
 
