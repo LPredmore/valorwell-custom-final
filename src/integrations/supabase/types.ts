@@ -1213,6 +1213,37 @@ export type Database = {
           phone_number: string | null
           plan_name: string
           prior_authorization_required: boolean
+          requires_claims_address_line1: boolean | null
+          requires_claims_address_line2: boolean | null
+          requires_claims_city: boolean | null
+          requires_claims_state: boolean | null
+          requires_claims_zip: boolean | null
+          requires_copay_amount: boolean | null
+          requires_group_number: boolean | null
+          requires_health_benefit_plan_indicator: boolean | null
+          requires_insurance_plan_program_name: boolean | null
+          requires_insurance_plan_type: boolean | null
+          requires_insured_address: boolean | null
+          requires_insured_authorization_payment: boolean | null
+          requires_insured_date_of_birth: boolean | null
+          requires_insured_employer_school_name: boolean | null
+          requires_insured_id_number: boolean | null
+          requires_insured_name: boolean | null
+          requires_insured_sex: boolean | null
+          requires_notes: boolean | null
+          requires_other_insured_date_of_birth: boolean | null
+          requires_other_insured_employer_school_name: boolean | null
+          requires_other_insured_name: boolean | null
+          requires_other_insured_plan_program_name: boolean | null
+          requires_other_insured_policy_group_number: boolean | null
+          requires_other_insured_sex: boolean | null
+          requires_patient_condition_auto_accident: boolean | null
+          requires_patient_condition_employment: boolean | null
+          requires_patient_condition_other_accident: boolean | null
+          requires_patient_relationship_to_insured: boolean | null
+          requires_phone_number: boolean | null
+          requires_signature_on_file: boolean | null
+          requires_website: boolean | null
           updated_at: string
           website: string | null
         }
@@ -1234,6 +1265,37 @@ export type Database = {
           phone_number?: string | null
           plan_name: string
           prior_authorization_required?: boolean
+          requires_claims_address_line1?: boolean | null
+          requires_claims_address_line2?: boolean | null
+          requires_claims_city?: boolean | null
+          requires_claims_state?: boolean | null
+          requires_claims_zip?: boolean | null
+          requires_copay_amount?: boolean | null
+          requires_group_number?: boolean | null
+          requires_health_benefit_plan_indicator?: boolean | null
+          requires_insurance_plan_program_name?: boolean | null
+          requires_insurance_plan_type?: boolean | null
+          requires_insured_address?: boolean | null
+          requires_insured_authorization_payment?: boolean | null
+          requires_insured_date_of_birth?: boolean | null
+          requires_insured_employer_school_name?: boolean | null
+          requires_insured_id_number?: boolean | null
+          requires_insured_name?: boolean | null
+          requires_insured_sex?: boolean | null
+          requires_notes?: boolean | null
+          requires_other_insured_date_of_birth?: boolean | null
+          requires_other_insured_employer_school_name?: boolean | null
+          requires_other_insured_name?: boolean | null
+          requires_other_insured_plan_program_name?: boolean | null
+          requires_other_insured_policy_group_number?: boolean | null
+          requires_other_insured_sex?: boolean | null
+          requires_patient_condition_auto_accident?: boolean | null
+          requires_patient_condition_employment?: boolean | null
+          requires_patient_condition_other_accident?: boolean | null
+          requires_patient_relationship_to_insured?: boolean | null
+          requires_phone_number?: boolean | null
+          requires_signature_on_file?: boolean | null
+          requires_website?: boolean | null
           updated_at?: string
           website?: string | null
         }
@@ -1255,6 +1317,37 @@ export type Database = {
           phone_number?: string | null
           plan_name?: string
           prior_authorization_required?: boolean
+          requires_claims_address_line1?: boolean | null
+          requires_claims_address_line2?: boolean | null
+          requires_claims_city?: boolean | null
+          requires_claims_state?: boolean | null
+          requires_claims_zip?: boolean | null
+          requires_copay_amount?: boolean | null
+          requires_group_number?: boolean | null
+          requires_health_benefit_plan_indicator?: boolean | null
+          requires_insurance_plan_program_name?: boolean | null
+          requires_insurance_plan_type?: boolean | null
+          requires_insured_address?: boolean | null
+          requires_insured_authorization_payment?: boolean | null
+          requires_insured_date_of_birth?: boolean | null
+          requires_insured_employer_school_name?: boolean | null
+          requires_insured_id_number?: boolean | null
+          requires_insured_name?: boolean | null
+          requires_insured_sex?: boolean | null
+          requires_notes?: boolean | null
+          requires_other_insured_date_of_birth?: boolean | null
+          requires_other_insured_employer_school_name?: boolean | null
+          requires_other_insured_name?: boolean | null
+          requires_other_insured_plan_program_name?: boolean | null
+          requires_other_insured_policy_group_number?: boolean | null
+          requires_other_insured_sex?: boolean | null
+          requires_patient_condition_auto_accident?: boolean | null
+          requires_patient_condition_employment?: boolean | null
+          requires_patient_condition_other_accident?: boolean | null
+          requires_patient_relationship_to_insured?: boolean | null
+          requires_phone_number?: boolean | null
+          requires_signature_on_file?: boolean | null
+          requires_website?: boolean | null
           updated_at?: string
           website?: string | null
         }
