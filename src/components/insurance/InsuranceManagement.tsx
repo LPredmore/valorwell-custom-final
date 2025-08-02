@@ -15,12 +15,14 @@ import {
   useCreateAcceptedInsurance, 
   useUpdateAcceptedInsurance, 
   useDeleteAcceptedInsurance,
-  AcceptedInsurance 
+  AcceptedInsurance,
+  useInsuranceCompanies 
 } from '@/hooks/useInsurance';
 import { InsuranceCompanyCombobox } from './InsuranceCompanyCombobox';
 
 export const InsuranceManagement = () => {
   const { data: acceptedInsurance = [], isLoading } = useAcceptedInsurance();
+  const { data: insuranceCompanies = [] } = useInsuranceCompanies();
   const createInsurance = useCreateAcceptedInsurance();
   const updateInsurance = useUpdateAcceptedInsurance();
   const deleteInsurance = useDeleteAcceptedInsurance();
@@ -48,6 +50,15 @@ export const InsuranceManagement = () => {
     is_active: true,
   });
 
+  const handleInsuranceCompanyChange = (value: string) => {
+    const selectedCompany = insuranceCompanies.find(company => company.id === value);
+    setFormData({ 
+      ...formData, 
+      insurance_company_id: value,
+      payer_id: selectedCompany?.payer_id || ''
+    });
+  };
+
   const resetForm = () => {
     setFormData({
       insurance_company_id: '',
@@ -70,18 +81,20 @@ export const InsuranceManagement = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.insurance_company_id || !formData.plan_name) {
+    if (!formData.insurance_company_id) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in insurance company and plan name.",
+        description: "Please select an insurance company.",
         variant: "destructive",
       });
       return;
     }
 
     try {
+      const selectedCompany = insuranceCompanies.find(company => company.id === formData.insurance_company_id);
       const insuranceData = {
         ...formData,
+        plan_name: formData.plan_name || selectedCompany?.name || 'General Plan',
         copay_amount: formData.copay_amount ? parseFloat(formData.copay_amount) : null,
       };
 
@@ -236,10 +249,10 @@ export const InsuranceManagement = () => {
                     </TableCell>
                     <TableCell>
                       {editingId === insurance.id ? (
-                        <InsuranceCompanyCombobox
-                          value={formData.insurance_company_id}
-                          onValueChange={(value) => setFormData({ ...formData, insurance_company_id: value })}
-                        />
+                         <InsuranceCompanyCombobox
+                           value={formData.insurance_company_id}
+                           onValueChange={handleInsuranceCompanyChange}
+                         />
                       ) : (
                         insurance.insurance_companies?.name || 'Unknown'
                       )}
@@ -359,138 +372,22 @@ export const InsuranceManagement = () => {
             <DialogTitle>Add Insurance Plan</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="insurance-company">Insurance Company *</Label>
-                <InsuranceCompanyCombobox
-                  value={formData.insurance_company_id}
-                  onValueChange={(value) => setFormData({ ...formData, insurance_company_id: value })}
-                  placeholder="Select insurance company..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="plan-name">Plan Name *</Label>
-                <Input
-                  id="plan-name"
-                  value={formData.plan_name}
-                  onChange={(e) => setFormData({ ...formData, plan_name: e.target.value })}
-                  placeholder="e.g., PPO, HMO, Medicare Advantage"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="payer-id">Payer ID</Label>
-                <Input
-                  id="payer-id"
-                  value={formData.payer_id}
-                  onChange={(e) => setFormData({ ...formData, payer_id: e.target.value })}
-                  placeholder="Billing payer ID"
-                />
-              </div>
-              <div>
-                <Label htmlFor="group-number">Group Number</Label>
-                <Input
-                  id="group-number"
-                  value={formData.group_number}
-                  onChange={(e) => setFormData({ ...formData, group_number: e.target.value })}
-                  placeholder="Group number"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone_number}
-                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                  placeholder="Customer service phone"
-                />
-              </div>
-            </div>
-
             <div>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="https://..."
+              <Label htmlFor="insurance-company">Insurance Company *</Label>
+              <InsuranceCompanyCombobox
+                value={formData.insurance_company_id}
+                onValueChange={handleInsuranceCompanyChange}
+                placeholder="Select insurance company..."
               />
             </div>
-
-            <div className="space-y-2">
-              <Label>Claims Address</Label>
-              <Input
-                value={formData.claims_address_line1}
-                onChange={(e) => setFormData({ ...formData, claims_address_line1: e.target.value })}
-                placeholder="Address Line 1"
-              />
-              <Input
-                value={formData.claims_address_line2}
-                onChange={(e) => setFormData({ ...formData, claims_address_line2: e.target.value })}
-                placeholder="Address Line 2 (optional)"
-              />
-              <div className="grid grid-cols-3 gap-2">
-                <Input
-                  value={formData.claims_city}
-                  onChange={(e) => setFormData({ ...formData, claims_city: e.target.value })}
-                  placeholder="City"
-                />
-                <Input
-                  value={formData.claims_state}
-                  onChange={(e) => setFormData({ ...formData, claims_state: e.target.value })}
-                  placeholder="State"
-                  maxLength={2}
-                />
-                <Input
-                  value={formData.claims_zip}
-                  onChange={(e) => setFormData({ ...formData, claims_zip: e.target.value })}
-                  placeholder="ZIP Code"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="copay">Standard Copay Amount</Label>
-                <Input
-                  id="copay"
-                  type="number"
-                  step="0.01"
-                  value={formData.copay_amount}
-                  onChange={(e) => setFormData({ ...formData, copay_amount: e.target.value })}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-3 pt-6">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="electronic-claims"
-                    checked={formData.electronic_claims_supported}
-                    onCheckedChange={(checked) => setFormData({ ...formData, electronic_claims_supported: checked })}
-                  />
-                  <Label htmlFor="electronic-claims">Electronic Claims Supported</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="prior-auth"
-                    checked={formData.prior_authorization_required}
-                    onCheckedChange={(checked) => setFormData({ ...formData, prior_authorization_required: checked })}
-                  />
-                  <Label htmlFor="prior-auth">Prior Authorization Required</Label>
-                </div>
-              </div>
-            </div>
-
+            
             <div>
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes about this insurance plan..."
-                rows={3}
+              <Label htmlFor="payer-id">Payer ID</Label>
+              <Input
+                id="payer-id"
+                value={formData.payer_id}
+                onChange={(e) => setFormData({ ...formData, payer_id: e.target.value })}
+                placeholder="Billing payer ID"
               />
             </div>
 
@@ -500,7 +397,7 @@ export const InsuranceManagement = () => {
               </Button>
               <Button 
                 onClick={handleSubmit}
-                disabled={createInsurance.isPending || !formData.insurance_company_id || !formData.plan_name}
+                disabled={createInsurance.isPending || !formData.insurance_company_id}
               >
                 {createInsurance.isPending ? "Adding..." : "Add Insurance"}
               </Button>
