@@ -22,6 +22,7 @@ import { ClinicianProfile } from '@/pages/ClinicianProfile';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import { SessionDocumentation } from '@/pages/SessionDocumentation';
+import { AddClientInfo } from '@/pages/AddClientInfo';
 
 // Template page imports
 import { TemplatesPage } from '@/features/templates/pages/TemplatesPage';
@@ -47,6 +48,11 @@ function App() {
             <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/add-client-info" element={
+              <ProtectedRoute>
+                <AddClientInfo />
+              </ProtectedRoute>
+            } />
             
             <Route path="/" element={
               <ProtectedRoute>
