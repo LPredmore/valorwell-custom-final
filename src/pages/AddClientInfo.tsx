@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -92,6 +93,11 @@ export const AddClientInfo: React.FC = () => {
     client_intervention2: '',
   });
 
+  // Insurance-related state
+  const [clientSSN, setClientSSN] = useState('');
+  const [wantInsurance, setWantInsurance] = useState<boolean | null>(null);
+  const [agreeOutOfPocket, setAgreeOutOfPocket] = useState(false);
+
   // Auto-populate form when client data is loaded
   useEffect(() => {
     if (clientData) {
@@ -124,6 +130,13 @@ export const AddClientInfo: React.FC = () => {
         client_secondaryobjective: clientData.client_secondaryobjective || '',
         client_intervention2: clientData.client_intervention2 || '',
       }));
+      
+      // Set SSN and insurance preference if they exist
+      setClientSSN((clientData as any).client_ssn || '');
+      if ((clientData as any).wants_insurance !== null && (clientData as any).wants_insurance !== undefined) {
+        setWantInsurance((clientData as any).wants_insurance);
+      }
+      setAgreeOutOfPocket((clientData as any).agrees_out_of_pocket || false);
     }
   }, [clientData, user?.email]);
 
@@ -170,6 +183,27 @@ export const AddClientInfo: React.FC = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const formatSSN = (value: string) => {
+    // Remove all non-numeric characters
+    const numericValue = value.replace(/\D/g, '');
+    
+    // Limit to 9 digits
+    const limitedValue = numericValue.slice(0, 9);
+    
+    // Add dashes
+    if (limitedValue.length >= 5) {
+      return `${limitedValue.slice(0, 3)}-${limitedValue.slice(3, 5)}-${limitedValue.slice(5)}`;
+    } else if (limitedValue.length >= 3) {
+      return `${limitedValue.slice(0, 3)}-${limitedValue.slice(3)}`;
+    }
+    return limitedValue;
+  };
+
+  const handleSSNChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatSSN(e.target.value);
+    setClientSSN(formatted);
   };
 
   const handlePrimaryInsuranceSelect = (insuranceId: string) => {
@@ -261,54 +295,115 @@ export const AddClientInfo: React.FC = () => {
   };
 
   const handleSaveInsurance = async () => {
-    if (!clientData?.id) return;
+    if (!clientData?.id || !user) return;
+
+    // Validate SSN
+    const ssnDigits = clientSSN.replace(/\D/g, '');
+    if (ssnDigits.length !== 9) {
+      toast({
+        variant: "destructive",
+        title: "Invalid SSN",
+        description: "Please enter a valid 9-digit Social Security Number.",
+      });
+      return;
+    }
+
+    // Validate insurance preference selection
+    if (wantInsurance === null) {
+      toast({
+        variant: "destructive",
+        title: "Insurance Selection Required",
+        description: "Please select whether you want to use insurance or not.",
+      });
+      return;
+    }
+
+    // If they want insurance, validate primary insurance is selected
+    if (wantInsurance && !primaryInsuranceData.insurance_company_id) {
+      toast({
+        variant: "destructive",
+        title: "Insurance Company Required",
+        description: "Please select your primary insurance company.",
+      });
+      return;
+    }
+
+    // If they don't want insurance, validate they agreed to out-of-pocket
+    if (!wantInsurance && !agreeOutOfPocket) {
+      toast({
+        variant: "destructive",
+        title: "Agreement Required",
+        description: "Please check the agreement box for out-of-pocket payment.",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      // Save primary insurance
-      if (primaryInsuranceData.insurance_company_id) {
-        const primaryExists = existingInsurance?.find(ins => ins.insurance_type === 'primary');
-        
-        if (primaryExists) {
-          await updateInsurance.mutateAsync({
-            id: primaryExists.id,
-            ...primaryInsuranceData,
-          });
-        } else {
-          await createInsurance.mutateAsync({
-            ...primaryInsuranceData,
-            client_id: clientData.id,
-            insurance_type: 'primary',
-          });
+      // Save SSN and insurance preference to client record
+      const { error: clientError } = await supabase
+        .from('clients')
+        .update({
+          client_ssn: ssnDigits,
+          wants_insurance: wantInsurance,
+          agrees_out_of_pocket: !wantInsurance ? agreeOutOfPocket : false,
+        } as any)
+        .eq('profile_id', user.id);
+
+      if (clientError) throw clientError;
+
+      // Only save insurance data if they want insurance
+      if (wantInsurance) {
+        // Save primary insurance
+        if (primaryInsuranceData.insurance_company_id) {
+          const primaryExists = existingInsurance?.find(ins => ins.insurance_type === 'primary');
+          
+          if (primaryExists) {
+            await updateInsurance.mutateAsync({
+              id: primaryExists.id,
+              ...primaryInsuranceData,
+            });
+          } else {
+            await createInsurance.mutateAsync({
+              ...primaryInsuranceData,
+              client_id: clientData.id,
+              insurance_type: 'primary',
+            });
+          }
+        }
+
+        // Save secondary insurance if exists
+        if (secondaryInsuranceData.insurance_company_id) {
+          const secondaryExists = existingInsurance?.find(ins => ins.insurance_type === 'secondary');
+          
+          if (secondaryExists) {
+            await updateInsurance.mutateAsync({
+              id: secondaryExists.id,
+              ...secondaryInsuranceData,
+            });
+          } else {
+            await createInsurance.mutateAsync({
+              ...secondaryInsuranceData,
+              client_id: clientData.id,
+              insurance_type: 'secondary',
+            });
+          }
         }
       }
 
-      // Save secondary insurance if exists
-      if (secondaryInsuranceData.insurance_company_id) {
-        const secondaryExists = existingInsurance?.find(ins => ins.insurance_type === 'secondary');
-        
-        if (secondaryExists) {
-          await updateInsurance.mutateAsync({
-            id: secondaryExists.id,
-            ...secondaryInsuranceData,
-          });
-        } else {
-          await createInsurance.mutateAsync({
-            ...secondaryInsuranceData,
-            client_id: clientData.id,
-            insurance_type: 'secondary',
-          });
-        }
-      }
+      toast({
+        title: "Information Saved",
+        description: wantInsurance ? "Insurance information saved successfully." : "Out-of-pocket payment preference saved.",
+      });
 
       // Move to Clinical tab
       setActiveTab('clinical');
     } catch (error) {
-      console.error('Error saving insurance:', error);
+      console.error('Error saving insurance information:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to save insurance information. Please try again.",
+        description: "Failed to save information. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -676,43 +771,125 @@ export const AddClientInfo: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Insurance Information</CardTitle>
-                <CardDescription>Please provide your insurance information</CardDescription>
+                <CardDescription>Please provide your insurance and payment information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
-                {/* Primary Insurance Section */}
-                <InsuranceFormSection
-                  insuranceType="primary"
-                  selectedInsurance={selectedPrimaryInsurance}
-                  insuranceData={primaryInsuranceData}
-                  onInsuranceSelect={handlePrimaryInsuranceSelect}
-                  onFieldChange={handlePrimaryInsuranceFieldChange}
-                />
-
-                {/* Add Secondary Insurance Button */}
-                {!showSecondaryInsurance && (
-                  <div className="flex justify-center pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowSecondaryInsurance(true)}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add Secondary/Supplemental Insurance
-                    </Button>
+                {/* SSN Field */}
+                <div className="space-y-4">
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold text-foreground">Social Security Number</h3>
+                    <p className="text-sm text-muted-foreground">Required for billing and insurance purposes</p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_ssn">Social Security Number *</Label>
+                    <Input
+                      id="client_ssn"
+                      type="text"
+                      value={clientSSN}
+                      onChange={handleSSNChange}
+                      placeholder="XXX-XX-XXXX"
+                      maxLength={11}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Insurance Preference */}
+                <div className="space-y-4">
+                  <div className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold text-foreground">Payment Method</h3>
+                    <p className="text-sm text-muted-foreground">Choose how you would like to pay for your sessions</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Label className="text-base">I want to use insurance *</Label>
+                    <div className="flex gap-6">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="insurance-yes"
+                          name="insurance-preference"
+                          checked={wantInsurance === true}
+                          onChange={() => setWantInsurance(true)}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="insurance-yes">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id="insurance-no"
+                          name="insurance-preference"
+                          checked={wantInsurance === false}
+                          onChange={() => setWantInsurance(false)}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="insurance-no">No</Label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Insurance Sections - Only show if user wants insurance */}
+                {wantInsurance === true && (
+                  <>
+                    {/* Primary Insurance Section */}
+                    <InsuranceFormSection
+                      insuranceType="primary"
+                      selectedInsurance={selectedPrimaryInsurance}
+                      insuranceData={primaryInsuranceData}
+                      onInsuranceSelect={handlePrimaryInsuranceSelect}
+                      onFieldChange={handlePrimaryInsuranceFieldChange}
+                    />
+
+                    {/* Add Secondary Insurance Button */}
+                    {!showSecondaryInsurance && (
+                      <div className="flex justify-center pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowSecondaryInsurance(true)}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Secondary/Supplemental Insurance
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Secondary Insurance Section */}
+                    {showSecondaryInsurance && (
+                      <div className="border-t pt-8">
+                        <InsuranceFormSection
+                          insuranceType="secondary"
+                          selectedInsurance={selectedSecondaryInsurance}
+                          insuranceData={secondaryInsuranceData}
+                          onInsuranceSelect={handleSecondaryInsuranceSelect}
+                          onFieldChange={handleSecondaryInsuranceFieldChange}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
 
-                {/* Secondary Insurance Section */}
-                {showSecondaryInsurance && (
-                  <div className="border-t pt-8">
-                    <InsuranceFormSection
-                      insuranceType="secondary"
-                      selectedInsurance={selectedSecondaryInsurance}
-                      insuranceData={secondaryInsuranceData}
-                      onInsuranceSelect={handleSecondaryInsuranceSelect}
-                      onFieldChange={handleSecondaryInsuranceFieldChange}
-                    />
+                {/* Out-of-Pocket Section - Only show if user doesn't want insurance */}
+                {wantInsurance === false && (
+                  <div className="space-y-4">
+                    <div className="border border-amber-200 bg-amber-50 p-4 rounded-md">
+                      <p className="text-sm text-amber-800 mb-4">
+                        I understand that this means that my sessions will be paid out of pocket and will be due immediately after each session.
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="agree-out-of-pocket"
+                          checked={agreeOutOfPocket}
+                          onCheckedChange={(checked) => setAgreeOutOfPocket(checked === true)}
+                        />
+                        <Label htmlFor="agree-out-of-pocket" className="text-sm">
+                          I agree *
+                        </Label>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -722,7 +899,7 @@ export const AddClientInfo: React.FC = () => {
                     type="button"
                     onClick={handleSaveInsurance}
                     size="lg"
-                    disabled={isSubmitting || !primaryInsuranceData.insurance_company_id}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <>

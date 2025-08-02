@@ -277,9 +277,6 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
               </div>
             )}
 
-            {/* Insurance Contact Info */}
-            {renderField('phone_number', selectedInsurance.insurance_companies?.requires_phone_number, selectedInsurance.insurance_companies?.requires_phone_number)}
-
             {/* Copay Amount */}
             {renderField('copay_amount', selectedInsurance.insurance_companies?.requires_copay_amount, selectedInsurance.insurance_companies?.requires_copay_amount)}
 
@@ -288,23 +285,6 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
 
             {/* Employer/School Name */}
             {renderField('insured_employer_school_name', selectedInsurance.insurance_companies?.requires_insured_employer_school_name, selectedInsurance.insurance_companies?.requires_insured_employer_school_name)}
-
-            {/* Claims address fields */}
-            {(selectedInsurance.insurance_companies?.requires_claims_address_line1 || 
-              selectedInsurance.insurance_companies?.requires_claims_city || 
-              selectedInsurance.insurance_companies?.requires_claims_state || 
-              selectedInsurance.insurance_companies?.requires_claims_zip) && (
-              <div className="space-y-4">
-                <h4 className="font-medium text-foreground">Claims Mailing Address</h4>
-                {renderField('claims_address_line1', selectedInsurance.insurance_companies?.requires_claims_address_line1, selectedInsurance.insurance_companies?.requires_claims_address_line1)}
-                {renderField('claims_address_line2', selectedInsurance.insurance_companies?.requires_claims_address_line2, selectedInsurance.insurance_companies?.requires_claims_address_line2)}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {renderField('claims_city', selectedInsurance.insurance_companies?.requires_claims_city, selectedInsurance.insurance_companies?.requires_claims_city)}
-                  {renderField('claims_state', selectedInsurance.insurance_companies?.requires_claims_state, selectedInsurance.insurance_companies?.requires_claims_state)}
-                  {renderField('claims_zip', selectedInsurance.insurance_companies?.requires_claims_zip, selectedInsurance.insurance_companies?.requires_claims_zip)}
-                </div>
-              </div>
-            )}
 
             {/* Other insured fields */}
             {(selectedInsurance.insurance_companies?.requires_other_insured_name ||
