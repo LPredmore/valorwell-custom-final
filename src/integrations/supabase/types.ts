@@ -1194,6 +1194,107 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_accepted: {
+        Row: {
+          claims_address_line1: string | null
+          claims_address_line2: string | null
+          claims_city: string | null
+          claims_state: string | null
+          claims_zip: string | null
+          copay_amount: number | null
+          created_at: string
+          electronic_claims_supported: boolean
+          group_number: string | null
+          id: string
+          insurance_company_id: string
+          is_active: boolean
+          notes: string | null
+          payer_id: string | null
+          phone_number: string | null
+          plan_name: string
+          prior_authorization_required: boolean
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          claims_address_line1?: string | null
+          claims_address_line2?: string | null
+          claims_city?: string | null
+          claims_state?: string | null
+          claims_zip?: string | null
+          copay_amount?: number | null
+          created_at?: string
+          electronic_claims_supported?: boolean
+          group_number?: string | null
+          id?: string
+          insurance_company_id: string
+          is_active?: boolean
+          notes?: string | null
+          payer_id?: string | null
+          phone_number?: string | null
+          plan_name: string
+          prior_authorization_required?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          claims_address_line1?: string | null
+          claims_address_line2?: string | null
+          claims_city?: string | null
+          claims_state?: string | null
+          claims_zip?: string | null
+          copay_amount?: number | null
+          created_at?: string
+          electronic_claims_supported?: boolean
+          group_number?: string | null
+          id?: string
+          insurance_company_id?: string
+          is_active?: boolean
+          notes?: string | null
+          payer_id?: string | null
+          phone_number?: string | null
+          plan_name?: string
+          prior_authorization_required?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_accepted_insurance_company_id_fkey"
+            columns: ["insurance_company_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_companies: {
+        Row: {
+          created_at: string
+          id: string
+          is_custom: boolean
+          name: string
+          payer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_custom?: boolean
+          name: string
+          payer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_custom?: boolean
+          name?: string
+          payer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nylas_accounts: {
         Row: {
           access_token: string

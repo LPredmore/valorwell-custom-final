@@ -16,11 +16,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useClinicians, useDeleteClinician } from '@/hooks/useClinicians';
 import { useCptCodes, useDeleteCptCode, useUpdateCptCode, CptCode } from '@/hooks/useCptCodes';
 import { Link } from 'react-router-dom';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronRight } from 'lucide-react';
+import { InsuranceManagement } from '@/components/insurance/InsuranceManagement';
 
 const CptCodesManagement = () => {
   const { data: cptCodes, isLoading } = useCptCodes();
   const deleteCptCode = useDeleteCptCode();
   const updateCptCode = useUpdateCptCode();
+  const [isOpen, setIsOpen] = useState(false);
 
   const specialtyTypeOptions = ['Mental Health', 'Speech Therapy'];
 
@@ -62,20 +66,32 @@ const CptCodesManagement = () => {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>CPT Codes</CardTitle>
-          <CardDescription>
-            Manage CPT codes and their fees for billing.
-          </CardDescription>
-        </div>
-        <Button className="bg-green-700 hover:bg-green-800 text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          Add CPT Code
-        </Button>
-      </CardHeader>
-      <CardContent>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="flex flex-row items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="flex items-center space-x-2">
+              <ChevronRight className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+              <div>
+                <CardTitle>CPT Codes</CardTitle>
+                <CardDescription>
+                  Manage CPT codes and their fees for billing.
+                </CardDescription>
+              </div>
+            </div>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add CPT Code
+            </Button>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
@@ -195,8 +211,10 @@ const CptCodesManagement = () => {
             No CPT codes found. Add your first CPT code to get started.
           </div>
         )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 };
 
@@ -732,7 +750,10 @@ const Settings = () => {
         </TabsContent>
 
         <TabsContent value="billing" className="mt-6">
-          <CptCodesManagement />
+          <div className="space-y-6">
+            <CptCodesManagement />
+            <InsuranceManagement />
+          </div>
         </TabsContent>
 
         <TabsContent value="documentation" className="mt-6">
