@@ -418,33 +418,9 @@ export const AddClientInfo: React.FC = () => {
       const { error } = await supabase
         .from('clients')
         .update({
-          client_first_name: formData.client_first_name,
-          client_last_name: formData.client_last_name,
-          client_email: formData.client_email,
-          client_preferred_name: formData.client_preferred_name,
-          client_middle_name: formData.client_middle_name,
-          client_address: formData.client_address,
-          client_city: formData.client_city,
-          state: formData.state as Database["public"]["Enums"]["states"] | null,
-          client_zip_code: formData.client_zip_code,
-          client_phone: formData.client_phone,
-          date_of_birth: formData.date_of_birth,
-          client_gender: formData.client_gender,
-          client_gender_identity: formData.client_gender_identity,
-          client_time_zone: formData.client_time_zone,
-          client_minor: formData.client_minor,
           client_referral_source: formData.client_referral_source,
           client_self_goal: formData.client_self_goal,
-          client_status: formData.client_status,
-          client_planlength: formData.client_planlength,
-          client_treatmentfrequency: formData.client_treatmentfrequency,
-          client_problem: formData.client_problem,
-          client_treatmentgoal: formData.client_treatmentgoal,
-          client_primaryobjective: formData.client_primaryobjective,
-          client_intervention1: formData.client_intervention1,
-          client_secondaryobjective: formData.client_secondaryobjective,
-          client_intervention2: formData.client_intervention2,
-          client_is_profile_complete: 'Yes'
+          client_status: 'Complete'
         })
         .eq('profile_id', user.id);
 
