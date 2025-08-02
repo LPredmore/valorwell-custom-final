@@ -229,7 +229,6 @@ export type Database = {
       }
       clients: {
         Row: {
-          city: string | null
           client_address: string | null
           client_affect: string | null
           client_age: number | null
@@ -344,19 +343,13 @@ export type Database = {
           eligibility_status_primary: string | null
           eligibility_status_secondary: string | null
           eligibility_status_tertiary: string | null
-          email: string | null
-          first_name: string | null
           id: string
-          last_name: string | null
-          phone: string | null
           profile_id: string | null
           state: Database["public"]["Enums"]["states"] | null
           stripe_customer_id: string | null
           updated_at: string
-          zip_code: string | null
         }
         Insert: {
-          city?: string | null
           client_address?: string | null
           client_affect?: string | null
           client_age?: number | null
@@ -471,19 +464,13 @@ export type Database = {
           eligibility_status_primary?: string | null
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
-          email?: string | null
-          first_name?: string | null
           id: string
-          last_name?: string | null
-          phone?: string | null
           profile_id?: string | null
           state?: Database["public"]["Enums"]["states"] | null
           stripe_customer_id?: string | null
           updated_at?: string
-          zip_code?: string | null
         }
         Update: {
-          city?: string | null
           client_address?: string | null
           client_affect?: string | null
           client_age?: number | null
@@ -598,16 +585,11 @@ export type Database = {
           eligibility_status_primary?: string | null
           eligibility_status_secondary?: string | null
           eligibility_status_tertiary?: string | null
-          email?: string | null
-          first_name?: string | null
           id?: string
-          last_name?: string | null
-          phone?: string | null
           profile_id?: string | null
           state?: Database["public"]["Enums"]["states"] | null
           stripe_customer_id?: string | null
           updated_at?: string
-          zip_code?: string | null
         }
         Relationships: [
           {
