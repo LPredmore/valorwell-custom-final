@@ -9,9 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { useAcceptedInsurance } from '@/hooks/useInsurance';
 import type { Database } from '@/integrations/supabase/types';
 
 export const AddClientInfo: React.FC = () => {
@@ -20,6 +21,12 @@ export const AddClientInfo: React.FC = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
+  const [hasInsurance, setHasInsurance] = useState(false);
+  const [selectedInsurance, setSelectedInsurance] = useState<string>('');
+  const [insuranceData, setInsuranceData] = useState<{[key: string]: string}>({});
+  
+  // Fetch accepted insurance companies
+  const { data: acceptedInsurance, isLoading: isLoadingInsurance } = useAcceptedInsurance();
   const [formData, setFormData] = useState({
     // Names and basic info - using client_* columns
     client_first_name: '',
@@ -555,95 +562,239 @@ export const AddClientInfo: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Insurance Information</CardTitle>
-                <CardDescription>Primary insurance details</CardDescription>
+                <CardDescription>Let us know if you have insurance coverage</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="client_insurance_type_primary">Insurance Type</Label>
-                    <Select value={formData.client_insurance_type_primary} onValueChange={(value) => handleSelectChange('client_insurance_type_primary', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select insurance type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Private">Private Insurance</SelectItem>
-                        <SelectItem value="Medicare">Medicare</SelectItem>
-                        <SelectItem value="Medicaid">Medicaid</SelectItem>
-                        <SelectItem value="Tricare">Tricare</SelectItem>
-                        <SelectItem value="VA">VA Benefits</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <CardContent className="space-y-6">
+                {!hasInsurance ? (
+                  <div className="text-center space-y-4">
+                    <p className="text-muted-foreground">Do you have health insurance?</p>
+                    <Button
+                      onClick={() => setHasInsurance(true)}
+                      variant="outline"
+                      size="lg"
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      I have insurance
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_insurance_company_primary">Insurance Company</Label>
-                    <Input
-                      id="client_insurance_company_primary"
-                      name="client_insurance_company_primary"
-                      value={formData.client_insurance_company_primary}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Add Insurance</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setHasInsurance(false);
+                          setSelectedInsurance('');
+                          setInsuranceData({});
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="client_policy_number_primary">Policy Number</Label>
-                    <Input
-                      id="client_policy_number_primary"
-                      name="client_policy_number_primary"
-                      value={formData.client_policy_number_primary}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_group_number_primary">Group Number</Label>
-                    <Input
-                      id="client_group_number_primary"
-                      name="client_group_number_primary"
-                      value={formData.client_group_number_primary}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
+                    <div className="space-y-2">
+                      <Label>Select Your Insurance Company</Label>
+                      {isLoadingInsurance ? (
+                        <div className="text-sm text-muted-foreground">Loading insurance companies...</div>
+                      ) : (
+                        <Select value={selectedInsurance} onValueChange={setSelectedInsurance}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Search and select your insurance company..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {acceptedInsurance?.map((insurance) => (
+                              <SelectItem key={insurance.id} value={insurance.id}>
+                                {insurance.insurance_companies?.name} - {insurance.plan_name}
+                                {insurance.payer_id && ` (${insurance.payer_id})`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="client_subscriber_name_primary">Subscriber Name</Label>
-                    <Input
-                      id="client_subscriber_name_primary"
-                      name="client_subscriber_name_primary"
-                      value={formData.client_subscriber_name_primary}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_subscriber_relationship_primary">Relationship to Subscriber</Label>
-                    <Select value={formData.client_subscriber_relationship_primary} onValueChange={(value) => handleSelectChange('client_subscriber_relationship_primary', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select relationship" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Self">Self</SelectItem>
-                        <SelectItem value="Spouse">Spouse</SelectItem>
-                        <SelectItem value="Child">Child</SelectItem>
-                        <SelectItem value="Parent">Parent</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                    {selectedInsurance && (
+                      <div className="space-y-4 border-t pt-4">
+                        {(() => {
+                          const selected = acceptedInsurance?.find(ins => ins.id === selectedInsurance);
+                          if (!selected) return null;
 
-                <div className="space-y-2">
-                  <Label htmlFor="client_subscriber_dob_primary">Subscriber Date of Birth</Label>
-                  <Input
-                    id="client_subscriber_dob_primary"
-                    name="client_subscriber_dob_primary"
-                    type="date"
-                    value={formData.client_subscriber_dob_primary}
-                    onChange={handleInputChange}
-                  />
-                </div>
+                          const companyData = selected.insurance_companies;
+                          const fields = [];
+
+                          // Add company name (always shown)
+                          fields.push(
+                            <div key="company-name" className="space-y-2">
+                              <Label>Insurance Company</Label>
+                              <Input 
+                                value={companyData?.name || ''} 
+                                disabled 
+                                className="bg-muted"
+                              />
+                            </div>
+                          );
+
+                          // Add plan name (always shown)
+                          fields.push(
+                            <div key="plan-name" className="space-y-2">
+                              <Label>Plan Name</Label>
+                              <Input 
+                                value={selected.plan_name} 
+                                disabled 
+                                className="bg-muted"
+                              />
+                            </div>
+                          );
+
+                          // Add payer ID if available
+                          if (selected.payer_id) {
+                            fields.push(
+                              <div key="payer-id" className="space-y-2">
+                                <Label>Payer ID</Label>
+                                <Input 
+                                  value={selected.payer_id} 
+                                  disabled 
+                                  className="bg-muted"
+                                />
+                              </div>
+                            );
+                          }
+
+                          // Add group number field if required or available
+                          if (companyData?.requires_group_number || selected.group_number) {
+                            fields.push(
+                              <div key="group-number" className="space-y-2">
+                                <Label htmlFor="group_number">
+                                  Group Number {companyData?.requires_group_number ? '*' : ''}
+                                </Label>
+                                <Input
+                                  id="group_number"
+                                  value={insuranceData.group_number || ''}
+                                  onChange={(e) => setInsuranceData(prev => ({...prev, group_number: e.target.value}))}
+                                  placeholder={selected.group_number || 'Enter group number'}
+                                  required={companyData?.requires_group_number}
+                                />
+                              </div>
+                            );
+                          }
+
+                          // Add phone number field if required or available
+                          if (companyData?.requires_phone_number || selected.phone_number) {
+                            fields.push(
+                              <div key="phone-number" className="space-y-2">
+                                <Label htmlFor="phone_number">
+                                  Phone Number {companyData?.requires_phone_number ? '*' : ''}
+                                </Label>
+                                <Input
+                                  id="phone_number"
+                                  value={insuranceData.phone_number || ''}
+                                  onChange={(e) => setInsuranceData(prev => ({...prev, phone_number: e.target.value}))}
+                                  placeholder={selected.phone_number || 'Enter phone number'}
+                                  required={companyData?.requires_phone_number}
+                                />
+                              </div>
+                            );
+                          }
+
+                          // Add copay amount field if required or available
+                          if (companyData?.requires_copay_amount || selected.copay_amount) {
+                            fields.push(
+                              <div key="copay-amount" className="space-y-2">
+                                <Label htmlFor="copay_amount">
+                                  Copay Amount {companyData?.requires_copay_amount ? '*' : ''}
+                                </Label>
+                                <Input
+                                  id="copay_amount"
+                                  type="number"
+                                  step="0.01"
+                                  value={insuranceData.copay_amount || ''}
+                                  onChange={(e) => setInsuranceData(prev => ({...prev, copay_amount: e.target.value}))}
+                                  placeholder={selected.copay_amount?.toString() || 'Enter copay amount'}
+                                  required={companyData?.requires_copay_amount}
+                                />
+                              </div>
+                            );
+                          }
+
+                          // Add claims address if available
+                          if (selected.claims_address_line1) {
+                            fields.push(
+                              <div key="claims-address" className="space-y-2">
+                                <Label>Claims Address</Label>
+                                <div className="text-sm p-3 bg-muted rounded">
+                                  <p>{selected.claims_address_line1}</p>
+                                  {selected.claims_address_line2 && <p>{selected.claims_address_line2}</p>}
+                                  {selected.claims_city && selected.claims_state && selected.claims_zip && (
+                                    <p>{selected.claims_city}, {selected.claims_state} {selected.claims_zip}</p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Add website if available
+                          if (selected.website) {
+                            fields.push(
+                              <div key="website" className="space-y-2">
+                                <Label>Website</Label>
+                                <Input 
+                                  value={selected.website} 
+                                  disabled 
+                                  className="bg-muted"
+                                />
+                              </div>
+                            );
+                          }
+
+                          // Show coverage details
+                          const coverageInfo = [];
+                          if (selected.electronic_claims_supported) {
+                            coverageInfo.push("Electronic claims supported");
+                          }
+                          if (selected.prior_authorization_required) {
+                            coverageInfo.push("Prior authorization required");
+                          }
+
+                          if (coverageInfo.length > 0) {
+                            fields.push(
+                              <div key="coverage-info" className="space-y-2">
+                                <Label>Coverage Information</Label>
+                                <div className="text-sm p-3 bg-muted rounded">
+                                  <ul className="list-disc list-inside space-y-1">
+                                    {coverageInfo.map((info, index) => (
+                                      <li key={index}>{info}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Add notes if available
+                          if (selected.notes) {
+                            fields.push(
+                              <div key="notes" className="space-y-2">
+                                <Label>Notes</Label>
+                                <div className="text-sm p-3 bg-muted rounded">
+                                  {selected.notes}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {fields}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
