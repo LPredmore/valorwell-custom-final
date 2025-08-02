@@ -342,14 +342,12 @@ export const AddClientInfo: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      // Save SSN and insurance preference to client record
+      // Save SSN to client record
       const { error: clientError } = await supabase
         .from('clients')
         .update({
           client_ssn: ssnDigits,
-          wants_insurance: wantInsurance,
-          agrees_out_of_pocket: !wantInsurance ? agreeOutOfPocket : false,
-        } as any)
+        })
         .eq('profile_id', user.id);
 
       if (clientError) throw clientError;

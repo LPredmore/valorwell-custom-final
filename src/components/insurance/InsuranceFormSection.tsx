@@ -124,6 +124,20 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
     }
 
     if (fieldName === 'subscriber_state' || fieldName === 'claims_state') {
+      const states = [
+        'Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California',
+        'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida',
+        'Georgia', 'Guam', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
+        'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts',
+        'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska',
+        'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',
+        'North Carolina', 'North Dakota', 'Northern Mariana Islands', 'Ohio',
+        'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island',
+        'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+        'Virgin Islands', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin',
+        'Wyoming'
+      ];
+
       return (
         <div className="space-y-2">
           <Label htmlFor={fieldName}>
@@ -134,12 +148,11 @@ export const InsuranceFormSection: React.FC<InsuranceFormSectionProps> = ({
               <SelectValue placeholder="Select state" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="AL">Alabama</SelectItem>
-              <SelectItem value="CA">California</SelectItem>
-              <SelectItem value="FL">Florida</SelectItem>
-              <SelectItem value="NY">New York</SelectItem>
-              <SelectItem value="TX">Texas</SelectItem>
-              {/* Add more states as needed */}
+              {states.map((state) => (
+                <SelectItem key={state} value={state}>
+                  {state}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
