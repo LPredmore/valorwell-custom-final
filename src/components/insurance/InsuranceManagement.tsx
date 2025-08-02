@@ -92,10 +92,32 @@ export const InsuranceManagement = () => {
 
     try {
       const selectedCompany = insuranceCompanies.find(company => company.id === formData.insurance_company_id);
+      if (!selectedCompany) {
+        toast({
+          title: "Error",
+          description: "Selected insurance company not found.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const insuranceData = {
-        ...formData,
-        plan_name: formData.plan_name || selectedCompany?.name || 'General Plan',
-        copay_amount: formData.copay_amount ? parseFloat(formData.copay_amount) : null,
+        insurance_company_id: formData.insurance_company_id,
+        plan_name: selectedCompany.name, // Use the company name as the plan name
+        payer_id: formData.payer_id || selectedCompany.payer_id,
+        group_number: null,
+        phone_number: null,
+        website: null,
+        claims_address_line1: null,
+        claims_address_line2: null,
+        claims_city: null,
+        claims_state: null,
+        claims_zip: null,
+        electronic_claims_supported: false,
+        prior_authorization_required: false,
+        copay_amount: null,
+        notes: null,
+        is_active: true,
       };
 
       if (editingId) {
