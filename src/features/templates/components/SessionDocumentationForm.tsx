@@ -1,15 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';
-<<<<<<< HEAD
 import 'survey-core/survey-core.min.css';
-=======
-// Import SurveyJS default theme for proper styling
-import 'survey-core/survey-core.min.css';
-// Import custom multi-column layout styles
-import './SessionDocumentationForm.css';
-
->>>>>>> f710a3d6c29535076e95bcf5145cffa236ab3ce9
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2 } from 'lucide-react';
