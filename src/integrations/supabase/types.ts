@@ -1880,6 +1880,16 @@ export type Database = {
     Enums: {
       appointment_status: "scheduled" | "documented" | "no show" | "cancelled"
       "Biological Sex": "Male" | "Female"
+      client_status:
+        | "Interested"
+        | "New"
+        | "Complete"
+        | "Assigned"
+        | "Scheduled"
+        | "Established"
+        | "At Risk"
+        | "Cold"
+        | "Re-Engaged"
       insurance_type: "primary" | "secondary" | "tertiary"
       specialty_type: "Mental Health" | "Speech Therapy"
       states:
@@ -2077,6 +2087,17 @@ export const Constants = {
     Enums: {
       appointment_status: ["scheduled", "documented", "no show", "cancelled"],
       "Biological Sex": ["Male", "Female"],
+      client_status: [
+        "Interested",
+        "New",
+        "Complete",
+        "Assigned",
+        "Scheduled",
+        "Established",
+        "At Risk",
+        "Cold",
+        "Re-Engaged",
+      ],
       insurance_type: ["primary", "secondary", "tertiary"],
       specialty_type: ["Mental Health", "Speech Therapy"],
       states: [
