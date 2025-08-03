@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Database } from '@/integrations/supabase/types';
 
 interface ClientData {
   client_first_name: string;
@@ -17,7 +18,7 @@ interface ClientData {
   client_state?: string;
   client_zip_code?: string;
   client_time_zone?: string;
-  client_status?: string;
+  client_status?: Database['public']['Enums']['client_status'];
   client_assigned_therapist?: string;
   client_referral_source?: string;
   client_treatmentgoal?: string;

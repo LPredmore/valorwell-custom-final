@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAcceptedInsurance } from '@/hooks/useInsurance';
 import { useClientInsurance, useCreateClientInsurance, useUpdateClientInsurance, ClientInsurance } from '@/hooks/useClientInsurance';
 import { InsuranceFormSection } from '@/components/insurance/InsuranceFormSection';
@@ -22,6 +22,7 @@ export const AddClientInfo: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [showSecondaryInsurance, setShowSecondaryInsurance] = useState(false);
@@ -446,7 +447,7 @@ export const AddClientInfo: React.FC = () => {
           client_secondaryobjective: formData.client_secondaryobjective,
           client_intervention2: formData.client_intervention2,
           // Status update
-          client_status: 'Complete'
+          client_status: 'New' as Database["public"]["Enums"]["client_status"]
         })
         .eq('profile_id', user.id);
 
@@ -454,12 +455,14 @@ export const AddClientInfo: React.FC = () => {
         throw error;
       }
 
+      // Invalidate the client status cache to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ['client-status'] });
+      queryClient.invalidateQueries({ queryKey: ['client-data'] });
+
       toast({
         title: "Profile Completed",
         description: "Your information has been saved successfully.",
       });
-
-      navigate('/client-dashboard');
     } catch (error) {
       console.error('Error completing profile:', error);
       toast({
