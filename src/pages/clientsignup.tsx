@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-
+import { useAuth } from "@/context/AuthContext";
+ 
 import {
   Form,
   FormControl,
@@ -34,13 +35,12 @@ const signupSchema = z.object({
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-const MAX_RETRIES = 2;
-const RETRY_DELAY = 1000; // 1 second
-
 const Signup = () => {
   const navigate = useNavigate();
+  const { signUp, signOut } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   // Initialize form
   const form = useForm<SignupFormValues>({
@@ -62,117 +62,51 @@ const Signup = () => {
     try {
       console.log("[Signup] Starting client registration with values:", values);
       
-      // If preferredName is empty, use firstName instead
-      const preferredName = values.preferredName?.trim() 
-        ? values.preferredName 
-        : values.firstName;
-      
-      // Generate a random password (will be reset later)
-      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-      
-      let attempt = 0;
-      let success = false;
-      let lastError = null;
-      
-      // Retry logic for authentication
-      while (!success && attempt < MAX_RETRIES) {
-        try {
-          if (attempt > 0) {
-            console.log(`[Signup] Retrying signup attempt ${attempt + 1}/${MAX_RETRIES + 1}...`);
-            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-          }
-          
-          // Create auth user with client role directly in the metadata
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: values.email,
-            password: tempPassword,
-            options: {
-              data: {
-                first_name: values.firstName,
-                last_name: values.lastName,
-                preferred_name: preferredName, // Use firstName if preferredName is empty
-                phone: values.phone,
-                role: "client",
-                state: values.state,
-                temp_password: tempPassword,
-                client_status: "New" // Set initial status to New
-              }
-            }
-          });
-          
-          if (authError) {
-            console.error(`[Signup] Auth error on attempt ${attempt + 1}:`, authError);
-            lastError = authError;
-            attempt++;
-            continue;
-          }
-          
-          if (!authData.user) {
-            console.error(`[Signup] No user returned in auth data on attempt ${attempt + 1}`);
-            lastError = new Error("Failed to create user account - no user returned");
-            attempt++;
-            continue;
-          }
-          
-          console.log("[Signup] User created successfully:", authData.user.id);
-          success = true;
-          
-          toast({
-            title: "Account created successfully",
-            description: "You'll be redirected to complete your profile setup.",
-          });
-          
-          // Redirect to profile setup page instead of login
-          navigate("/profile-setup");
-          
-        } catch (attemptError: any) {
-          console.error(`[Signup] Error during registration attempt ${attempt + 1}:`, attemptError);
-          lastError = attemptError;
-          attempt++;
-        }
+      const { error: signUpError } = await signUp(
+        values.email,
+        values.firstName,
+        values.lastName,
+        values.preferredName,
+        values.phone,
+        values.state
+      );
+
+      if (signUpError) {
+        throw signUpError;
       }
-      
-      // If we get here and success is false, we've exhausted our retries
-      if (!success) {
-        let errorMessage = "There was a problem creating your account. Please try again later.";
-        
-        if (lastError && typeof lastError === 'object') {
-          if ('code' in lastError && lastError.code === '23505') {
-            errorMessage = "This email address is already in use. Please log in or use a different email.";
-          } else if ('message' in lastError) {
-            // Check for specific error messages and provide user-friendly alternatives
-            const errMsg = lastError.message.toString().toLowerCase();
-            if (errMsg.includes('email')) {
-              errorMessage = "There was a problem with your email address. Please verify it and try again.";
-            } else if (errMsg.includes('database')) {
-              errorMessage = "We're experiencing temporary database issues. Please try again in a few moments.";
-            }
-          }
-        }
-        
-        setError(errorMessage);
-        console.error("[Signup] Registration failed after all retries. Last error:", lastError);
+
+      // Send password reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: `${window.location.origin}/update-password`,
+      });
+
+      if (resetError) {
+        throw resetError;
       }
+
+      // Sign out to prevent usage of temporary password
+      await signOut();
+
+      setEmailSent(true);
       
-    } catch (error: any) {
-      console.error("[Signup] Error during registration:", error);
-      
+    } catch (error: unknown) {
       let errorMessage = "There was a problem creating your account. Please try again later.";
-      if (error.message) {
-        if (error.message.includes("duplicate key")) {
+      
+      if (error instanceof Error) {
+        if (error.message.includes('23505')) {
           errorMessage = "This email address is already in use. Please log in or use a different email.";
-        } else if (error.message.includes("database") || error.message.includes("saving")) {
-          errorMessage = "We're experiencing temporary database issues. Please try again in a few moments.";
+        } else {
+          const errMsg = error.message.toLowerCase();
+          if (errMsg.includes('email')) {
+            errorMessage = "There was a problem with your email address. Please verify it and try again.";
+          } else if (errMsg.includes('database')) {
+            errorMessage = "We're experiencing temporary database issues. Please try again in a few moments.";
+          }
         }
       }
       
       setError(errorMessage);
-      
-      toast({
-        title: "Error creating account",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      console.error("[Signup] Registration failed:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -204,18 +138,53 @@ const Signup = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+          {emailSent ? (
+            <Alert className="mb-4">
+              <AlertDescription>
+                Registration successful! Please check your email for a link to set your password and complete your profile.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="firstName"
+                  name="preferredName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>Preferred Name (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="How you'd like to be addressed" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -224,99 +193,71 @@ const Signup = () => {
                 
                 <FormField
                   control={form.control}
-                  name="lastName"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Last Name</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="Doe" {...field} />
+                        <Input type="email" placeholder="john.doe@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="preferredName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preferred Name (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="How you'd like to be addressed" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="john.doe@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="(555) 123-4567" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State of Primary Residence</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select state" />
-                        </SelectTrigger>
+                        <Input type="tel" placeholder="(555) 123-4567" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {states.map(state => (
-                          <SelectItem key={state} value={state}>
-                            {state}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Account...
-                  </>
-                ) : "Create Account"}
-              </Button>
-            </form>
-          </Form>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State of Primary Residence</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select state" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {states.map(state => (
+                            <SelectItem key={state} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : "Create Account"}
+                </Button>
+              </form>
+            </Form>
+          )}
         </CardContent>
         <CardFooter className="flex justify-center">
           <Button variant="link" onClick={() => navigate("/login")}>

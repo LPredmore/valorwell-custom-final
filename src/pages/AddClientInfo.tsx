@@ -248,14 +248,14 @@ export const AddClientInfo: React.FC = () => {
     }));
   };
 
-  const handlePersonalSave = async () => {
-    if (!user) return;
+  const handleSave = async (tab: string) => {
+    if (!user || !clientData) return;
 
-    setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from('clients')
-        .update({
+      let updateData = {};
+
+      if (tab === 'personal') {
+        updateData = {
           client_first_name: formData.client_first_name,
           client_last_name: formData.client_last_name,
           client_email: formData.client_email,
@@ -270,30 +270,46 @@ export const AddClientInfo: React.FC = () => {
           client_time_zone: formData.client_time_zone,
           client_gender: formData.client_gender,
           client_gender_identity: formData.client_gender_identity,
-          client_ssn: formData.client_ssn,
-        })
-        .eq('profile_id', user.id);
-
-      if (error) {
-        throw error;
+          client_ssn: clientSSN.replace(/\D/g, ''),
+        };
+      } else if (tab === 'insurance') {
+        updateData = {
+          client_ssn: clientSSN.replace(/\D/g, ''),
+        };
+        // Add insurance save logic here (to be implemented in next chunk)
+      } else if (tab === 'final') {
+        updateData = {
+          client_referral_source: formData.client_referral_source,
+          client_self_goal: formData.client_self_goal,
+          client_planlength: formData.client_planlength,
+          client_treatmentfrequency: formData.client_treatmentfrequency,
+          client_problem: formData.client_problem,
+          client_treatmentgoal: formData.client_treatmentgoal,
+          client_primaryobjective: formData.client_primaryobjective,
+          client_intervention1: formData.client_intervention1,
+          client_secondaryobjective: formData.client_secondaryobjective,
+          client_intervention2: formData.client_intervention2,
+        };
       }
 
-      toast({
-        title: "Personal Information Saved",
-        description: "Your personal details have been saved successfully.",
-      });
+      const { error } = await supabase
+        .from('clients')
+        .update(updateData)
+        .eq('profile_id', user.id);
 
-      // Move to Insurance tab
-      setActiveTab('insurance');
+      if (error) throw error;
+
+      toast({
+        title: "Saved",
+        description: "Changes saved successfully.",
+      });
     } catch (error) {
-      console.error('Error saving personal info:', error);
+      console.error('Save error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to save personal information. Please try again.",
+        description: "Failed to save changes.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -499,11 +515,14 @@ export const AddClientInfo: React.FC = () => {
           <p className="text-muted-foreground">Please provide additional information to complete your client profile.</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(newTab) => {
+          handleSave(activeTab);
+          setActiveTab(newTab);
+        }} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="personal">Personal</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
-            <TabsTrigger value="clinical">Final</TabsTrigger>
+            <TabsTrigger value="final">Final</TabsTrigger>
           </TabsList>
 
           <TabsContent value="personal">
@@ -749,11 +768,15 @@ export const AddClientInfo: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Next Button */}
+                {/* Buttons */}
                 <div className="flex justify-end pt-4">
                   <Button
                     type="button"
-                    onClick={handlePersonalSave}
+                    onClick={() => {
+                      // TODO: Validation for required fields
+                      handleSave('personal');
+                      setActiveTab('insurance');
+                    }}
                     size="lg"
                     disabled={isSubmitting}
                   >
@@ -897,11 +920,22 @@ export const AddClientInfo: React.FC = () => {
                   </div>
                 )}
 
-                {/* Save and Continue Button */}
-                <div className="flex justify-end pt-4">
+                {/* Buttons */}
+                <div className="flex justify-between pt-4">
                   <Button
                     type="button"
-                    onClick={handleSaveInsurance}
+                    variant="outline"
+                    onClick={() => setActiveTab('personal')}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      // TODO: Validation
+                      handleSave('insurance');
+                      setActiveTab('final');
+                    }}
                     size="lg"
                     disabled={isSubmitting}
                   >
@@ -911,7 +945,7 @@ export const AddClientInfo: React.FC = () => {
                         Saving...
                       </>
                     ) : (
-                      'Save & Continue'
+                      'Next'
                     )}
                   </Button>
                 </div>
@@ -957,18 +991,28 @@ export const AddClientInfo: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Complete Profile Button */}
-                <div className="flex justify-end pt-4">
+                {/* Buttons */}
+                <div className="flex justify-between pt-4">
                   <Button
                     type="button"
-                    onClick={handleCompleteProfile}
+                    variant="outline"
+                    onClick={() => setActiveTab('insurance')}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      // TODO: Validation
+                      handleCompleteProfile();
+                    }}
                     size="lg"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Completing Profile...
+                        Completing...
                       </>
                     ) : (
                       'Complete Profile'

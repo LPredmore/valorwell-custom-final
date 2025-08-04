@@ -8,8 +8,15 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, role?: 'client' | 'clinician', firstName?: string, lastName?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    firstName: string,
+    lastName: string,
+    preferredName: string,
+    phone: string,
+    state: string
+  ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -96,80 +103,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signUp = async (email: string, password: string, role: 'client' | 'clinician' = 'client', firstName?: string, lastName?: string) => {
-    console.log('🔵 AUTH CONTEXT - signUp function called with parameters:');
-    console.log('📧 Email:', email);
-    console.log('🔒 Password length:', password?.length);
-    console.log('👤 Role:', role);
-    console.log('👤 First Name:', firstName);
-    console.log('👤 Last Name:', lastName);
-    
-    const redirectUrl = `${window.location.origin}/`;
-    console.log('🌐 Redirect URL:', redirectUrl);
-    
-    const signUpPayload = {
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          role,
-          first_name: firstName,
-          last_name: lastName
-        }
-      }
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY = 1000;
+
+  const signUp = async (
+    email: string,
+    firstName: string,
+    lastName: string,
+    preferredName: string,
+    phone: string,
+    state: string
+  ) => {
+    const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+    const effectivePreferredName = preferredName.trim() || firstName;
+
+    const metadata = {
+      role: 'client',
+      first_name: firstName,
+      last_name: lastName,
+      preferred_name: effectivePreferredName,
+      phone,
+      state
     };
-    
-    console.log('📦 Full signUp payload being sent to Supabase:');
-    console.log(JSON.stringify(signUpPayload, null, 2));
-    
-    console.log('🚀 Calling supabase.auth.signUp...');
-    
-    try {
-      const result = await supabase.auth.signUp(signUpPayload);
-      
-      console.log('✅ Supabase signUp response received:');
-      console.log('📊 Full result object:', JSON.stringify(result, null, 2));
-      console.log('❌ Error object:', result.error);
-      console.log('👤 User object:', result.data?.user);
-      console.log('🔑 Session object:', result.data?.session);
-      
-      if (result.error) {
-        console.error('❌ SIGNUP ERROR DETECTED:');
-        console.error('Error message:', result.error.message);
-        console.error('Error status:', result.error.status);
-        console.error('Error details:', result.error);
-        
-        toast({
-          variant: "destructive",
-          title: "Registration Error",
-          description: result.error.message,
+
+    let attempt = 0;
+    let success = false;
+    let lastError: Error | null = null;
+
+    while (!success && attempt < MAX_RETRIES) {
+      try {
+        if (attempt > 0) await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password: tempPassword,
+          options: {
+            data: metadata
+          }
         });
-      } else {
-        console.log('✅ SIGNUP SUCCESS - No error detected');
+
+        if (authError) throw authError;
+        if (!authData.user) throw new Error("No user returned");
+
+        success = true;
         toast({
           title: "Registration Successful",
-          description: "Please check your email to confirm your account.",
+          description: "Please complete your profile.",
         });
-        
-        // Note: Client redirect to /add-client-info is now handled by ProtectedRoute
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        attempt++;
       }
+    }
 
-      return { error: result.error };
-    } catch (exception) {
-      console.error('💥 EXCEPTION CAUGHT during signUp:');
-      console.error('Exception type:', typeof exception);
-      console.error('Exception message:', exception?.message);
-      console.error('Full exception:', exception);
-      
+    if (!success) {
       toast({
         variant: "destructive",
         title: "Registration Error",
-        description: "An unexpected error occurred during registration.",
+        description: lastError?.message || "Failed to create account",
       });
-      
-      return { error: exception };
+      return { error: lastError };
     }
+
+    return { error: null };
   };
 
   const signOut = async () => {
