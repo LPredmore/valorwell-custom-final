@@ -61,7 +61,8 @@ export const Login: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await signUp(email, password);
+    // For login page signup, we'll use minimal data and let user complete profile later
+    await signUp(email, '', '', '', '', '');
     setIsSubmitting(false);
   };
 

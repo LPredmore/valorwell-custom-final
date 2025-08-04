@@ -66,7 +66,7 @@ export const Signup: React.FC = () => {
     console.log('✅ CLIENT SIGNUP - Password validation passed, calling signUp...');
     console.log('🎯 CLIENT SIGNUP - Calling signUp with role: client');
     
-    await signUp(formData.email, formData.password, 'client', formData.firstName, formData.lastName);
+    await signUp(formData.email, formData.firstName, formData.lastName, '', '', '');
     
     setIsSubmitting(false);
     console.log('🏁 CLIENT SIGNUP - Process completed');
@@ -93,7 +93,7 @@ export const Signup: React.FC = () => {
     console.log('✅ STAFF SIGNUP - Password validation passed, calling signUp...');
     console.log('🎯 STAFF SIGNUP - Calling signUp with role: clinician');
     
-    await signUp(formData.email, formData.password, 'clinician', formData.firstName, formData.lastName);
+    await signUp(formData.email, formData.firstName, formData.lastName, '', '', '');
     
     setIsSubmitting(false);
     console.log('🏁 STAFF SIGNUP - Process completed');
