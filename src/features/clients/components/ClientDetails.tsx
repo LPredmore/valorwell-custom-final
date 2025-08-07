@@ -21,13 +21,16 @@ export const ClientDetails: React.FC = () => {
       const { data, error } = await supabase
         .from('clients')
         .select(`
-          *
+          id, first_name, last_name, preferred_name, email, phone, address, city, state, zip_code,
+          date_of_birth, age, gender, time_zone, status, assigned_therapist, diagnosis, referral_source,
+          treatmentgoal, insurance_company_primary, insurance_type_primary, policy_number_primary,
+          group_number_primary, insurance_company_secondary, insurance_type_secondary, policy_number_secondary
         `)
         .eq('id', id)
         .single();
       
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!id,
   });
@@ -75,10 +78,10 @@ export const ClientDetails: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center">
               <User className="h-8 w-8 mr-3" />
-              {client.client_first_name || 'Unknown'} {client.client_last_name || 'User'}
+              {client.first_name || 'Unknown'} {client.last_name || 'User'}
             </h1>
-            <Badge className={getStatusColor(client.client_status)}>
-              {client.client_status || 'Unknown'}
+            <Badge className={getStatusColor(client.status)}>
+              {client.status || 'Unknown'}
             </Badge>
           </div>
         </div>
@@ -98,16 +101,16 @@ export const ClientDetails: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">First Name</p>
-                <p className="font-medium">{client.client_first_name || 'Not provided'}</p>
+                <p className="font-medium">{client.first_name || 'Not provided'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Last Name</p>
-                <p className="font-medium">{client.client_last_name || 'Not provided'}</p>
+                <p className="font-medium">{client.last_name || 'Not provided'}</p>
               </div>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Preferred Name</p>
-              <p className="font-medium">{client.client_preferred_name || 'Not provided'}</p>
+              <p className="font-medium">{client.preferred_name || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Date of Birth</p>
@@ -115,11 +118,11 @@ export const ClientDetails: React.FC = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Gender</p>
-              <p className="font-medium">{client.client_gender || 'Not provided'}</p>
+              <p className="font-medium">{client.gender || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Age</p>
-              <p className="font-medium">{client.client_age || 'Not calculated'}</p>
+              <p className="font-medium">{client.age || 'Not calculated'}</p>
             </div>
           </CardContent>
         </Card>
@@ -141,7 +144,7 @@ export const ClientDetails: React.FC = () => {
               <Phone className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">{client.client_phone || 'Not provided'}</p>
+                <p className="font-medium">{client.phone || 'Not provided'}</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -149,21 +152,21 @@ export const ClientDetails: React.FC = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Address</p>
                 <div className="font-medium">
-                  {client.client_address && (
+                  {client.address && (
                     <>
-                      <p>{client.client_address}</p>
+                      <p>{client.address}</p>
                       <p>
-                        {client.client_city}, {client.state} {client.client_zip_code}
+                        {client.city}, {client.state} {client.zip_code}
                       </p>
                     </>
                   )}
-                  {!client.client_address && 'Not provided'}
+                  {!client.address && 'Not provided'}
                 </div>
               </div>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Time Zone</p>
-              <p className="font-medium">{client.client_time_zone || 'Not provided'}</p>
+              <p className="font-medium">{client.time_zone || 'Not provided'}</p>
             </div>
           </CardContent>
         </Card>
@@ -176,14 +179,14 @@ export const ClientDetails: React.FC = () => {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Assigned Therapist</p>
-              <p className="font-medium">{client.client_assigned_therapist || 'Unassigned'}</p>
+              <p className="font-medium">{client.assigned_therapist || 'Unassigned'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Diagnosis</p>
               <div className="font-medium">
-                {client.client_diagnosis && client.client_diagnosis.length > 0 ? (
+                {client.diagnosis && client.diagnosis.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
-                    {client.client_diagnosis.map((diagnosis: string, index: number) => (
+                    {client.diagnosis.map((diagnosis: string, index: number) => (
                       <Badge key={index} variant="secondary">{diagnosis}</Badge>
                     ))}
                   </div>
@@ -194,11 +197,11 @@ export const ClientDetails: React.FC = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Referral Source</p>
-              <p className="font-medium">{client.client_referral_source || 'Not provided'}</p>
+              <p className="font-medium">{client.referral_source || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Treatment Goal</p>
-              <p className="font-medium">{client.client_treatmentgoal || 'Not provided'}</p>
+              <p className="font-medium">{client.treatmentgoal || 'Not provided'}</p>
             </div>
           </CardContent>
         </Card>
@@ -212,22 +215,22 @@ export const ClientDetails: React.FC = () => {
             <div>
               <p className="text-sm font-medium mb-2">Primary Insurance</p>
               <div className="space-y-2 text-sm">
-                <p><span className="text-muted-foreground">Company:</span> {client.client_insurance_company_primary || 'Not provided'}</p>
-                <p><span className="text-muted-foreground">Type:</span> {client.client_insurance_type_primary || 'Not provided'}</p>
-                <p><span className="text-muted-foreground">Policy Number:</span> {client.client_policy_number_primary || 'Not provided'}</p>
-                <p><span className="text-muted-foreground">Group Number:</span> {client.client_group_number_primary || 'Not provided'}</p>
+                <p><span className="text-muted-foreground">Company:</span> {client.insurance_company_primary || 'Not provided'}</p>
+                <p><span className="text-muted-foreground">Type:</span> {client.insurance_type_primary || 'Not provided'}</p>
+                <p><span className="text-muted-foreground">Policy Number:</span> {client.policy_number_primary || 'Not provided'}</p>
+                <p><span className="text-muted-foreground">Group Number:</span> {client.group_number_primary || 'Not provided'}</p>
               </div>
             </div>
             
-            {client.client_insurance_company_secondary && (
+            {client.insurance_company_secondary && (
               <>
                 <Separator />
                 <div>
                   <p className="text-sm font-medium mb-2">Secondary Insurance</p>
                   <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Company:</span> {client.client_insurance_company_secondary}</p>
-                    <p><span className="text-muted-foreground">Type:</span> {client.client_insurance_type_secondary || 'Not provided'}</p>
-                    <p><span className="text-muted-foreground">Policy Number:</span> {client.client_policy_number_secondary || 'Not provided'}</p>
+                    <p><span className="text-muted-foreground">Company:</span> {client.insurance_company_secondary}</p>
+                    <p><span className="text-muted-foreground">Type:</span> {client.insurance_type_secondary || 'Not provided'}</p>
+                    <p><span className="text-muted-foreground">Policy Number:</span> {client.policy_number_secondary || 'Not provided'}</p>
                   </div>
                 </div>
               </>

@@ -12,7 +12,7 @@ export const useClientStatus = () => {
 
       const { data, error } = await supabase
         .from('clients')
-        .select('client_status')
+        .select('status')
         .eq('profile_id', user.id)
         .single();
 
@@ -20,7 +20,7 @@ export const useClientStatus = () => {
         throw error;
       }
 
-      return data?.client_status || null;
+      return (data as any)?.status || null;
     },
     enabled: !!user,
   });

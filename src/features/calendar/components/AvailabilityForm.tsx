@@ -87,8 +87,8 @@ export const AvailabilityForm: React.FC<AvailabilityFormProps> = ({ availability
               </h4>
               <div className="grid grid-cols-1 gap-3">
                   {[1, 2, 3].map((slot) => {
-                    const startFieldName = `clinician_availability_start_${day.key}_${slot}` as keyof ClinicianAvailability;
-                    const endFieldName = `clinician_availability_end_${day.key}_${slot}` as keyof ClinicianAvailability;
+                    const startFieldName = `availability_start_${day.key}_${slot}` as keyof ClinicianAvailability;
+                    const endFieldName = `availability_end_${day.key}_${slot}` as keyof ClinicianAvailability;
                     
                     return (
                       <div key={slot} className="grid grid-cols-2 gap-3">

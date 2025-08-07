@@ -6,26 +6,26 @@ import { useNavigate } from 'react-router-dom';
 import { Database } from '@/integrations/supabase/types';
 
 interface ClientData {
-  client_first_name: string;
-  client_last_name: string;
-  client_preferred_name?: string;
-  client_email?: string;
-  client_phone?: string;
-  client_date_of_birth?: string;
-  client_gender?: string;
-  client_address?: string;
-  client_city?: string;
-  client_state?: string;
-  client_zip_code?: string;
-  client_time_zone?: string;
-  client_status?: Database['public']['Enums']['client_status'];
-  client_assigned_therapist?: string;
-  client_referral_source?: string;
-  client_treatmentgoal?: string;
-  client_insurance_company_primary?: string;
-  client_insurance_type_primary?: string;
-  client_policy_number_primary?: string;
-  client_group_number_primary?: string;
+  first_name: string;
+  last_name: string;
+  preferred_name?: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
+  gender?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  time_zone?: string;
+  status?: Database['public']['Enums']['client_status'];
+  assigned_therapist?: string;
+  referral_source?: string;
+  treatmentgoal?: string;
+  insurance_company_primary?: string;
+  insurance_type_primary?: string;
+  policy_number_primary?: string;
+  group_number_primary?: string;
 }
 
 interface ClientDataWithId extends ClientData {
@@ -41,7 +41,7 @@ export const useCreateClient = () => {
     mutationFn: async (clientData: ClientData) => {
       const { data, error } = await supabase
         .from('clients')
-        .insert([clientData as any]) // Cast to any to handle the id field issue
+        .insert([clientData as any])
         .select()
         .single();
 
@@ -76,7 +76,7 @@ export const useUpdateClient = (clientId: string) => {
     mutationFn: async (clientData: Partial<ClientData>) => {
       const { data, error } = await supabase
         .from('clients')
-        .update(clientData)
+        .update(clientData as any)
         .eq('id', clientId)
         .select()
         .single();
@@ -116,7 +116,7 @@ export const useUpsertClients = () => {
     mutationFn: async (clients: ClientDataWithId[]) => {
       const { data, error } = await supabase
         .from('clients')
-        .upsert(clients, { onConflict: 'id' })
+        .upsert(clients as any, { onConflict: 'id' })
         .select();
 
       if (error) throw error;

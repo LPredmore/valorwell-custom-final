@@ -13,13 +13,13 @@ import { useNavigate } from 'react-router-dom';
 
 interface Client {
   id: string;
-  client_status: string;
-  client_assigned_therapist: string;
-  client_preferred_name: string;
-  client_first_name: string;
-  client_last_name: string;
-  client_email?: string;
-  client_phone?: string;
+  status: string;
+  assigned_therapist: string;
+  preferred_name: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
   date_of_birth?: string;
   created_at: string;
 }
@@ -33,18 +33,18 @@ export const ClientList: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select('id, first_name, last_name, preferred_name, email, phone, date_of_birth, status, assigned_therapist, created_at')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Client[];
+      return data as any as Client[];
     },
   });
 
   const filteredClients = clients?.filter(client => {
-    const displayName = `${client.client_preferred_name || client.client_first_name || ''} ${client.client_last_name || ''}`;
+    const displayName = `${client.preferred_name || client.first_name || ''} ${client.last_name || ''}`;
     return displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           client.client_email?.toLowerCase().includes(searchTerm.toLowerCase());
+           client.email?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const getStatusColor = (status: string) => {
@@ -140,10 +140,10 @@ export const ClientList: React.FC = () => {
                   <Checkbox />
                 </TableCell>
                 <TableCell className="font-medium">
-                  {client.client_preferred_name || client.client_first_name || 'Unknown'} {client.client_last_name || 'User'}
+                  {client.preferred_name || client.first_name || 'Unknown'} {client.last_name || 'User'}
                 </TableCell>
-                 <TableCell>{client.client_email || 'Not provided'}</TableCell>
-                 <TableCell>{client.client_phone || 'Not provided'}</TableCell>
+                 <TableCell>{client.email || 'Not provided'}</TableCell>
+                 <TableCell>{client.phone || 'Not provided'}</TableCell>
                 <TableCell>
                   {client.date_of_birth 
                     ? new Date(client.date_of_birth).toLocaleDateString() 
