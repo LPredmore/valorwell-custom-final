@@ -112,13 +112,13 @@ export const AppointmentCalendar: React.FC = () => {
     let min = defaultStart;
     let max = defaultEnd;
 
-    if (availability.clinician_calendar_start_time) {
-      const [hours, minutes] = availability.clinician_calendar_start_time.split(':').map(Number);
+    if (availability.calendar_start_time) {
+      const [hours, minutes] = availability.calendar_start_time.split(':').map(Number);
       min = new Date(0, 0, 0, hours, minutes, 0);
     }
 
-    if (availability.clinician_calendar_end_time) {
-      const [hours, minutes] = availability.clinician_calendar_end_time.split(':').map(Number);
+    if (availability.calendar_end_time) {
+      const [hours, minutes] = availability.calendar_end_time.split(':').map(Number);
       max = new Date(0, 0, 0, hours, minutes, 0);
     }
 

@@ -55,19 +55,19 @@ export const AvailabilityForm: React.FC<AvailabilityFormProps> = ({ availability
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="clinician_calendar_start_time">Start Time</Label>
+              <Label htmlFor="calendar_start_time">Start Time</Label>
               <Input
-                id="clinician_calendar_start_time"
+                id="calendar_start_time"
                 type="time"
-                {...register('clinician_calendar_start_time')}
+                {...register('calendar_start_time')}
               />
             </div>
             <div>
-              <Label htmlFor="clinician_calendar_end_time">End Time</Label>
+              <Label htmlFor="calendar_end_time">End Time</Label>
               <Input
-                id="clinician_calendar_end_time"
+                id="calendar_end_time"
                 type="time"
-                {...register('clinician_calendar_end_time')}
+                {...register('calendar_end_time')}
               />
             </div>
           </div>
