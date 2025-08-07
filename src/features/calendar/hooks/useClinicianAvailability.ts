@@ -8,7 +8,7 @@ export interface ClinicianAvailability {
   profile_id: string;
   calendar_start_time: string;
   calendar_end_time: string;
-  // Monday availability
+// Monday availability
   availability_start_monday_1?: string;
   availability_end_monday_1?: string;
   availability_start_monday_2?: string;
