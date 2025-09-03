@@ -27,12 +27,7 @@ export const useAppointments = (dateRange?: { start: Date; end: Date }) => {
       let query = supabase
         .from('appointments')
         .select(`
-          *,
-           clients!appointments_client_id_fkey(
-             id,
-             client_first_name,
-             client_last_name
-           )
+          *
         `)
         .order('start_at');
 

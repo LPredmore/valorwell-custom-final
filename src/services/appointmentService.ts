@@ -147,7 +147,7 @@ export const createSingleAppointment = async (
         .single(),
       supabase
         .from('clinicians')
-        .select('first_name, last_name, clinician_time_zone')
+        .select('first_name, last_name, time_zone')
         .eq('id', appointmentData.clinician_id)
         .single()
     ]);

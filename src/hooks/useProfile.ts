@@ -39,7 +39,7 @@ export const useUserRole = () => {
         .single();
       
       if (error) throw error;
-      return data.role;
+      return data.role[0]; // Return first role from array
     },
   });
 };

@@ -369,6 +369,31 @@ export type Database = {
           branchos: string | null
           champva: boolean | null
           city: string | null
+          client_address: string | null
+          client_city: string | null
+          client_email: string | null
+          client_first_name: string | null
+          client_gender: string | null
+          client_gender_identity: string | null
+          client_intervention1: string | null
+          client_intervention2: string | null
+          client_last_name: string | null
+          client_middle_name: string | null
+          client_minor: string | null
+          client_phone: string | null
+          client_planlength: string | null
+          client_preferred_name: string | null
+          client_primaryobjective: string | null
+          client_problem: string | null
+          client_referral_source: string | null
+          client_secondaryobjective: string | null
+          client_self_goal: string | null
+          client_ssn: string | null
+          client_status: string | null
+          client_time_zone: string | null
+          client_treatmentfrequency: string | null
+          client_treatmentgoal: string | null
+          client_zip_code: string | null
           clinic_taxid: string | null
           created_at: string
           currentsymptoms: string | null
@@ -498,6 +523,31 @@ export type Database = {
           branchos?: string | null
           champva?: boolean | null
           city?: string | null
+          client_address?: string | null
+          client_city?: string | null
+          client_email?: string | null
+          client_first_name?: string | null
+          client_gender?: string | null
+          client_gender_identity?: string | null
+          client_intervention1?: string | null
+          client_intervention2?: string | null
+          client_last_name?: string | null
+          client_middle_name?: string | null
+          client_minor?: string | null
+          client_phone?: string | null
+          client_planlength?: string | null
+          client_preferred_name?: string | null
+          client_primaryobjective?: string | null
+          client_problem?: string | null
+          client_referral_source?: string | null
+          client_secondaryobjective?: string | null
+          client_self_goal?: string | null
+          client_ssn?: string | null
+          client_status?: string | null
+          client_time_zone?: string | null
+          client_treatmentfrequency?: string | null
+          client_treatmentgoal?: string | null
+          client_zip_code?: string | null
           clinic_taxid?: string | null
           created_at?: string
           currentsymptoms?: string | null
@@ -627,6 +677,31 @@ export type Database = {
           branchos?: string | null
           champva?: boolean | null
           city?: string | null
+          client_address?: string | null
+          client_city?: string | null
+          client_email?: string | null
+          client_first_name?: string | null
+          client_gender?: string | null
+          client_gender_identity?: string | null
+          client_intervention1?: string | null
+          client_intervention2?: string | null
+          client_last_name?: string | null
+          client_middle_name?: string | null
+          client_minor?: string | null
+          client_phone?: string | null
+          client_planlength?: string | null
+          client_preferred_name?: string | null
+          client_primaryobjective?: string | null
+          client_problem?: string | null
+          client_referral_source?: string | null
+          client_secondaryobjective?: string | null
+          client_self_goal?: string | null
+          client_ssn?: string | null
+          client_status?: string | null
+          client_time_zone?: string | null
+          client_treatmentfrequency?: string | null
+          client_treatmentgoal?: string | null
+          client_zip_code?: string | null
           clinic_taxid?: string | null
           created_at?: string
           currentsymptoms?: string | null

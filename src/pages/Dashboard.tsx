@@ -24,7 +24,7 @@ export const Dashboard: React.FC = () => {
   
   // Filter appointments for current clinician only
   const clinicianAppointments = allAppointments.filter(apt => {
-    return profile?.role === 'clinician' && apt.clinician_id === currentClinician?.id;
+    return profile?.role?.includes('clinician') && apt.clinician_id === currentClinician?.id;
   });
 
   // Today's appointments: scheduled today with status 'scheduled'
@@ -65,11 +65,9 @@ export const Dashboard: React.FC = () => {
                   <div key={appointment.id} className="border rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-3">
                       <User className="h-5 w-5 text-muted-foreground" />
-                       <span className="font-medium">
-                         {appointment.clients?.client_first_name && appointment.clients?.client_last_name 
-                           ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
-                           : 'Unknown Client'}
-                       </span>
+                        <span className="font-medium">
+                          {appointment.client_name || 'Unknown Client'}
+                        </span>
                     </div>
                     <div className="text-sm text-muted-foreground mb-2">
                       <Calendar className="h-4 w-4 inline mr-1" />
@@ -113,11 +111,9 @@ export const Dashboard: React.FC = () => {
                 <div key={appointment.id} className="border rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <User className="h-5 w-5 text-muted-foreground" />
-                     <span className="font-medium">
-                         {appointment.clients?.client_first_name && appointment.clients?.client_last_name 
-                           ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
-                           : 'Unknown Client'}
-                     </span>
+                      <span className="font-medium">
+                          {appointment.client_name || 'Unknown Client'}
+                      </span>
                   </div>
                   <div className="text-sm text-muted-foreground mb-2">
                     <Calendar className="h-4 w-4 inline mr-1" />
@@ -174,11 +170,9 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                         <span className="font-medium">
-                             {appointment.clients?.client_first_name && appointment.clients?.client_last_name 
-                               ? `${appointment.clients.client_first_name} ${appointment.clients.client_last_name}`
-                               : 'Unknown Client'}
-                         </span>
+                          <span className="font-medium">
+                              {appointment.client_name || 'Unknown Client'}
+                          </span>
                       </div>
                       <p className="text-sm text-muted-foreground">{appointment.type}</p>
                     </div>

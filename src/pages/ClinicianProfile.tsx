@@ -16,7 +16,7 @@ export const ClinicianProfile: React.FC = () => {
   const updateClinician = useUpdateCurrentClinician();
 
   const handleImageChange = (url: string | null) => {
-    updateClinician.mutate({ clinician_image_url: url });
+    updateClinician.mutate({ image_url: url });
   };
 
   const handleFieldUpdate = (field: string, value: any) => {
@@ -52,10 +52,10 @@ export const ClinicianProfile: React.FC = () => {
       <div className="mb-8 bg-card rounded-lg p-6">
         <div className="flex items-center gap-6 mb-6">
           <div className="relative">
-            {clinician?.clinician_image_url ? (
+            {clinician?.image_url ? (
               <div className="relative group">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={clinician.clinician_image_url} />
+                  <AvatarImage src={clinician.image_url} />
                   <AvatarFallback className="text-lg font-semibold">
                     {getInitials()}
                   </AvatarFallback>
@@ -69,7 +69,7 @@ export const ClinicianProfile: React.FC = () => {
                 <ImageUpload
                   label=""
                   bucket="clinician-avatars"
-                  currentImageUrl={clinician?.clinician_image_url}
+                  currentImageUrl={clinician?.image_url}
                   onImageChange={handleImageChange}
                   userId={clinician?.id}
                 />
@@ -83,11 +83,11 @@ export const ClinicianProfile: React.FC = () => {
               </h1>
             </div>
             <p className="text-muted-foreground mb-3">
-              {clinician?.clinician_professional_name || 'Professional name not set'}
+              {clinician?.professional_name || 'Professional name not set'}
             </p>
             <div className="flex gap-2">
               <Badge variant="default" className="bg-emerald-500 text-white">
-                {clinician?.clinician_accepting_new_clients ? 'Accepting Clients' : 'Not Accepting'}
+                {clinician?.accepting_new_clients ? 'Accepting Clients' : 'Not Accepting'}
               </Badge>
               <Badge variant="secondary">Mental Health</Badge>
             </div>
@@ -95,12 +95,12 @@ export const ClinicianProfile: React.FC = () => {
         </div>
         
         {/* Image Upload Section */}
-        {clinician?.clinician_image_url && (
+        {!clinician?.image_url && (
           <div className="mt-4">
             <ImageUpload
               label="Update Profile Image"
               bucket="clinician-avatars"
-              currentImageUrl={clinician.clinician_image_url}
+              currentImageUrl={clinician.image_url}
               onImageChange={handleImageChange}
               userId={clinician.id}
             />
@@ -131,8 +131,8 @@ export const ClinicianProfile: React.FC = () => {
             
             <EditableField
               label="Professional Name"
-              value={clinician?.clinician_professional_name}
-              onSave={(value) => handleFieldUpdate('clinician_professional_name', value)}
+              value={clinician?.professional_name}
+              onSave={(value) => handleFieldUpdate('professional_name', value)}
               isLoading={updateClinician.isPending}
             />
           </div>
@@ -181,8 +181,8 @@ export const ClinicianProfile: React.FC = () => {
           
           <EditableField
             label="Bio"
-            value={clinician?.clinician_bio}
-            onSave={(value) => handleFieldUpdate('clinician_bio', value)}
+            value={clinician?.bio}
+            onSave={(value) => handleFieldUpdate('bio', value)}
             type="textarea"
             placeholder="Tell us about yourself and your practice..."
             isLoading={updateClinician.isPending}
@@ -199,40 +199,40 @@ export const ClinicianProfile: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <EditableField
               label="NPI Number"
-              value={clinician?.clinician_npi_number}
-              onSave={(value) => handleFieldUpdate('clinician_npi_number', value)}
+              value={clinician?.npi_number}
+              onSave={(value) => handleFieldUpdate('npi_number', value)}
               placeholder="10-digit NPI number"
               isLoading={updateClinician.isPending}
             />
             
             <EditableField
               label="License Type"
-              value={clinician?.clinician_license_type}
-              onSave={(value) => handleFieldUpdate('clinician_license_type', value)}
+              value={clinician?.license_type}
+              onSave={(value) => handleFieldUpdate('license_type', value)}
               placeholder="e.g., LCSW, LPC, LMFT"
               isLoading={updateClinician.isPending}
             />
             
             <EditableField
               label="Taxonomy Code"
-              value={clinician?.clinician_taxonomy_code}
-              onSave={(value) => handleFieldUpdate('clinician_taxonomy_code', value)}
+              value={clinician?.taxonomy_code}
+              onSave={(value) => handleFieldUpdate('taxonomy_code', value)}
               placeholder="Healthcare provider taxonomy code"
               isLoading={updateClinician.isPending}
             />
             
             <EditableField
               label="Clinician Type"
-              value={clinician?.clinician_type}
-              onSave={(value) => handleFieldUpdate('clinician_type', value)}
+              value={clinician?.type}
+              onSave={(value) => handleFieldUpdate('type', value)}
               placeholder="e.g., Therapist, Counselor, Psychologist"
               isLoading={updateClinician.isPending}
             />
             
             <EditableField
               label="Minimum Client Age"
-              value={clinician?.clinician_min_client_age}
-              onSave={(value) => handleFieldUpdate('clinician_min_client_age', value)}
+              value={clinician?.min_client_age}
+              onSave={(value) => handleFieldUpdate('min_client_age', value)}
               type="number"
               placeholder="18"
               isLoading={updateClinician.isPending}
@@ -240,8 +240,8 @@ export const ClinicianProfile: React.FC = () => {
             
             <EditableField
               label="Time Zone"
-              value={clinician?.clinician_time_zone}
-              onSave={(value) => handleFieldUpdate('clinician_time_zone', value)}
+              value={clinician?.time_zone}
+              onSave={(value) => handleFieldUpdate('time_zone', value)}
               placeholder="America/New_York"
               isLoading={updateClinician.isPending}
             />
@@ -250,25 +250,25 @@ export const ClinicianProfile: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <EditableToggleField
               label="Accepting New Clients"
-              value={clinician?.clinician_accepting_new_clients}
-              onSave={(value) => handleFieldUpdate('clinician_accepting_new_clients', value)}
+              value={clinician?.accepting_new_clients}
+              onSave={(value) => handleFieldUpdate('accepting_new_clients', value)}
               isLoading={updateClinician.isPending}
             />
           </div>
           
-          <EditableArrayField
+          <EditableField
             label="Licensed States"
-            value={clinician?.clinician_licensed_states}
-            onSave={(value) => handleFieldUpdate('clinician_licensed_states', value)}
-            placeholder="Add state abbreviation (e.g., CA, NY)"
+            value={clinician?.licensed_states}
+            onSave={(value) => handleFieldUpdate('licensed_states', value)}
+            placeholder="Add state abbreviations (e.g., CA, NY, TX)"
             isLoading={updateClinician.isPending}
           />
           
-          <EditableArrayField
+          <EditableField
             label="Treatment Approaches"
-            value={clinician?.clinician_treatment_approaches}
-            onSave={(value) => handleFieldUpdate('clinician_treatment_approaches', value)}
-            placeholder="Add treatment approach (e.g., CBT, DBT)"
+            value={clinician?.treatment_approaches}
+            onSave={(value) => handleFieldUpdate('treatment_approaches', value)}
+            placeholder="Add treatment approaches (e.g., CBT, DBT, EMDR)"
             isLoading={updateClinician.isPending}
           />
         </CardContent>
